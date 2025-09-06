@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
 import carData from '@/lib/car_data.json';
 import BackButton from '@/components/BackButton';
@@ -61,6 +62,8 @@ const US_STATES: { code: string; name: string }[] = [
 ];
 
 export default function MyVehiclesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -101,6 +104,46 @@ export default function MyVehiclesPage() {
       setLoading(false);
     }
   }, []);
+
+  // Handle return from Stripe Checkout
+  useEffect(() => {
+    const sessionId = searchParams?.get('session_id');
+    const vehicleId = searchParams?.get('vehicleId');
+    if (!sessionId || !vehicleId) return;
+
+    async function finalizeActivation() {
+      try {
+        setActivatingVehicleId(vehicleId);
+        const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId)}`);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Failed to confirm session');
+
+        await updateVehicle(vehicleId, {
+          isActive: true,
+          stripe: {
+            customerId: data.customerId || null,
+            subscriptionId: data.subscriptionId || null,
+            status: data.status || null,
+            currentPeriodEnd: data.currentPeriodEnd ? new Date(data.currentPeriodEnd * 1000) : null,
+          },
+        });
+
+        alert('Vehicle activated successfully.');
+      } catch (e) {
+        console.error('Finalize activation failed', e);
+        alert('Activation completed, but we could not update your vehicle automatically. If it still shows inactive, refresh or contact support.');
+      } finally {
+        setActivatingVehicleId(null);
+        // Clean the query string
+        try {
+          router.replace('/dashboard/vehicles');
+        } catch {}
+      }
+    }
+
+    finalizeActivation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Handle ESC key to close expanded photo
   useEffect(() => {
@@ -472,12 +515,25 @@ export default function MyVehiclesPage() {
                   {!vehicle.isActive && (
                     <button
                       className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
-                      onClick={async () => { 
-                        setActivatingVehicleId(vehicle.id);
-                        setShowBillingModal(true);
+                      onClick={async () => {
+                        try {
+                          setActivatingVehicleId(vehicle.id);
+                          const resp = await fetch('/api/stripe/create-checkout-session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ vehicleId: vehicle.id }),
+                          });
+                          const data = await resp.json();
+                          if (!resp.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');
+                          window.location.href = data.url as string;
+                        } catch (e) {
+                          console.error('Start checkout failed', e);
+                          alert('Failed to start checkout. Please try again.');
+                          setActivatingVehicleId(null);
+                        }
                       }}
                     >
-                      Activate
+                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
                     </button>
                   )}
                   <Link 
