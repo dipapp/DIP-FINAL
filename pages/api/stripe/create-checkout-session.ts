@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-// Create per-vehicle subscription checkout session
+// Create per-vehicle subscription checkout session (webhook-first flow)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'STRIPE_PRICE_ID must be a Price ID starting with "price_"' });
   }
 
-  const { vehicleId } = req.body || {};
+  const { vehicleId, userId, customerEmail, customerId } = req.body || {};
   if (!vehicleId || typeof vehicleId !== 'string') {
     return res.status(400).json({ error: 'vehicleId is required' });
   }
@@ -38,16 +38,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           quantity: 1,
         },
       ],
+      // Webhook will confirm and flip isActive. Success page only shows pending UI.
       success_url: `${origin}/dashboard/vehicles?vehicleId=${encodeURIComponent(vehicleId)}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/dashboard/vehicles?cancelled=1`,
       metadata: {
         vehicleId,
+        userId: typeof userId === 'string' ? userId : '',
       },
       subscription_data: {
         metadata: {
           vehicleId,
+          userId: typeof userId === 'string' ? userId : '',
         },
       },
+      customer: typeof customerId === 'string' && customerId.startsWith('cus_') ? customerId : undefined,
+      customer_email: !customerId && typeof customerEmail === 'string' && customerEmail.includes('@') ? customerEmail : undefined,
       allow_promotion_codes: true,
     });
 

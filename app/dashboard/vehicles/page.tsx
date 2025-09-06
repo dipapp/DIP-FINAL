@@ -105,7 +105,7 @@ export default function MyVehiclesPage() {
     }
   }, []);
 
-  // Handle return from Stripe Checkout
+  // Handle return from Stripe Checkout (webhook-first)
   useEffect(() => {
     const sessionId = searchParams?.get('session_id');
     const vehicleId = searchParams?.get('vehicleId');
@@ -114,21 +114,23 @@ export default function MyVehiclesPage() {
     async function finalizeActivation() {
       try {
         setActivatingVehicleId(vehicleId);
-        const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId)}`);
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Failed to confirm session');
+        // Poll vehicle doc briefly for webhook to flip isActive
+        const start = Date.now();
+        let active = false;
+        while (Date.now() - start < 45000) { // up to 45s
+          const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId)}`);
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.error || 'Failed to confirm session');
+          active = data.status === 'active' || data.status === 'trialing';
+          if (active) break;
+          await new Promise((r) => setTimeout(r, 3000));
+        }
 
-        await updateVehicle(vehicleId, {
-          isActive: true,
-          stripe: {
-            customerId: data.customerId || null,
-            subscriptionId: data.subscriptionId || null,
-            status: data.status || null,
-            currentPeriodEnd: data.currentPeriodEnd ? new Date(data.currentPeriodEnd * 1000) : null,
-          },
-        });
-
-        alert('Vehicle activated successfully.');
+        if (active) {
+          alert('Vehicle activated successfully.');
+        } else {
+          alert("We're confirming your payment. If your vehicle doesn't show Active soon, try refreshing this page.");
+        }
       } catch (e) {
         console.error('Finalize activation failed', e);
         alert('Activation completed, but we could not update your vehicle automatically. If it still shows inactive, refresh or contact support.');
