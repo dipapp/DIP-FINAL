@@ -522,7 +522,9 @@ export default function MyVehiclesPage() {
                       onClick={async () => {
                         try {
                           setActivatingVehicleId(vehicle.id);
-                          const resp = await fetch('/api/stripe/create-checkout-session', {
+                          const useExisting = Boolean(profile?.stripe?.subscriptionId);
+                          const endpoint = useExisting ? '/api/stripe/add-subscription-item' : '/api/stripe/create-checkout-session';
+                          const resp = await fetch(endpoint, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
@@ -533,8 +535,14 @@ export default function MyVehiclesPage() {
                             }),
                           });
                           const data = await resp.json();
-                          if (!resp.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');
-                          window.location.href = data.url as string;
+                          if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
+                          if (!useExisting) {
+                            if (!data.url) throw new Error('Missing checkout URL');
+                            window.location.href = data.url as string;
+                          } else {
+                            alert('Vehicle activation charge added. It may take a few seconds to reflect.');
+                            setActivatingVehicleId(null);
+                          }
                         } catch (e) {
                           console.error('Start checkout failed', e);
                           alert('Failed to start checkout. Please try again.');

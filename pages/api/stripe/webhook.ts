@@ -67,20 +67,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             lastUpdated: serverTimestamp(),
           });
         }
-        if (userId && customerId) {
+        if (userId && (customerId || subscriptionId)) {
           const userRef = doc(db, 'users', userId);
           const snap = await getDoc(userRef);
           if (snap.exists()) {
             await updateDoc(userRef, {
               stripe: {
                 ...(snap.data().stripe || {}),
-                customerId,
+                customerId: customerId || (snap.data().stripe?.customerId ?? null),
+                subscriptionId: subscriptionId || (snap.data().stripe?.subscriptionId ?? null),
               },
               updatedAt: new Date(),
             });
           } else {
             await setDoc(userRef, {
-              stripe: { customerId },
+              stripe: { customerId, subscriptionId },
               createdAt: new Date(),
               updatedAt: new Date(),
             }, { merge: true });
@@ -92,12 +93,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
         const vehicleId = (sub.metadata?.vehicleId as string) || undefined;
-        if (vehicleId) {
-          await updateDoc(doc(db, 'vehicles', vehicleId), {
+        // Multi-item model: iterate items and update vehicles based on metadata.vehicleId
+        const items = sub.items?.data || [];
+        for (const it of items) {
+          const vId = (it.metadata?.vehicleId as string) || undefined;
+          if (!vId) continue;
+          await updateDoc(doc(db, 'vehicles', vId), {
             isActive: sub.status === 'active' || sub.status === 'trialing',
             stripe: {
               customerId: sub.customer as string,
               subscriptionId: sub.id,
+              subscriptionItemId: it.id,
               status: sub.status,
               currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
             },
