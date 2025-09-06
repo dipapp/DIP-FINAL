@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
+import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto, subscribeMyProfile } from '@/lib/firebase/memberActions';
 import carData from '@/lib/car_data.json';
 import BackButton from '@/components/BackButton';
 
@@ -65,6 +65,7 @@ export default function MyVehiclesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [form, setForm] = useState({ make: '', model: '', year: '', vin: '', licensePlate: '', state: '', color: '' });
@@ -99,7 +100,8 @@ export default function MyVehiclesPage() {
         setVehicles(rows);
         setLoading(false);
       });
-      return () => { try { (unsub as any)?.(); } catch {} };
+      const unsubProfile = subscribeMyProfile((p) => setProfile(p));
+      return () => { try { (unsub as any)?.(); unsubProfile?.(); } catch {} };
     } catch {
       setLoading(false);
     }
@@ -523,7 +525,12 @@ export default function MyVehiclesPage() {
                           const resp = await fetch('/api/stripe/create-checkout-session', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ vehicleId: vehicle.id }),
+                            body: JSON.stringify({ 
+                              vehicleId: vehicle.id,
+                              userId: profile?.uid,
+                              customerEmail: profile?.email,
+                              customerId: profile?.stripe?.customerId,
+                            }),
                           });
                           const data = await resp.json();
                           if (!resp.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');

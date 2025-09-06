@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
 
 export const config = {
   api: {
@@ -53,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const vehicleId = (session.metadata?.vehicleId as string) || undefined;
+        const userId = (session.metadata?.userId as string) || undefined;
         const subscriptionId = session.subscription as string | undefined;
         const customerId = (session.customer as string) || undefined;
         if (vehicleId) {
@@ -65,6 +66,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
             lastUpdated: serverTimestamp(),
           });
+        }
+        if (userId && customerId) {
+          const userRef = doc(db, 'users', userId);
+          const snap = await getDoc(userRef);
+          if (snap.exists()) {
+            await updateDoc(userRef, {
+              stripe: {
+                ...(snap.data().stripe || {}),
+                customerId,
+              },
+              updatedAt: new Date(),
+            });
+          } else {
+            await setDoc(userRef, {
+              stripe: { customerId },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }, { merge: true });
+          }
         }
         break;
       }
