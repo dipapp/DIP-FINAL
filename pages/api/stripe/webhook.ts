@@ -68,6 +68,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });
         }
+        // Ensure the initial subscription item created by Checkout is tagged with vehicleId
+        // so future subscription.updated/deleted events can map back to the vehicle.
+        try {
+          if (subscriptionId && vehicleId) {
+            const sub = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['items'] });
+            const firstItem = sub.items?.data?.[0];
+            if (firstItem) {
+              const currentMeta = firstItem.metadata || {} as any;
+              if (currentMeta.vehicleId !== vehicleId) {
+                await stripe.subscriptionItems.update(firstItem.id, {
+                  metadata: { ...currentMeta, vehicleId: vehicleId as string },
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Failed to attach vehicleId metadata to subscription item', e);
+        }
         if (userId && (customerId || subscriptionId)) {
           const userRef = db.collection('users').doc(userId);
           const snap = await userRef.get();
@@ -97,15 +115,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const vehicleId = (sub.metadata?.vehicleId as string) || undefined;
         // Multi-item model: iterate items and update vehicles based on metadata.vehicleId
         const items = sub.items?.data || [];
+        let matchedAny = false;
         for (const it of items) {
           const vId = (it.metadata?.vehicleId as string) || undefined;
           if (!vId) continue;
+          matchedAny = true;
           await db.collection('vehicles').doc(vId).update({
             isActive: sub.status === 'active' || sub.status === 'trialing',
             stripe: {
               customerId: sub.customer as string,
               subscriptionId: sub.id,
               subscriptionItemId: it.id,
+              status: sub.status,
+              currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+            },
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+        // Fallback: if no items carried vehicle metadata (e.g., initial Checkout-created item),
+        // use the subscription-level metadata to update that single vehicle.
+        if (!matchedAny && vehicleId) {
+          await db.collection('vehicles').doc(vehicleId).update({
+            isActive: sub.status === 'active' || sub.status === 'trialing',
+            stripe: {
+              customerId: sub.customer as string,
+              subscriptionId: sub.id,
               status: sub.status,
               currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
             },
