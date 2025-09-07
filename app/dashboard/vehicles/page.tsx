@@ -540,7 +540,13 @@ export default function MyVehiclesPage() {
                             if (!data.url) throw new Error('Missing checkout URL');
                             window.location.href = data.url as string;
                           } else {
-                            alert('Vehicle activation charge added. It may take a few seconds to reflect.');
+                            // After adding an item, ensure quantity matches active count (idempotent)
+                            await fetch('/api/stripe/sync-vehicle-quantity', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ userId: profile?.uid }),
+                            });
+                            alert('Vehicle activation processed. Billing will reflect shortly.');
                             setActivatingVehicleId(null);
                           }
                         } catch (e) {

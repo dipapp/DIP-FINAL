@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, updateDoc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import { initializeApp as initClientApp, getApps as getClientApps } from 'firebase/app';
+import admin from 'firebase-admin';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 
 export const config = {
   api: {
@@ -10,17 +11,17 @@ export const config = {
   },
 };
 
-function initFirebase() {
-  if (!getApps().length) {
-    initializeApp({
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+function initAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      } as any),
     });
   }
-  return getFirestore();
+  return getAdminFirestore();
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -46,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  const db = initFirebase();
+  const db = initAdmin();
 
   try {
     switch (event.type) {
@@ -57,31 +58,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const subscriptionId = session.subscription as string | undefined;
         const customerId = (session.customer as string) || undefined;
         if (vehicleId) {
-          await updateDoc(doc(db, 'vehicles', vehicleId), {
+          await db.collection('vehicles').doc(vehicleId).update({
             isActive: true,
             stripe: {
               customerId: customerId || null,
               subscriptionId: subscriptionId || null,
               checkoutSessionId: session.id,
             },
-            lastUpdated: serverTimestamp(),
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });
         }
         if (userId && (customerId || subscriptionId)) {
-          const userRef = doc(db, 'users', userId);
-          const snap = await getDoc(userRef);
-          if (snap.exists()) {
-            await updateDoc(userRef, {
+          const userRef = db.collection('users').doc(userId);
+          const snap = await userRef.get();
+          if (snap.exists) {
+            const existing = snap.data() || {};
+            await userRef.set({
               stripe: {
-                ...(snap.data().stripe || {}),
-                customerId: customerId || (snap.data().stripe?.customerId ?? null),
-                subscriptionId: subscriptionId || (snap.data().stripe?.subscriptionId ?? null),
+                ...(existing.stripe || {}),
+                customerId: customerId || existing.stripe?.customerId || null,
+                subscriptionId: subscriptionId || existing.stripe?.subscriptionId || null,
               },
               updatedAt: new Date(),
-            });
+            }, { merge: true });
           } else {
-            await setDoc(userRef, {
-              stripe: { customerId, subscriptionId },
+            await userRef.set({
+              stripe: { customerId: customerId || null, subscriptionId: subscriptionId || null },
               createdAt: new Date(),
               updatedAt: new Date(),
             }, { merge: true });
@@ -98,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (const it of items) {
           const vId = (it.metadata?.vehicleId as string) || undefined;
           if (!vId) continue;
-          await updateDoc(doc(db, 'vehicles', vId), {
+          await db.collection('vehicles').doc(vId).update({
             isActive: sub.status === 'active' || sub.status === 'trialing',
             stripe: {
               customerId: sub.customer as string,
@@ -107,7 +109,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               status: sub.status,
               currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
             },
-            lastUpdated: serverTimestamp(),
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });
         }
         break;

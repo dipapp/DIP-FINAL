@@ -1,19 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import admin from 'firebase-admin';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 
-function initFirebase() {
-  if (!getApps().length) {
-    initializeApp({
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+function initAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      } as any),
     });
   }
-  return getFirestore();
+  return getAdminFirestore();
 }
 
 // Adds a subscription item (one vehicle) to an existing subscription and invoices immediately
@@ -37,12 +37,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const db = initFirebase();
-    const userSnap = await getDoc(doc(db, 'users', String(userId)));
-    if (!userSnap.exists()) {
+    const db = initAdmin();
+    const userRef = db.collection('users').doc(String(userId));
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
       return res.status(404).json({ error: 'User not found' });
     }
-    const stripeInfo = (userSnap.data() as any).stripe || {};
+    const stripeInfo = (userSnap.data() as any)?.stripe || {};
     const customerId = stripeInfo.customerId as string | undefined;
     const subscriptionId = stripeInfo.subscriptionId as string | undefined;
 
