@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const customerId = (session.customer as string) || undefined;
         if (vehicleId) {
           await db.collection('vehicles').doc(vehicleId).update({
-            isActive: true,
+            // Do not mark active here; wait for subscription.created/updated after payment
             stripe: {
               customerId: customerId || null,
               subscriptionId: subscriptionId || null,
@@ -114,6 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         break;
       }
+      case 'customer.subscription.created':
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
