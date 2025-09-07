@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'STRIPE_PRICE_ID must be a Price ID starting with "price_"' });
   }
 
-  const { vehicleId, userId, customerEmail, customerId } = req.body || {};
+  const { vehicleId, userId, customerEmail, customerId, vin, licensePlate } = req.body || {};
   if (!vehicleId || typeof vehicleId !== 'string') {
     return res.status(400).json({ error: 'vehicleId is required' });
   }
@@ -28,27 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2022-11-15' });
 
-    // Guard: if customer already has an active/incomplete subscription, add an item instead of creating a new subscription
-    let effectiveCustomerId = typeof customerId === 'string' && customerId.startsWith('cus_') ? customerId : undefined;
-    // If we don't have customerId in the request, attempt to infer via Checkout email usage (best-effort) - skip if unknown
-    if (effectiveCustomerId) {
-      const existing = await stripe.subscriptions.list({ customer: effectiveCustomerId, status: 'all', limit: 5 });
-      const current = existing.data.find((s) => s.status !== 'canceled' && s.status !== 'unpaid' && s.status !== 'incomplete_expired');
-      if (current) {
-        // Add a new subscription item for this vehicle
-        const item = await stripe.subscriptionItems.create({
-          subscription: current.id,
-          price: priceId,
-          quantity: 1,
-          metadata: { vehicleId },
-        });
-        // Invoice immediately so user sees the charge now
-        const invoice = await stripe.invoices.create({ customer: current.customer as string, subscription: current.id, collection_method: 'charge_automatically', pending_invoice_items_behavior: 'include' });
-        const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
-        await stripe.invoices.pay(finalized.id);
-        return res.status(200).json({ addedItemId: item.id, subscriptionId: current.id });
-      }
-    }
+    // Always create a new subscription via Checkout Session for this specific vehicle
 
     const origin = (req.headers.origin as string) || `https://${req.headers.host}` || 'http://localhost:3000';
 
@@ -66,11 +46,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       metadata: {
         vehicleId,
         userId: typeof userId === 'string' ? userId : '',
+        vin: typeof vin === 'string' ? vin : '',
+        licensePlate: typeof licensePlate === 'string' ? licensePlate : '',
       },
       subscription_data: {
         metadata: {
           vehicleId,
           userId: typeof userId === 'string' ? userId : '',
+          vin: typeof vin === 'string' ? vin : '',
+          licensePlate: typeof licensePlate === 'string' ? licensePlate : '',
         },
       },
       customer: typeof customerId === 'string' && customerId.startsWith('cus_') ? customerId : undefined,

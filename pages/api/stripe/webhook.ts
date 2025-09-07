@@ -55,6 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const session = event.data.object as Stripe.Checkout.Session;
         const vehicleId = (session.metadata?.vehicleId as string) || undefined;
         const userId = (session.metadata?.userId as string) || undefined;
+        const vin = (session.metadata?.vin as string) || undefined;
+        const licensePlate = (session.metadata?.licensePlate as string) || undefined;
         const subscriptionId = session.subscription as string | undefined;
         const customerId = (session.customer as string) || undefined;
         if (vehicleId) {
@@ -76,17 +78,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const firstItem = sub.items?.data?.[0];
             if (firstItem) {
               const currentMeta = firstItem.metadata || {} as any;
-              if (currentMeta.vehicleId !== vehicleId) {
-                await stripe.subscriptionItems.update(firstItem.id, {
-                  metadata: { ...currentMeta, vehicleId: vehicleId as string },
-                });
-              }
+              await stripe.subscriptionItems.update(firstItem.id, {
+                metadata: {
+                  ...currentMeta,
+                  vehicleId: vehicleId as string,
+                  vin: typeof vin === 'string' ? vin : (currentMeta.vin || ''),
+                  licensePlate: typeof licensePlate === 'string' ? licensePlate : (currentMeta.licensePlate || ''),
+                },
+              });
             }
           }
         } catch (e) {
           console.error('Failed to attach vehicleId metadata to subscription item', e);
         }
-        if (userId && (customerId || subscriptionId)) {
+        // Only store customerId on the user. Do not store a single subscriptionId at user level.
+        if (userId && customerId) {
           const userRef = db.collection('users').doc(userId);
           const snap = await userRef.get();
           if (snap.exists) {
@@ -95,13 +101,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               stripe: {
                 ...(existing.stripe || {}),
                 customerId: customerId || existing.stripe?.customerId || null,
-                subscriptionId: subscriptionId || existing.stripe?.subscriptionId || null,
               },
               updatedAt: new Date(),
             }, { merge: true });
           } else {
             await userRef.set({
-              stripe: { customerId: customerId || null, subscriptionId: subscriptionId || null },
+              stripe: { customerId: customerId || null },
               createdAt: new Date(),
               updatedAt: new Date(),
             }, { merge: true });

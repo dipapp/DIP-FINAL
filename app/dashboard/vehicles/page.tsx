@@ -522,9 +522,7 @@ export default function MyVehiclesPage() {
                       onClick={async () => {
                         try {
                           setActivatingVehicleId(vehicle.id);
-                          const useExisting = Boolean(profile?.stripe?.subscriptionId);
-                          const endpoint = useExisting ? '/api/stripe/add-subscription-item' : '/api/stripe/create-checkout-session';
-                          const resp = await fetch(endpoint, {
+                          const resp = await fetch('/api/stripe/create-checkout-session', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
@@ -532,23 +530,14 @@ export default function MyVehiclesPage() {
                               userId: profile?.uid,
                               customerEmail: profile?.email,
                               customerId: profile?.stripe?.customerId,
+                              vin: vehicle.vin,
+                              licensePlate: vehicle.licensePlate,
                             }),
                           });
                           const data = await resp.json();
                           if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
-                          if (!useExisting) {
-                            if (!data.url) throw new Error('Missing checkout URL');
-                            window.location.href = data.url as string;
-                          } else {
-                            // After adding an item, ensure quantity matches active count (idempotent)
-                            await fetch('/api/stripe/sync-vehicle-quantity', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ userId: profile?.uid }),
-                            });
-                            alert('Vehicle activation processed. Billing will reflect shortly.');
-                            setActivatingVehicleId(null);
-                          }
+                          if (!data.url) throw new Error('Missing checkout URL');
+                          window.location.href = data.url as string;
                         } catch (e) {
                           console.error('Start checkout failed', e);
                           alert('Failed to start checkout. Please try again.');
