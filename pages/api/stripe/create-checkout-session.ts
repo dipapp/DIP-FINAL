@@ -27,6 +27,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2022-11-15' });
+    console.log('[stripe] create-checkout-session start', {
+      vehicleId,
+      userId,
+      hasCustomerId: Boolean(customerId),
+      vin: typeof vin === 'string' && vin ? vin.slice(-6) : undefined,
+      licensePlate,
+    });
 
     // Always create a new subscription via Checkout Session for this specific vehicle
 
@@ -62,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       allow_promotion_codes: true,
     });
 
+    console.log('[stripe] create-checkout-session created', { sessionId: session.id, url: session.url });
     return res.status(200).json({ url: session.url });
   } catch (error: any) {
     console.error('[stripe] create-checkout-session error', error);

@@ -53,6 +53,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log('[stripe] webhook checkout.session.completed', {
+          sessionId: session.id,
+          vehicleId: session.metadata?.vehicleId,
+          userId: session.metadata?.userId,
+          subscriptionId: session.subscription,
+          customer: session.customer,
+        });
         const vehicleId = (session.metadata?.vehicleId as string) || undefined;
         const userId = (session.metadata?.userId as string) || undefined;
         const vin = (session.metadata?.vin as string) || undefined;
@@ -117,6 +124,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'customer.subscription.created':
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated': {
+        console.log('[stripe] webhook subscription event', event.type);
         const sub = event.data.object as Stripe.Subscription;
         const vehicleId = (sub.metadata?.vehicleId as string) || undefined;
         // Multi-item model: iterate items and update vehicles based on metadata.vehicleId
@@ -126,6 +134,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const vId = (it.metadata?.vehicleId as string) || undefined;
           if (!vId) continue;
           matchedAny = true;
+          console.log('[stripe] updating vehicle from item', { vId, itemId: it.id, status: sub.status });
           await db.collection('vehicles').doc(vId).update({
             isActive: sub.status === 'active' || sub.status === 'trialing',
             stripe: {
@@ -141,6 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Fallback: if no items carried vehicle metadata (e.g., initial Checkout-created item),
         // use the subscription-level metadata to update that single vehicle.
         if (!matchedAny && vehicleId) {
+          console.log('[stripe] updating vehicle from subscription-level metadata', { vehicleId, status: sub.status });
           await db.collection('vehicles').doc(vehicleId).update({
             isActive: sub.status === 'active' || sub.status === 'trialing',
             stripe: {

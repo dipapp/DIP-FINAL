@@ -387,7 +387,7 @@ export async function updatePaymentMethod(vehicleId: string, paymentData: {
       zip: paymentData.zip,
       updatedAt: serverTimestamp(),
     },
-    isActive: true, // Activate the vehicle when payment is added
+    // Do not activate here; activation is driven by Stripe webhook subscription events
     lastUpdated: serverTimestamp(),
   });
 }
