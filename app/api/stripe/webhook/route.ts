@@ -27,4 +27,13 @@ export async function POST(req: Request) {
   return new Response("ok", { status: 200 });
 }
 
+// For health checks and quick verification
+export async function HEAD() {
+  return new Response('ok', { status: 200 });
+}
+
+export async function GET() {
+  return new Response('Method Not Allowed', { status: 405, headers: { 'Allow': 'POST, HEAD' } });
+}
+
 
