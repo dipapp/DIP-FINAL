@@ -522,29 +522,30 @@ export default function MyVehiclesPage() {
                       onClick={async () => {
                         try {
                           setActivatingVehicleId(vehicle.id);
-                          // Persist inactive->active immediately
-                          await setVehicleActive(vehicle.id, true);
-                          // Sync subscription quantity for this user
-                          const resp = await fetch('/api/billing/sync', {
+                          const resp = await fetch('/api/stripe/create-checkout-session', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uid: profile?.uid }),
+                            body: JSON.stringify({
+                              vehicleId: vehicle.id,
+                              userId: profile?.uid,
+                              customerEmail: profile?.email,
+                              customerId: profile?.stripe?.customerId,
+                              vin: vehicle.vin,
+                              licensePlate: vehicle.licensePlate,
+                            }),
                           });
                           const data = await resp.json();
-                          if (!resp.ok) throw new Error(data.error || 'Failed to sync billing');
-                          if (data.checkoutUrl) {
-                            window.location.href = data.checkoutUrl as string;
-                            return;
-                          }
-                          alert('Membership synced successfully.');
+                          if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
+                          if (!data.url) throw new Error('Missing checkout URL');
+                          window.location.href = data.url as string;
                         } catch (e) {
-                          console.error('Activate & sync failed', e);
-                          alert('Failed to activate membership. Please try again.');
+                          console.error('Start checkout failed', e);
+                          alert('Failed to start checkout. Please try again.');
                           setActivatingVehicleId(null);
                         }
                       }}
                     >
-                      {activatingVehicleId === vehicle.id ? 'Syncing…' : 'Activate'}
+                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
                     </button>
                   )}
                   <Link 
