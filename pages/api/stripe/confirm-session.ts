@@ -1,5 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import admin from 'firebase-admin';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+
+function initAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\n/g, '\n'),
+      } as any),
+    });
+  }
+  return getAdminFirestore();
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -23,14 +38,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const subscriptionId = session.subscription as string | undefined;
     let status: string | undefined;
     let currentPeriodEnd: number | undefined;
+    let customerId: string | undefined = (session.customer as string) || undefined;
     if (subscriptionId) {
       const sub = await stripe.subscriptions.retrieve(subscriptionId);
       status = sub.status;
       currentPeriodEnd = sub.current_period_end;
+      if (!customerId && typeof sub.customer === 'string') {
+        customerId = sub.customer;
+      }
+    }
+
+    // Attempt to link the vehicle and flip active state immediately (webhook may lag)
+    try {
+      const db = initAdmin();
+      const vehicleId = (session.metadata?.vehicleId as string) || undefined;
+      const userId = (session.metadata?.userId as string) || undefined;
+      if (vehicleId) {
+        await db.collection('vehicles').doc(vehicleId).set(
+          {
+            isActive: status === 'active' || status === 'trialing' ? true : undefined,
+            stripe: {
+              customerId: customerId || null,
+              subscriptionId: subscriptionId || null,
+              status: status || null,
+              currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
+              checkoutSessionId: session.id,
+            },
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+      if (userId && customerId) {
+        await db.collection('users').doc(userId).set(
+          {
+            stripe: {
+              customerId,
+            },
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+    } catch (e) {
+      console.error('[stripe] confirm-session vehicle/user update failed (non-fatal)', e);
     }
 
     return res.status(200).json({
-      customerId: (session.customer as string) || null,
+      customerId: customerId || null,
       subscriptionId: subscriptionId || null,
       status: status || null,
       currentPeriodEnd: currentPeriodEnd || null,
