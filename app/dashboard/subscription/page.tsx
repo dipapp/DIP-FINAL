@@ -205,9 +205,18 @@ function ManageSubscriptionPageInner() {
                         setBusy('cancel');
                         try {
                           if (!vehicleId) return;
-                          await requestMembershipCancellation(vehicleId, 'User chose to cancel despite retention offers');
-                          setMessage('💔 Cancellation request submitted. Our team will process this within 24 hours.');
+                          const resp = await fetch('/api/stripe/cancel-vehicle', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ vehicleId }),
+                          });
+                          const data = await resp.json();
+                          if (!resp.ok) throw new Error(data.error || 'Cancellation failed');
+                          setMessage('💔 Membership cancelled for this vehicle. You will not be charged for it next cycle.');
                           setShowCancel(false);
+                        } catch (e) {
+                          console.error('cancel vehicle failed', e);
+                          setMessage('We could not cancel automatically. Support has been notified.');
                         } finally {
                           setBusy(null);
                         }
