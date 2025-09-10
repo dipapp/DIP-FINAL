@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import admin from 'firebase-admin';
 
 // Create per-vehicle subscription checkout session (webhook-first flow)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -20,24 +21,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'STRIPE_PRICE_ID must be a Price ID starting with "price_"' });
   }
 
-  const { vehicleId, userId, customerEmail, customerId, vin, licensePlate } = req.body || {};
+  const { vehicleId, userId, uid: rawUid, customerEmail, vin, licensePlate } = req.body || {};
+  const uid = typeof rawUid === 'string' && rawUid ? rawUid : (typeof userId === 'string' ? userId : undefined);
   if (!vehicleId || typeof vehicleId !== 'string') {
     return res.status(400).json({ error: 'vehicleId is required' });
+  }
+  if (!uid) {
+    return res.status(400).json({ error: 'uid is required' });
   }
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2022-11-15' });
-    console.log('[stripe] create-checkout-session start', {
+
+    // Initialize Admin if needed
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\n/g, '\n'),
+        } as any),
+      });
+    }
+    const db = admin.firestore();
+
+    // Reuse or create Stripe customer for this uid
+    const userRef = db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    const userData = userSnap.exists ? (userSnap.data() as any) : {};
+    let stripeCustomerId: string | undefined = userData?.stripeCustomerId || userData?.stripe?.customerId;
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({ metadata: { firebaseUid: uid } });
+      stripeCustomerId = customer.id;
+      await userRef.set({ stripeCustomerId, stripe: { ...(userData?.stripe || {}), customerId: stripeCustomerId } }, { merge: true });
+    }
+
+    console.log('CHECKOUT_START', {
+      uid,
       vehicleId,
-      userId,
-      hasCustomerId: Boolean(customerId),
-      vin: typeof vin === 'string' && vin ? vin.slice(-6) : undefined,
-      licensePlate,
+      priceId,
+      customer: stripeCustomerId,
     });
 
     // Always create a new subscription via Checkout Session for this specific vehicle
 
     const origin = (req.headers.origin as string) || `https://${req.headers.host}` || 'http://localhost:3000';
+
+    // Ensure idempotency is unique per vehicle attempt
+    const idemKey = `checkout_${uid}_${vehicleId}_${Date.now()}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -52,6 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cancel_url: `${origin}/dashboard/vehicles?cancelled=1`,
       metadata: {
         vehicleId,
+        uid,
         userId: typeof userId === 'string' ? userId : '',
         vin: typeof vin === 'string' ? vin : '',
         licensePlate: typeof licensePlate === 'string' ? licensePlate : '',
@@ -59,17 +91,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       subscription_data: {
         metadata: {
           vehicleId,
+          uid,
           userId: typeof userId === 'string' ? userId : '',
+          priceId,
           vin: typeof vin === 'string' ? vin : '',
           licensePlate: typeof licensePlate === 'string' ? licensePlate : '',
         },
       },
-      customer: typeof customerId === 'string' && customerId.startsWith('cus_') ? customerId : undefined,
-      customer_email: !customerId && typeof customerEmail === 'string' && customerEmail.includes('@') ? customerEmail : undefined,
+      customer: stripeCustomerId,
+      customer_email: !stripeCustomerId && typeof customerEmail === 'string' && customerEmail.includes('@') ? customerEmail : undefined,
       allow_promotion_codes: true,
-    });
+    }, { idempotencyKey: idemKey });
 
-    console.log('[stripe] create-checkout-session created', { sessionId: session.id, url: session.url });
+    console.log('CHECKOUT_CREATED', { sessionId: session.id, idempotencyKey: idemKey });
     return res.status(200).json({ url: session.url });
   } catch (error: any) {
     console.error('[stripe] create-checkout-session error', error);

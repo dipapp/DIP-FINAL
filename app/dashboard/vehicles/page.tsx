@@ -512,41 +512,67 @@ export default function MyVehiclesPage() {
                       <span>{vehicle.state}</span>
                     </div>
                   )}
+                  {vehicle.subscription?.subscriptionId && (
+                    <div className="flex items-center text-sm">
+                      <span className="text-muted w-12">Sub:</span>
+                      <span className="font-mono">{vehicle.subscription.subscriptionId}</span>
+                    </div>
+                  )}
+                  {vehicle.subscription?.status && (
+                    <div className="flex items-center text-sm">
+                      <span className="text-muted w-12">Status:</span>
+                      <span className="capitalize">{vehicle.subscription.status.replace(/_/g, ' ')}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Primary Actions */}
                 <div className="flex gap-2 mb-3">
                   {!vehicle.isActive && (
-                    <button
-                      className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
-                      onClick={async () => {
-                        try {
-                          setActivatingVehicleId(vehicle.id);
-                          const resp = await fetch('/api/stripe/create-checkout-session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              vehicleId: vehicle.id,
-                              userId: profile?.uid,
-                              customerEmail: profile?.email,
-                              customerId: profile?.stripe?.customerId,
-                              vin: vehicle.vin,
-                              licensePlate: vehicle.licensePlate,
-                            }),
-                          });
-                          const data = await resp.json();
-                          if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
-                          if (!data.url) throw new Error('Missing checkout URL');
-                          window.location.href = data.url as string;
-                        } catch (e) {
-                          console.error('Start checkout failed', e);
-                          alert('Failed to start checkout. Please try again.');
-                          setActivatingVehicleId(null);
-                        }
-                      }}
-                    >
-                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
-                    </button>
+                    (() => {
+                      const subStatus = vehicle.subscription?.status as string | undefined;
+                      const hasBlockingSub = !!subStatus && subStatus !== 'canceled' && subStatus !== 'unpaid';
+                      if (hasBlockingSub) {
+                        const label = subStatus === 'incomplete' ? 'Activation Pending' : subStatus === 'past_due' ? 'Payment Required' : 'Membership Locked';
+                        return (
+                          <button className="btn bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed flex-1" disabled>
+                            {label}
+                          </button>
+                        );
+                      }
+                      return (
+                        <button
+                          className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
+                          onClick={async () => {
+                            try {
+                              setActivatingVehicleId(vehicle.id);
+                              const resp = await fetch('/api/stripe/create-checkout-session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  vehicleId: vehicle.id,
+                                  userId: profile?.uid,
+                                  customerEmail: profile?.email,
+                                  customerId: profile?.stripe?.customerId,
+                                  vin: vehicle.vin,
+                                  licensePlate: vehicle.licensePlate,
+                                }),
+                              });
+                              const data = await resp.json();
+                              if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
+                              if (!data.url) throw new Error('Missing checkout URL');
+                              window.location.href = data.url as string;
+                            } catch (e) {
+                              console.error('Start checkout failed', e);
+                              alert('Failed to start checkout. Please try again.');
+                              setActivatingVehicleId(null);
+                            }
+                          }}
+                        >
+                          {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
+                        </button>
+                      );
+                    })()
                   )}
                   <Link 
                     href={{ pathname: '/dashboard/subscription', query: { vehicleId: vehicle.id } }} 

@@ -21,6 +21,16 @@ export type VehiclePhoto = {
   isMain: boolean;
 };
 
+export type SubscriptionStatus =
+  | 'active'
+  | 'trialing'
+  | 'past_due'
+  | 'canceled'
+  | 'incomplete'
+  | 'incomplete_expired'
+  | 'unpaid'
+  | 'paused';
+
 export type VehicleDocument = {
   id: string;
   name: string;
@@ -45,6 +55,13 @@ export type Vehicle = {
   ownerId?: string;
   photos: VehiclePhoto[];
   insuranceDocuments: VehicleDocument[];
+  // Stripe subscription details for this specific vehicle
+  subscription?: {
+    subscriptionId: string;
+    status: SubscriptionStatus;
+    priceId?: string;
+    createdAt?: any;
+  };
 };
 
 export type Claim = {

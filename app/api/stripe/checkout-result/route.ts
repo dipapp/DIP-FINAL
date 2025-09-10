@@ -35,17 +35,7 @@ export async function GET(req: Request) {
 
     console.log('[checkout-result] retrieved', { sessionId, uid, subscriptionId, customerId });
 
-    const db = initAdmin();
-    await db.collection('users').doc(uid).set(
-      {
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        subscriptionStatus: 'active',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-
+    // No user-level subscription writes here. Webhook is source of truth.
     return new Response(
       JSON.stringify({ ok: true, subscriptionId, customerId }),
       { status: 200 }
@@ -55,6 +45,7 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ error: error?.message || 'Internal Server Error' }), { status: 500 });
   }
 }
+
 
 
 
