@@ -153,9 +153,7 @@ export default function AdminUserDetailPage() {
                   <td className="py-3 pr-4"><span className="font-mono text-xs">{v.licensePlate || '—'}</span></td>
                   <td className="py-3 pr-4">{v.state || '—'}</td>
                   <td className="py-3 pr-4">
-                    <span className={`badge ${v.subscription?.status === 'active' || v.subscription?.status === 'trialing' ? 'badge-success' : 'badge-error'}`}>
-                      {v.subscription?.status ? v.subscription.status.replace(/_/g, ' ') : 'no-subscription'}
-                    </span>
+                    <span className={`badge ${v.isActive ? 'badge-success' : 'badge-error'}`}>{v.isActive ? '✓ Active' : '✖ Inactive'}</span>
                   </td>
                   <td className="py-3 pr-4">{v.lastUpdated?.toDate?.()?.toLocaleDateString?.() || '—'}</td>
                 </tr>
@@ -226,7 +224,20 @@ export default function AdminUserDetailPage() {
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <button className="btn btn-secondary" onClick={() => setVehicleModalOpen(false)}>Close</button>
-              <button className="btn btn-secondary" onClick={() => alert('Status managed by Stripe; use subscription actions.')}>OK</button>
+              <button
+                className={`btn ${selectedVehicle.isActive ? 'btn-danger' : 'btn-success'}`}
+                onClick={async () => {
+                  try {
+                    await updateVehicleAdmin(selectedVehicle.id, { isActive: !selectedVehicle.isActive });
+                    setSelectedVehicle({ ...selectedVehicle, isActive: !selectedVehicle.isActive });
+                  } catch (e) {
+                    alert('Failed to update vehicle');
+                    console.error(e);
+                  }
+                }}
+              >
+                {selectedVehicle.isActive ? 'Deactivate' : 'Activate'}
+              </button>
             </div>
           </div>
         </div>

@@ -48,54 +48,84 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const db = initAdmin();
-  
+
   try {
-    console.log('WEBHOOK_RECEIVED', { type: event.type, eventId: event.id });
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log('[stripe] checkout.session.completed', {
+          sessionId: session.id,
+          vehicleId: session.metadata?.vehicleId,
+          userId: session.metadata?.userId,
+          subscriptionId: session.subscription,
+          customer: session.customer,
+        });
+
         const vehicleId = (session.metadata?.vehicleId as string) || undefined;
-        const uid = (session.metadata?.uid as string) || (session.metadata?.userId as string) || undefined;
+        const userId = (session.metadata?.userId as string) || undefined;
+        const vin = (session.metadata?.vin as string) || undefined;
+        const licensePlate = (session.metadata?.licensePlate as string) || undefined;
         const subscriptionId = session.subscription as string | undefined;
         const customerId = (session.customer as string) || undefined;
 
-        if (vehicleId && uid) {
-          let targetVehicleId = vehicleId;
-          if (subscriptionId) {
-            // Reverse index write (create only; do not overwrite conflicts)
-            const idxRef = db.collection('users').doc(uid).collection('subscriptions').doc(subscriptionId);
-            const idxSnap = await idxRef.get();
-            if (idxSnap.exists) {
-              const existingVehicleId = (idxSnap.data() as any)?.vehicleId;
-              if (existingVehicleId && existingVehicleId !== vehicleId) {
-                console.warn('WEBHOOK_INDEX_CONFLICT', { subId: subscriptionId, existingVehicleId, newVehicleId: vehicleId });
-                targetVehicleId = existingVehicleId;
-              }
-            } else {
-              await idxRef.set({ vehicleId, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        if (vehicleId) {
+          await db.collection('vehicles').doc(vehicleId).update({
+            stripe: {
+              customerId: customerId || null,
+              subscriptionId: subscriptionId || null,
+              checkoutSessionId: session.id,
+            },
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+
+        // Attach vehicle metadata to the first item if possible
+        try {
+          if (subscriptionId && vehicleId) {
+            const sub = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['items'] });
+            const firstItem = sub.items?.data?.[0];
+            if (firstItem) {
+              const currentMeta = firstItem.metadata || ({} as any);
+              await stripe.subscriptionItems.update(firstItem.id, {
+                metadata: {
+                  ...currentMeta,
+                  vehicleId,
+                  vin: typeof vin === 'string' ? vin : currentMeta.vin || '',
+                  licensePlate: typeof licensePlate === 'string' ? licensePlate : currentMeta.licensePlate || '',
+                },
+              });
             }
           }
+        } catch (e) {
+          console.error('Failed to attach vehicleId metadata to subscription item', e);
+        }
 
-          // Initialize pending subscription state (mirror to user subcollection and root)
-          const subObj: any = {
-            subscriptionId: subscriptionId || '',
-            status: 'incomplete',
-            priceId: undefined,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            currentPeriodStart: null,
-            currentPeriodEnd: null,
-          };
-
-          await db.collection('users').doc(uid).collection('vehicles').doc(targetVehicleId).set(
-            { subscription: subObj },
-            { merge: true }
-          );
-          await db.collection('vehicles').doc(targetVehicleId).set(
-            { subscription: subObj, lastUpdated: admin.firestore.FieldValue.serverTimestamp() },
-            { merge: true }
-          );
-
-          console.log('WEBHOOK_WRITE_SUB', { uid, vehicleId: targetVehicleId, subId: subscriptionId, status: 'incomplete' });
+        // Store customerId at user level
+        if (userId && customerId) {
+          const userRef = db.collection('users').doc(userId);
+          const snap = await userRef.get();
+          if (snap.exists) {
+            const existing = snap.data() || {};
+            await userRef.set(
+              {
+                stripe: {
+                  ...(existing.stripe || {}),
+                  customerId: customerId || existing.stripe?.customerId || null,
+                },
+                updatedAt: new Date(),
+              },
+              { merge: true }
+            );
+          } else {
+            await userRef.set(
+              {
+                stripe: { customerId: customerId || null },
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+              { merge: true }
+            );
+          }
         }
         break;
       }
@@ -104,88 +134,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
-        const uid = (sub.metadata?.uid as string) || (sub.metadata?.userId as string) || undefined;
-        let vehicleId = (sub.metadata?.vehicleId as string) || undefined;
-
-        if (!vehicleId && uid) {
-          const idxSnap = await db.collection('users').doc(uid).collection('subscriptions').doc(sub.id).get();
-          vehicleId = (idxSnap.exists ? (idxSnap.data() as any)?.vehicleId : undefined) || undefined;
+        const vehicleId = (sub.metadata?.vehicleId as string) || undefined;
+        const items = sub.items?.data || [];
+        let matchedAny = false;
+        for (const it of items) {
+          const vId = (it.metadata?.vehicleId as string) || undefined;
+          if (!vId) continue;
+          matchedAny = true;
+          console.log('[stripe] update vehicle from item', { vId, itemId: it.id, status: sub.status });
+          await db.collection('vehicles').doc(vId).update({
+            isActive: sub.status === 'active' || sub.status === 'trialing',
+            stripe: {
+              customerId: sub.customer as string,
+              subscriptionId: sub.id,
+              subscriptionItemId: it.id,
+              status: sub.status,
+              currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+            },
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          });
         }
-
-        if (uid && sub.id) {
-          // Reverse index guard
-          const idxRef = db.collection('users').doc(uid).collection('subscriptions').doc(sub.id);
-          const idxSnap = await idxRef.get();
-          if (idxSnap.exists) {
-            const existingVehicleId = (idxSnap.data() as any)?.vehicleId;
-            if (vehicleId && existingVehicleId && existingVehicleId !== vehicleId) {
-              console.warn('WEBHOOK_INDEX_CONFLICT', { subId: sub.id, existingVehicleId, newVehicleId: vehicleId });
-              vehicleId = existingVehicleId; // honor existing mapping
-            }
-          } else if (vehicleId) {
-            await idxRef.set({ vehicleId, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-          }
-        }
-
-        if (uid && vehicleId) {
-          const subObj: any = {
-            subscriptionId: sub.id,
-            status: sub.status,
-            priceId: sub.items?.data?.[0]?.price?.id,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            currentPeriodStart: sub.current_period_start ? new Date(sub.current_period_start * 1000) : null,
-            currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
-          };
-
-          await db.collection('users').doc(uid).collection('vehicles').doc(vehicleId).set(
-            { subscription: subObj },
-            { merge: true }
-          );
-          await db.collection('vehicles').doc(vehicleId).set(
-            { subscription: subObj, lastUpdated: admin.firestore.FieldValue.serverTimestamp() },
-            { merge: true }
-          );
-
-          console.log('WEBHOOK_WRITE_SUB', { uid, vehicleId, subId: sub.id, status: sub.status });
-        } else {
-          console.warn('[stripe] subscription event without resolvable vehicleId/uid', { subId: sub.id, uid, vehicleId });
-        }
-        break;
-      }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subId = invoice.subscription as string | undefined;
-        if (subId) {
-          try {
-            const sub = await stripe.subscriptions.retrieve(subId);
-            const uid = (sub.metadata?.uid as string) || (sub.metadata?.userId as string) || undefined;
-            let vehicleId = (sub.metadata?.vehicleId as string) || undefined;
-            if (!vehicleId && uid) {
-              const idxSnap = await db.collection('users').doc(uid).collection('subscriptions').doc(sub.id).get();
-              vehicleId = (idxSnap.exists ? (idxSnap.data() as any)?.vehicleId : undefined) || undefined;
-            }
-            if (uid && vehicleId) {
-              const subObj: any = {
-                subscriptionId: sub.id,
-                status: sub.status,
-                priceId: sub.items?.data?.[0]?.price?.id,
-                currentPeriodStart: sub.current_period_start ? new Date(sub.current_period_start * 1000) : null,
-                currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
-              };
-              await db.collection('users').doc(uid).collection('vehicles').doc(vehicleId).set(
-                { subscription: subObj },
-                { merge: true }
-              );
-              await db.collection('vehicles').doc(vehicleId).set(
-                { subscription: subObj, lastUpdated: admin.firestore.FieldValue.serverTimestamp() },
-                { merge: true }
-              );
-              console.log('WEBHOOK_WRITE_SUB', { uid, vehicleId, subId: sub.id, status: sub.status });
-            }
-          } catch (e) {
-            console.error('[stripe] invoice.payment_succeeded fetch sub failed', e);
-          }
+        if (!matchedAny && vehicleId) {
+          console.log('[stripe] update vehicle from subscription-level metadata', { vehicleId, status: sub.status });
+          await db.collection('vehicles').doc(vehicleId).update({
+            isActive: sub.status === 'active' || sub.status === 'trialing',
+            stripe: {
+              customerId: sub.customer as string,
+              subscriptionId: sub.id,
+              status: sub.status,
+              currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+            },
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          });
         }
         break;
       }

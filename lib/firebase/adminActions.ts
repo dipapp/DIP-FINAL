@@ -47,7 +47,7 @@ export async function updateClaimStatus(claimId: string, status: RequestStatus) 
   await updateDoc(doc(db, 'claims', claimId), { status, updatedAt: new Date() });
 }
 
-export async function updateVehicleAdmin(vehicleId: string, update: Partial<{ make: string; model: string; year: string; vin: string; licensePlate: string; state: string; color: string }>) {
+export async function updateVehicleAdmin(vehicleId: string, update: Partial<{ make: string; model: string; year: string; vin: string; licensePlate: string; state: string; color: string; isActive: boolean }>) {
   await updateDoc(doc(db, 'vehicles', vehicleId), {
     ...update,
     lastUpdated: new Date(),

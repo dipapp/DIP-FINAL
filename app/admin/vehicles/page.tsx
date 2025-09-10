@@ -16,7 +16,7 @@ type Vehicle = {
   licensePlate?: string;
   state?: string;
   color?: string;
-  subscription?: { subscriptionId?: string; status?: string };
+  isActive?: boolean;
   lastUpdated?: any;
 };
 
@@ -65,8 +65,16 @@ export default function AdminVehiclesPage() {
     setEditForm({});
   };
 
-  const toggleActive = async (_vehicleId: string, _currentStatus: boolean) => {
-    alert('Status is managed by Stripe subscription status; cannot toggle here.');
+  const toggleActive = async (vehicleId: string, currentStatus: boolean) => {
+    setSaving(vehicleId);
+    try {
+      await updateVehicleAdmin(vehicleId, { isActive: !currentStatus });
+    } catch (error) {
+      console.error('Error updating vehicle status:', error);
+      alert('Failed to update vehicle status');
+    } finally {
+      setSaving(null);
+    }
   };
 
   const vehiclesWithMissingInfo = vehicles.filter(v => !v.vin || !v.licensePlate);
@@ -185,11 +193,13 @@ export default function AdminVehiclesPage() {
                     )}
                   </td>
                   <td className="py-3 pr-4">
-                    <span
-                      className={`badge ${vehicle.subscription?.status === 'active' || vehicle.subscription?.status === 'trialing' ? 'badge-success' : 'badge-error'}`}
+                    <button
+                      onClick={() => toggleActive(vehicle.id, vehicle.isActive || false)}
+                      disabled={saving === vehicle.id}
+                      className={`badge ${vehicle.isActive ? 'badge-success' : 'badge-error'} cursor-pointer hover:opacity-75 transition-opacity`}
                     >
-                      {vehicle.subscription?.status ? vehicle.subscription.status.replace(/_/g, ' ') : 'no-subscription'}
-                    </span>
+                      {vehicle.isActive ? '✓ Active' : '✖ Inactive'}
+                    </button>
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex items-center space-x-2">

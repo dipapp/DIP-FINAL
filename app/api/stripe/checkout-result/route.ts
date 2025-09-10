@@ -35,7 +35,17 @@ export async function GET(req: Request) {
 
     console.log('[checkout-result] retrieved', { sessionId, uid, subscriptionId, customerId });
 
-    // No user-level subscription writes here. Webhook is source of truth.
+    const db = initAdmin();
+    await db.collection('users').doc(uid).set(
+      {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        subscriptionStatus: 'active',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
     return new Response(
       JSON.stringify({ ok: true, subscriptionId, customerId }),
       { status: 200 }

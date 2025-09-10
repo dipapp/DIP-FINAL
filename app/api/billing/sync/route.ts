@@ -54,8 +54,79 @@ export async function POST(req: Request) {
     }
     console.log('[billing-sync] quantity', { uid, quantity });
 
-    // Deprecated legacy route in per-vehicle model; no-op for safety
-    return new Response(JSON.stringify({ ok: true, note: 'billing sync disabled in per-vehicle model' }), { status: 200 });
+    // Read user document for Stripe IDs
+    const userRef = db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+    const userData = userSnap.exists ? (userSnap.data() as any) : {};
+    const stripeCustomerId: string | undefined = userData?.stripeCustomerId || userData?.stripe?.customerId;
+    const stripeSubscriptionId: string | undefined = userData?.stripeSubscriptionId || undefined;
+    console.log('[billing-sync] ids', { uid, stripeCustomerId, stripeSubscriptionId });
+
+    if (quantity === 0) {
+      if (stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.update(stripeSubscriptionId, { cancel_at_period_end: true });
+          console.log('[billing-sync] set cancel_at_period_end', { uid, stripeSubscriptionId });
+        } catch (e) {
+          console.error('[billing-sync] failed to set cancel_at_period_end', e);
+        }
+      }
+      await userRef.set({ subscriptionStatus: 'cancel_at_period_end' }, { merge: true });
+      return new Response(JSON.stringify({ ok: true, quantity: 0 }), { status: 200 });
+    }
+
+    // Ensure customer exists
+    let customerId = stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({ metadata: { firebaseUid: uid } });
+      customerId = customer.id;
+      await userRef.set({ stripeCustomerId: customerId }, { merge: true });
+      console.log('[billing-sync] created customer', { uid, customerId });
+    }
+
+    // If no subscription, create Checkout Session to start one
+    if (!stripeSubscriptionId) {
+      const origin = process.env.NEXT_PUBLIC_APP_URL;
+      if (!origin) {
+        console.error('[billing-sync] missing NEXT_PUBLIC_APP_URL');
+        return new Response(JSON.stringify({ error: 'Server misconfigured: NEXT_PUBLIC_APP_URL missing' }), { status: 500 });
+      }
+      const successUrl = `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}&uid=${encodeURIComponent(uid)}`;
+      const cancelUrl = `${origin}/billing/cancel`;
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: customerId,
+        line_items: [
+          { price: PRICE_ID, quantity },
+        ],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        subscription_data: {
+          metadata: { firebaseUid: uid },
+        },
+      });
+      console.log('[billing-sync] create checkout', { uid, sessionId: session.id, customerId, quantity });
+      return new Response(JSON.stringify({ checkoutUrl: session.url }), { status: 200 });
+    }
+
+    // Otherwise, update subscription item quantity with proration
+    const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId, { expand: ['items.data.price'] });
+    const items = sub.items?.data || [];
+    let targetItem = items.find((it) => (typeof it.price === 'object' ? it.price.id === PRICE_ID : false));
+    if (!targetItem) {
+      targetItem = items.length === 1 ? items[0] : undefined as any;
+    }
+    if (!targetItem) {
+      console.error('[billing-sync] no subscription item found to update', { uid, stripeSubscriptionId });
+      return new Response(JSON.stringify({ error: 'No subscription item found to update' }), { status: 500 });
+    }
+
+    const updated = await stripe.subscriptionItems.update(targetItem.id, {
+      quantity,
+      proration_behavior: 'create_prorations',
+    });
+    console.log('[billing-sync] updated item', { uid, stripeSubscriptionId, itemId: targetItem.id, quantity });
+    return new Response(JSON.stringify({ ok: true, quantity }), { status: 200 });
   } catch (error: any) {
     console.error('[billing-sync] error', error);
     return new Response(JSON.stringify({ error: error?.message || 'Internal Server Error' }), { status: 500 });
