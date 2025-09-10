@@ -516,7 +516,30 @@ export default function MyVehiclesPage() {
 
                 {/* Primary Actions */}
                 <div className="flex gap-2 mb-3">
-                  {!vehicle.isActive && (
+                  {vehicle.isActive ? (
+                    <button
+                      className="btn bg-red-100 text-red-700 border-red-300 hover:bg-red-200 flex-1"
+                      onClick={async () => {
+                        try {
+                          setActivatingVehicleId(vehicle.id);
+                          const resp = await fetch('/api/stripe/cancel-vehicle', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ vehicleId: vehicle.id }),
+                          });
+                          const data = await resp.json();
+                          if (!resp.ok) throw new Error(data.error || 'Failed to cancel membership');
+                        } catch (e) {
+                          console.error('Cancel membership failed', e);
+                          alert('Failed to cancel membership. Please try again.');
+                        } finally {
+                          setActivatingVehicleId(null);
+                        }
+                      }}
+                    >
+                      {activatingVehicleId === vehicle.id ? 'Processing…' : 'Deactivate'}
+                    </button>
+                  ) : (
                     <button
                       className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
                       onClick={async () => {
