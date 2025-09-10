@@ -1,5 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
+import admin from 'firebase-admin';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+
+function initAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\n/g, '\n'),
+      } as any),
+    });
+  }
+  return getAdminFirestore();
+}
 
 // Create per-vehicle subscription checkout session (webhook-first flow)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -27,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2022-11-15' });
+    const db = initAdmin();
     console.log('[stripe] create-checkout-session start', {
       vehicleId,
       userId,
@@ -34,6 +50,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       vin: typeof vin === 'string' && vin ? vin.slice(-6) : undefined,
       licensePlate,
     });
+
+    // Resolve a single Stripe customer per user (server-side authority)
+    let resolvedCustomerId: string | undefined = undefined;
+    if (typeof customerId === 'string' && customerId.startsWith('cus_')) {
+      resolvedCustomerId = customerId;
+    } else if (typeof userId === 'string' && userId) {
+      try {
+        const userRef = db.collection('users').doc(userId);
+        const snap = await userRef.get();
+        const data = snap.exists ? (snap.data() as any) : {};
+        const existing = data?.stripe?.customerId as string | undefined;
+        if (existing && existing.startsWith('cus_')) {
+          resolvedCustomerId = existing;
+        } else {
+          const created = await stripe.customers.create({
+            email: typeof customerEmail === 'string' ? customerEmail : undefined,
+            metadata: { firebaseUid: userId },
+          });
+          resolvedCustomerId = created.id;
+          await userRef.set(
+            {
+              stripe: { ...(data?.stripe || {}), customerId: created.id },
+              updatedAt: new Date(),
+            },
+            { merge: true }
+          );
+        }
+      } catch (e) {
+        console.error('[stripe] failed to resolve/create customer', e);
+      }
+    }
 
     // Always create a new subscription via Checkout Session for this specific vehicle
 
@@ -64,8 +111,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           licensePlate: typeof licensePlate === 'string' ? licensePlate : '',
         },
       },
-      customer: typeof customerId === 'string' && customerId.startsWith('cus_') ? customerId : undefined,
-      customer_email: !customerId && typeof customerEmail === 'string' && customerEmail.includes('@') ? customerEmail : undefined,
+      customer: typeof resolvedCustomerId === 'string' && resolvedCustomerId.startsWith('cus_') ? resolvedCustomerId : undefined,
+      customer_email: !resolvedCustomerId && typeof customerEmail === 'string' && customerEmail.includes('@') ? customerEmail : undefined,
       allow_promotion_codes: true,
     });
 
