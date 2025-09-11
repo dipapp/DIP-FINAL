@@ -212,11 +212,11 @@ function ManageSubscriptionPageInner() {
                           });
                           const data = await resp.json();
                           if (!resp.ok) throw new Error(data.error || 'Cancellation failed');
-                          setMessage('💔 Membership cancelled for this vehicle. You will not be charged for it next cycle.');
-                          setShowCancel(false);
+                          // Redirect back to vehicles so user sees immediate inactive state
+                          window.location.href = '/dashboard/vehicles';
                         } catch (e) {
                           console.error('cancel vehicle failed', e);
-                          setMessage('We could not cancel automatically. Support has been notified.');
+                          setMessage('We could not cancel automatically. Please try again from the Vehicles page.');
                         } finally {
                           setBusy(null);
                         }

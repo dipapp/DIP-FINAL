@@ -50,8 +50,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Cancel immediately
-    await stripe.subscriptions.cancel(subscriptionId);
-    await vehicleRef.set({ isActive: false, lastUpdated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    const cancelled = await stripe.subscriptions.cancel(subscriptionId);
+    await vehicleRef.set({
+      isActive: false,
+      stripe: {
+        ...(v?.stripe || {}),
+        subscriptionId,
+        status: 'canceled',
+        currentPeriodEnd: cancelled.current_period_end ? new Date(cancelled.current_period_end * 1000) : null,
+      },
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
 
     return res.status(200).json({ ok: true, cancelled: true });
   } catch (error: any) {
