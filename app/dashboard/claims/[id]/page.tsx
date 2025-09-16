@@ -33,8 +33,8 @@ export default function RequestDetailPage() {
       hasLoadedRef.current = true;
           const requestData = await getClaimById(claimId);
       setRequest(requestData);
-      setDescription(requestData.description || '');
-      setContactPhone(requestData.userPhoneNumber || '');
+      setDescription((requestData as any).description || '');
+      setContactPhone((requestData as any).userPhoneNumber || '');
     } catch (err: any) {
       setError(err.message || 'Failed to load request');
     } finally {
