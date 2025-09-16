@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     try {
       const price = await stripe.prices.retrieve(priceId);
       priceOk = !!price && !price.deleted;
-      priceAmount = typeof price.unit_amount === 'number' ? price.unit_amount : null;
-      priceRecurring = (price.recurring?.interval as string) || null;
+      priceAmount = price.unit_amount ?? null;
+      priceRecurring = price.recurring?.interval ?? null;
     } catch (e: any) {
       return NextResponse.json({ ok: false, error: `Price lookup failed: ${e?.message || 'unknown'}` });
     }
