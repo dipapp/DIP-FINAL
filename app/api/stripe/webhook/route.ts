@@ -20,21 +20,22 @@ function initAdmin() {
   return getAdminFirestore();
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const signingSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
   if (!secretKey || !signingSecret) {
     console.error('Stripe env vars missing');
     return NextResponse.json({ error: 'Stripe env vars missing' }, { status: 500 });
   }
 
-  const stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' });
-  const raw = await req.text();
-  const sig = req.headers.get('stripe-signature') as string;
+  const stripe = new Stripe(secretKey, { apiVersion: '2025-08-27.basil' });
+  const body = await request.text();
+  const sig = request.headers.get('stripe-signature') as string;
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(raw, sig, signingSecret);
+    event = stripe.webhooks.constructEvent(body, sig, signingSecret);
   } catch (err: any) {
     console.error('Webhook signature verification failed.', err.message);
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
@@ -73,48 +74,57 @@ export async function POST(req: NextRequest) {
         }
 
         // Attach vehicle metadata to the first item if possible
-        if (subscriptionId && vehicleId) {
-          try {
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            const items = subscription.items.data;
-            if (items.length > 0) {
-              await stripe.subscriptionItems.update(items[0].id, {
+        try {
+          if (subscriptionId && vehicleId) {
+            const sub = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['items'] });
+            const firstItem = sub.items?.data?.[0];
+            if (firstItem) {
+              const currentMeta = firstItem.metadata || ({} as any);
+              await stripe.subscriptionItems.update(firstItem.id, {
                 metadata: {
+                  ...currentMeta,
                   vehicleId,
-                  userId: userId || '',
-                  vin: vin || '',
-                  licensePlate: licensePlate || '',
+                  vin: typeof vin === 'string' ? vin : currentMeta.vin || '',
+                  licensePlate: typeof licensePlate === 'string' ? licensePlate : currentMeta.licensePlate || '',
                 },
               });
             }
-          } catch (e) {
-            console.error('Failed to attach vehicleId metadata to subscription item', e);
           }
+        } catch (e) {
+          console.error('Failed to attach vehicleId metadata to subscription item', e);
         }
 
-        // Update user with customer ID if we have both
+        // Store customerId at user level
         if (userId && customerId) {
-          await db.collection('users').doc(userId).set(
-            {
-              stripe: {
-                customerId,
+          const userRef = db.collection('users').doc(userId);
+          const snap = await userRef.get();
+          if (snap.exists) {
+            const existing = snap.data() || {};
+            await userRef.set(
+              {
+                stripe: {
+                  ...(existing.stripe || {}),
+                  customerId: customerId || existing.stripe?.customerId || null,
+                },
+                updatedAt: new Date(),
               },
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            { merge: true }
-          );
-        }
-
-        // Mark vehicle as active
-        if (vehicleId) {
-          await db.collection('vehicles').doc(vehicleId).update({
-            isActive: true,
-            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-          });
+              { merge: true }
+            );
+          } else {
+            await userRef.set(
+              {
+                stripe: { customerId: customerId || null },
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+              { merge: true }
+            );
+          }
         }
         break;
       }
 
+      case 'customer.subscription.created':
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
@@ -133,7 +143,7 @@ export async function POST(req: NextRequest) {
               subscriptionId: sub.id,
               subscriptionItemId: it.id,
               status: sub.status,
-              currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+              currentPeriodEnd: (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000) : null,
             },
             lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });
@@ -146,7 +156,7 @@ export async function POST(req: NextRequest) {
               customerId: sub.customer as string,
               subscriptionId: sub.id,
               status: sub.status,
-              currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
+              currentPeriodEnd: (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000) : null,
             },
             lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });

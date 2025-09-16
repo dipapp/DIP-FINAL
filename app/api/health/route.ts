@@ -49,9 +49,7 @@ export async function GET() {
       if (priceId && priceId.startsWith('price_')) {
         const price = await stripe.prices.retrieve(priceId);
         priceOk = !!price && !!price.active;
-        // @ts-expect-error: unit_amount may be null
         priceAmount = price.unit_amount ?? null;
-        // @ts-expect-error: recurring may be null
         priceRecurring = price.recurring?.interval ?? null;
       }
       stripeOk = true;

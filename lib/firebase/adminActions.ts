@@ -2,7 +2,7 @@
 import { db, storage } from '@/lib/firebase/client';
 import { doc, updateDoc, collection, query, orderBy, onSnapshot, getDocs, where, getDoc, setDoc, addDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import type { RequestStatus, Vehicle } from '@/lib/types';
+import type { ClaimStatus, Vehicle } from '@/lib/types';
 
 export function subscribeUsers(callback: (users: any[]) => void) {
   const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
@@ -43,7 +43,7 @@ export async function setUserActive(uid: string, isActive: boolean) {
   await updateDoc(doc(db, 'users', uid), { isActive });
 }
 
-export async function updateClaimStatus(claimId: string, status: RequestStatus) {
+export async function updateClaimStatus(claimId: string, status: ClaimStatus) {
   await updateDoc(doc(db, 'claims', claimId), { status, updatedAt: new Date() });
 }
 

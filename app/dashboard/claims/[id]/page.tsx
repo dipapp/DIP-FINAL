@@ -30,7 +30,7 @@ export default function ClaimDetailPage() {
       setLoading(true);
       setError(null);
       hasLoadedRef.current = true;
-      const claimData = await getClaimById(claimId);
+      const claimData = await getClaimById(claimId) as any;
       setClaim(claimData);
       setDescription(claimData.description || '');
       setContactPhone(claimData.userPhoneNumber || '');

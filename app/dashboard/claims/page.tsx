@@ -42,8 +42,7 @@ export default function MyRequestsPage() {
         id: selectedVehicle.id, 
         make: selectedVehicle.make, 
         model: selectedVehicle.model, 
-        year: selectedVehicle.year,
-        vin: selectedVehicle.vin
+        year: selectedVehicle.year
       }, profile);
       
       const urls: string[] = [];

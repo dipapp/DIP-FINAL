@@ -20,8 +20,7 @@ function initAdmin() {
   return getAdminFirestore();
 }
 
-// Create per-vehicle subscription checkout session (webhook-first flow)
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const priceId = process.env.STRIPE_PRICE_ID;
 
@@ -35,13 +34,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'STRIPE_PRICE_ID must be a Price ID starting with "price_"' }, { status: 400 });
   }
 
-  const body = await req.json();
-  const { vehicleId, userId, customerEmail, customerId, vin, licensePlate } = body || {};
-  if (!vehicleId || typeof vehicleId !== 'string') {
-    return NextResponse.json({ error: 'vehicleId is required' }, { status: 400 });
-  }
-
   try {
+    const body = await request.json();
+    const { vehicleId, userId, customerEmail, customerId, vin, licensePlate } = body;
+
+    if (!vehicleId || typeof vehicleId !== 'string') {
+      return NextResponse.json({ error: 'vehicleId is required' }, { status: 400 });
+    }
+
     const stripe = new Stripe(secretKey);
     const db = initAdmin();
     console.log('[stripe] create-checkout-session start', {
@@ -84,8 +84,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Always create a new subscription via Checkout Session for this specific vehicle
-
-    const origin = (req.headers.get('origin') as string) || `https://${req.headers.get('host')}` || 'https://www.dipmembers.com';
+    const origin = request.headers.get('origin') || request.headers.get('host') || 'http://localhost:3000';
+    const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -96,8 +96,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       // Webhook will confirm and flip isActive. Success page only shows pending UI.
-      success_url: `${origin}/dashboard/vehicles?vehicleId=${encodeURIComponent(vehicleId)}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/dashboard/vehicles?cancelled=1`,
+      success_url: `${baseUrl}/dashboard/vehicles?vehicleId=${encodeURIComponent(vehicleId)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/dashboard/vehicles?cancelled=1`,
       metadata: {
         vehicleId,
         userId: typeof userId === 'string' ? userId : '',

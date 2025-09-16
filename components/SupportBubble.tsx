@@ -41,8 +41,8 @@ export default function SupportBubble() {
               ...doc.data()
             }));
             ticketData.sort((a, b) => {
-              const aTime = a.createdAt?.toDate?.() || new Date(0);
-              const bTime = b.createdAt?.toDate?.() || new Date(0);
+              const aTime = (a as any).createdAt?.toDate?.() || new Date(0);
+              const bTime = (b as any).createdAt?.toDate?.() || new Date(0);
               return bTime.getTime() - aTime.getTime();
             });
             setTickets(ticketData);

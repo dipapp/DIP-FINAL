@@ -20,31 +20,34 @@ function initAdmin() {
   return getAdminFirestore();
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
     return NextResponse.json({ error: 'Missing STRIPE_SECRET_KEY' }, { status: 500 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const sessionId = searchParams.get('session_id');
-  if (!sessionId) {
+  const { searchParams } = new URL(request.url);
+  const session_id = searchParams.get('session_id');
+  
+  if (!session_id || typeof session_id !== 'string') {
     return NextResponse.json({ error: 'session_id is required' }, { status: 400 });
   }
 
   try {
     const stripe = new Stripe(secretKey);
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const subscriptionId = session.subscription as string | undefined;
-    let status: string | undefined = undefined;
-    let currentPeriodEnd: number | undefined = undefined;
-    let customerId: string | undefined = undefined;
+    const session = await stripe.checkout.sessions.retrieve(session_id);
 
+    const subscriptionId = session.subscription as string | undefined;
+    let status: string | undefined;
+    let currentPeriodEnd: number | undefined;
+    let customerId: string | undefined = (session.customer as string) || undefined;
     if (subscriptionId) {
       const sub = await stripe.subscriptions.retrieve(subscriptionId);
       status = sub.status;
-      currentPeriodEnd = sub.current_period_end;
-      customerId = sub.customer as string;
+      currentPeriodEnd = (sub as any)?.current_period_end as number | undefined;
+      if (!customerId && typeof sub.customer === 'string') {
+        customerId = sub.customer;
+      }
     }
 
     // Attempt to link the vehicle and flip active state immediately (webhook may lag)

@@ -60,18 +60,21 @@ export async function GET(req: Request) {
 
     const list = await stripe.invoices.list({ customer: stripeCustomerId, limit: 20, expand: ['data.charge'] });
 
-    const invoices = list.data.map((inv) => ({
-      id: inv.id,
-      created: inv.created ? new Date(inv.created * 1000).toISOString() : null,
-      status: inv.status,
-      amount_due: inv.amount_due,
-      amount_paid: inv.amount_paid,
-      currency: inv.currency,
-      hosted_invoice_url: inv.hosted_invoice_url,
-      invoice_pdf: inv.invoice_pdf,
-      chargeId: typeof inv.charge === 'string' ? inv.charge : inv.charge?.id || null,
-      subscription: typeof inv.subscription === 'string' ? inv.subscription : inv.subscription?.id || null,
-    }));
+    const invoices = list.data.map((inv) => {
+      const invoice = inv as any;
+      return {
+        id: inv.id,
+        created: inv.created ? new Date(inv.created * 1000).toISOString() : null,
+        status: inv.status,
+        amount_due: inv.amount_due,
+        amount_paid: inv.amount_paid,
+        currency: inv.currency,
+        hosted_invoice_url: inv.hosted_invoice_url,
+        invoice_pdf: inv.invoice_pdf,
+        chargeId: typeof invoice.charge === 'string' ? invoice.charge : invoice.charge?.id || null,
+        subscription: typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id || null,
+      };
+    });
 
     return NextResponse.json({ invoices }, { status: 200 });
   } catch (e: any) {
