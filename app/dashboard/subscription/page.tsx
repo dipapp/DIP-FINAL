@@ -145,7 +145,7 @@ function ManageSubscriptionPageContent() {
                     <div className="text-3xl">💰</div>
                     <div>
                       <div className="font-bold text-green-700">Save 30% for 6 months!</div>
-                      <div className="text-sm text-green-600">Just $16.09/month instead of $22.99 • Save $82 total</div>
+                      <div className="text-sm text-green-600">Just $16.09/month instead of $20 • Save $82 total</div>
                     </div>
                   </div>
                   <span className="chev text-green-600">›</span>
