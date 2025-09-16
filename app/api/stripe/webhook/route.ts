@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const { vehicleId, userId } = session.metadata;
+        const { vehicleId, userId } = session.metadata || {};
 
         if (vehicleId && userId) {
           // Activate the vehicle
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (session.data.length > 0) {
-          const { vehicleId } = session.data[0].metadata;
+          const { vehicleId } = session.data[0].metadata || {};
           if (vehicleId) {
             await db.collection('vehicles').doc(vehicleId).update({
               isActive: subscription.status === 'active',
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (session.data.length > 0) {
-          const { vehicleId } = session.data[0].metadata;
+          const { vehicleId } = session.data[0].metadata || {};
           if (vehicleId) {
             await db.collection('vehicles').doc(vehicleId).update({
               isActive: false,
