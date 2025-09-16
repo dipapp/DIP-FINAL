@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const vehicleData = vehicleDoc.data();
-    if (vehicleData.ownerId !== userId) {
+    if (!vehicleData || vehicleData.ownerId !== userId) {
       return NextResponse.json(
         { error: 'Unauthorized - vehicle does not belong to user' },
         { status: 403 }
