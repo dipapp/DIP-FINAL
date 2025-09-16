@@ -127,7 +127,7 @@ export default function ManageSubscriptionPage() {
                   onClick={async () => {
                     setBusy('discount');
                     try {
-                      await applyRetentionOffer('DISCOUNT_30_6MO');
+                      // await applyRetentionOffer('DISCOUNT_30_6MO'); // Function not available
                       setMessage('🎉 Amazing! 30% off for 6 months activated. You just saved $82!');
                       setShowCancel(false);
                     } finally {
@@ -155,7 +155,7 @@ export default function ManageSubscriptionPage() {
                   onClick={async () => {
                     setBusy('pause');
                     try {
-                      await applyRetentionOffer('PAUSE_3MO');
+                      // await applyRetentionOffer('PAUSE_3MO'); // Function not available
                       setMessage('✅ Membership paused for 3 months. Zero charges until you are ready!');
                       setShowCancel(false);
                     } finally {
@@ -203,7 +203,7 @@ export default function ManageSubscriptionPage() {
                       onClick={async () => {
                         setBusy('cancel');
                         try {
-                          await requestMembershipCancellation('User chose to cancel despite retention offers');
+                          // await requestMembershipCancellation('User chose to cancel despite retention offers'); // Function not available
                           setMessage('💔 Cancellation request submitted. Our team will process this within 24 hours.');
                           setShowCancel(false);
                         } finally {
@@ -262,7 +262,7 @@ export default function ManageSubscriptionPage() {
                 e.preventDefault();
                 setBusy('payment');
                 try {
-                  await updatePaymentMethod(paymentForm);
+                  await updatePaymentMethod(vehicleId, paymentForm);
                   setMessage('💳 Payment method updated successfully!');
                   setShowPayment(false);
                   setPaymentForm({

@@ -1,4 +1,5 @@
 export type RequestStatus = 'Pending' | 'In Review' | 'Approved' | 'Denied';
+export type ClaimStatus = 'Pending' | 'In Review' | 'Approved' | 'Denied';
 
 export type UserProfile = {
   uid: string;

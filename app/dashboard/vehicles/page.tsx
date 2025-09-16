@@ -173,81 +173,6 @@ export default function MyVehiclesPage() {
     }
   }
 
-  // Removed - no longer using billing form
-  function validateBillingForm_DISABLED() {
-    const errors: {[key: string]: string} = {};
-    
-    // Validate cardholder name
-    if (!billingForm.name.trim()) {
-      errors.name = 'Cardholder name is required';
-    } else if (billingForm.name.trim().length < 2) {
-      errors.name = 'Cardholder name must be at least 2 characters';
-    }
-    
-    // Validate card number
-    const cleanCardNumber = billingForm.cardNumber.replace(/\s/g, '');
-    if (!cleanCardNumber) {
-      errors.cardNumber = 'Card number is required';
-    } else if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
-      errors.cardNumber = 'Card number must be 13-19 digits';
-    }
-    
-    // Validate expiry date
-    if (!billingForm.expiry) {
-      errors.expiry = 'Expiry date is required';
-    } else if (!billingForm.expiry.match(/^\d{2}\/\d{2}$/)) {
-      errors.expiry = 'Expiry date must be in MM/YY format';
-    } else {
-      const [month, year] = billingForm.expiry.split('/');
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear() % 100;
-      const currentMonth = currentDate.getMonth() + 1;
-      
-      if (parseInt(month) < 1 || parseInt(month) > 12) {
-        errors.expiry = 'Invalid month';
-      } else if (parseInt(year) < currentYear || (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
-        errors.expiry = 'Card has expired';
-      }
-    }
-    
-    // Validate CVV
-    if (!billingForm.cvv) {
-      errors.cvv = 'CVV is required';
-    } else if (billingForm.cvv.length < 3 || billingForm.cvv.length > 4) {
-      errors.cvv = 'CVV must be 3-4 digits';
-    }
-    
-    // Validate street address
-    if (!billingForm.streetAddress.trim()) {
-      errors.streetAddress = 'Street address is required';
-    } else if (billingForm.streetAddress.trim().length < 5) {
-      errors.streetAddress = 'Street address must be at least 5 characters';
-    }
-    
-    // Validate city
-    if (!billingForm.city.trim()) {
-      errors.city = 'City is required';
-    } else if (billingForm.city.trim().length < 2) {
-      errors.city = 'City must be at least 2 characters';
-    }
-    
-    // Validate state
-    if (!billingForm.state.trim()) {
-      errors.state = 'State is required';
-    } else if (!billingForm.state.match(/^[A-Z]{2}$/)) {
-      errors.state = 'State must be 2 letters (e.g., CA, NY, TX)';
-    }
-    
-    // Validate ZIP code
-    if (!billingForm.zip.trim()) {
-      errors.zip = 'ZIP code is required';
-    } else if (!billingForm.zip.match(/^\d{5}(-\d{4})?$/)) {
-      errors.zip = 'ZIP code must be 5 digits or 5+4 format';
-    }
-    
-    setBillingErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
 
   const getVehicleIcon = (make: string) => {
     const key = make.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -659,8 +584,8 @@ export default function MyVehiclesPage() {
         </div>
       )}
 
-      {/* Billing Modal removed - now using Stripe Checkout */}
-      {false && (
+      {/* Billing Modal completely removed - now using Stripe Checkout */}
+      {false && false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="card w-full max-w-2xl bg-white">
             <h3 className="text-xl font-semibold mb-4">Billing Information Required</h3>
