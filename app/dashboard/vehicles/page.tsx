@@ -548,10 +548,17 @@ function MyVehiclesContent() {
                     </button>
                   ) : (
                     <button
-                      className={`btn ${needsBilling ? 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200' : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'} flex-1`}
+                      className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
                       onClick={async () => {
                         try {
                           setActivatingVehicleId(vehicle.id);
+                          
+                          // If vehicle is marked as active but has no Stripe subscription, reset it first
+                          if (needsBilling) {
+                            console.log('Resetting vehicle active status before checkout');
+                            await setVehicleActive(vehicle.id, false);
+                          }
+                          
                           const resp = await fetch('/api/stripe/create-checkout-session', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -575,7 +582,7 @@ function MyVehiclesContent() {
                         }
                       }}
                     >
-                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : needsBilling ? 'Fix Billing' : 'Activate'}
+                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
                     </button>
                   )}
                   <Link 
