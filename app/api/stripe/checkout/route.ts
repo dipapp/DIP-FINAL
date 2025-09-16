@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { auth } from '@/lib/firebase/client';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY_B64 
-    ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8')
-    : process.env.FIREBASE_PRIVATE_KEY;
+  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY_B64) {
+    throw new Error('Missing Firebase Admin environment variables');
+  }
+
+  const privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8');
 
   initializeApp({
     credential: cert({
@@ -20,7 +21,11 @@ if (!getApps().length) {
   });
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID || !process.env.NEXT_PUBLIC_APP_URL) {
+  throw new Error('Missing Stripe environment variables');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil',
 });
 
@@ -86,7 +91,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID,
+          price: process.env.STRIPE_PRICE_ID!,
           quantity: 1,
         },
       ],
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
         vehicleId: vehicleId,
         userId: userId,
       },
-      customer_email: decodedToken.email,
+      customer_email: decodedToken.email || undefined,
     });
 
     return NextResponse.json({ url: session.url });
