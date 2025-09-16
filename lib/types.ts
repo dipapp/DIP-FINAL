@@ -58,7 +58,6 @@ export type Claim = {
   vehicleMake: string;
   vehicleModel: string;
   vehicleYear: string;
-  vehicleVin?: string;
   date: any;
   amount: number;
   status: ClaimStatus;

@@ -4,11 +4,6 @@ import Navbar from '@/components/Navbar'
 export const metadata = {
   title: 'Dip Members',
   description: 'Membership for California drivers',
-  icons: {
-    icon: '/dip-logo.png',
-    shortcut: '/dip-logo.png',
-    apple: '/dip-logo.png',
-  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

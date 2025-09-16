@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
     claimExpiryDays: 30,
     
     // Payment & Billing
-    monthlyMembershipFee: 20,
+    monthlyMembershipFee: 29.99,
     allowPaymentMethodUpdates: true,
     requireBillingForActivation: true,
     paymentGracePeriod: 7, // days

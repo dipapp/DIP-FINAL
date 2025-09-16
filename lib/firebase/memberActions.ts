@@ -1,6 +1,5 @@
 'use client';
 import { auth, db, storage } from '@/lib/firebase/client';
-import type { Claim } from '@/lib/types';
 import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
@@ -133,7 +132,7 @@ export async function deleteByUrl(url: string) {
   }
 }
 
-export function subscribeMyRequests(callback: (requests: any[]) => void) {
+export function subscribeMyClaims(callback: (claims: any[]) => void) {
   // Manage both auth and snapshot unsubs together
   let innerUnsub: (() => void) | null = null;
   const authUnsub = auth.onAuthStateChanged((u) => {
@@ -152,12 +151,12 @@ export function subscribeMyRequests(callback: (requests: any[]) => void) {
         q,
         (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))),
         (error) => {
-          console.error('subscribeMyRequests error:', error);
+          console.error('subscribeMyClaims error:', error);
           callback([]);
         }
       );
     } catch (err) {
-      console.error('subscribeMyRequests init error:', err);
+      console.error('subscribeMyClaims init error:', err);
       callback([]);
     }
   });
@@ -167,10 +166,7 @@ export function subscribeMyRequests(callback: (requests: any[]) => void) {
   };
 }
 
-// Backwards-compatible alias for existing callers
-export const subscribeMyClaims = subscribeMyRequests;
-
-export async function createClaimDraft(vehicle: { id: string; make: string; model: string; year: string; vin?: string }, userProfile: any) {
+export async function createClaimDraft(vehicle: { id: string; make: string; model: string; year: string }, userProfile: any) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   const refDoc = doc(collection(db, 'claims'));
@@ -183,7 +179,6 @@ export async function createClaimDraft(vehicle: { id: string; make: string; mode
     vehicleMake: vehicle.make,
     vehicleModel: vehicle.model,
     vehicleYear: vehicle.year,
-    vehicleVin: vehicle.vin ?? null,
     date: serverTimestamp(),
     amount: 0,
     status: 'Pending',
@@ -213,7 +208,7 @@ export async function submitClaim(claimId: string, data: { amount: number; descr
   });
 }
 
-export async function getClaimById(claimId: string): Promise<Claim> {
+export async function getClaimById(claimId: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
@@ -229,8 +224,7 @@ export async function getClaimById(claimId: string): Promise<Claim> {
     throw new Error('Access denied');
   }
   
-  const claim = { id: docSnap.id, ...(data as Omit<Claim, 'id'>) } as Claim;
-  return claim;
+  return { id: docSnap.id, ...data };
 }
 
 export async function addPhotosToClaim(claimId: string, files: File[]) {
@@ -387,7 +381,7 @@ export async function updatePaymentMethod(vehicleId: string, paymentData: {
       zip: paymentData.zip,
       updatedAt: serverTimestamp(),
     },
-    // Do not activate here; activation is driven by Stripe webhook subscription events
+    isActive: true, // Activate the vehicle when payment is added
     lastUpdated: serverTimestamp(),
   });
 }
@@ -432,57 +426,4 @@ export async function deleteVehiclePhoto(vehicleId: string, photoUrl: string) {
     // Don't throw the error since the database update succeeded
     // The photo will be removed from the UI anyway
   }
-}
-
-export async function applyRetentionOffer(vehicleId: string, offerType: string) {
-  const u = auth.currentUser;
-  if (!u) throw new Error('Not authenticated');
-  
-  // Verify the vehicle belongs to the current user
-  const vehicleDoc = await getDoc(doc(db, 'vehicles', vehicleId));
-  if (!vehicleDoc.exists()) {
-    throw new Error('Vehicle not found');
-  }
-  
-  const vehicleData = vehicleDoc.data();
-  if (vehicleData.ownerId !== u.uid) {
-    throw new Error('Access denied - you can only apply offers to your own vehicles');
-  }
-  
-  // Apply retention offer (placeholder implementation)
-  await updateDoc(doc(db, 'vehicles', vehicleId), {
-    retentionOffer: {
-      type: offerType,
-      appliedAt: serverTimestamp(),
-      appliedBy: u.uid,
-    },
-    lastUpdated: serverTimestamp(),
-  });
-}
-
-export async function requestMembershipCancellation(vehicleId: string, reason?: string) {
-  const u = auth.currentUser;
-  if (!u) throw new Error('Not authenticated');
-  
-  // Verify the vehicle belongs to the current user
-  const vehicleDoc = await getDoc(doc(db, 'vehicles', vehicleId));
-  if (!vehicleDoc.exists()) {
-    throw new Error('Vehicle not found');
-  }
-  
-  const vehicleData = vehicleDoc.data();
-  if (vehicleData.ownerId !== u.uid) {
-    throw new Error('Access denied - you can only request cancellation for your own vehicles');
-  }
-  
-  // Request cancellation (placeholder implementation)
-  await updateDoc(doc(db, 'vehicles', vehicleId), {
-    cancellationRequest: {
-      requestedAt: serverTimestamp(),
-      requestedBy: u.uid,
-      reason: reason || '',
-      status: 'pending',
-    },
-    lastUpdated: serverTimestamp(),
-  });
 }

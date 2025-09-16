@@ -14,7 +14,7 @@ const features = [
   },
   {
     icon: '💵',
-    title: 'Just $20/month',
+    title: 'Just $22.99/month',
     description: 'Affordable monthly membership that saves you thousands',
     color: '#3b82f6', // blue
     bgColor: 'rgba(59, 130, 246, 0.1)',

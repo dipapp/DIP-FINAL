@@ -2,13 +2,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getClaimById, addPhotosToClaim, updateClaimDescription, deleteClaimPhoto } from '@/lib/firebase/memberActions';
-import { doc, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/client';
 
 export default function ClaimDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const claimId = (params as any)?.id as string | undefined;
+  const claimId = params.id as string;
   
   const [claim, setClaim] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,6 @@ export default function ClaimDetailPage() {
   const [deletingPhoto, setDeletingPhoto] = useState<string | null>(null);
   const [editingContact, setEditingContact] = useState(false);
   const [contactPhone, setContactPhone] = useState('');
-  const [vehicleVin, setVehicleVin] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const hasLoadedRef = useRef(false);
 
@@ -35,17 +34,6 @@ export default function ClaimDetailPage() {
       setClaim(claimData);
       setDescription(claimData.description || '');
       setContactPhone(claimData.userPhoneNumber || '');
-      // If VIN is not stored on the claim, try to load it from the vehicle document
-      if (!claimData.vehicleVin && claimData.vehicleId) {
-        try {
-          const snap = await getDoc(doc(db, 'vehicles', claimData.vehicleId));
-          setVehicleVin((snap.data() as any)?.vin || null);
-        } catch {
-          setVehicleVin(null);
-        }
-      } else {
-        setVehicleVin(claimData.vehicleVin || null);
-      }
     } catch (err: any) {
       setError(err.message || 'Failed to load claim');
     } finally {
@@ -67,7 +55,7 @@ export default function ClaimDetailPage() {
   }, [claimId]);
 
   async function handlePhotoUpload() {
-    if (!claimId || newPhotos.length === 0) return;
+    if (newPhotos.length === 0) return;
     
     setUploading(true);
     try {
@@ -82,7 +70,6 @@ export default function ClaimDetailPage() {
   }
 
   async function handleDescriptionUpdate() {
-    if (!claimId) return;
     setUploading(true);
     try {
       await updateClaimDescription(claimId, description);
@@ -96,7 +83,6 @@ export default function ClaimDetailPage() {
   }
 
   async function handleDeletePhoto(photoURL: string) {
-    if (!claimId) return;
     if (!confirm('Are you sure you want to delete this photo?')) return;
     
     setDeletingPhoto(photoURL);
@@ -111,7 +97,6 @@ export default function ClaimDetailPage() {
   }
 
   async function handleContactUpdate() {
-    if (!claimId) return;
     setUploading(true);
     try {
       await updateDoc(doc(db, 'claims', claimId), {
@@ -228,7 +213,7 @@ export default function ClaimDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Vehicle VIN Number:</span>
-                <span className="font-mono">{claim.vehicleVin || vehicleVin || 'Not provided'}</span>
+                <span className="font-mono">{claim.vehicleVin || 'Not provided'}</span>
               </div>
             </div>
           </div>

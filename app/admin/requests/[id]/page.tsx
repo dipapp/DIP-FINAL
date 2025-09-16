@@ -151,7 +151,7 @@ export default function AdminRequestDetailPage() {
         <div>
           <h2 className="font-semibold mb-2">Vehicle</h2>
           <div className="font-medium">{request.vehicleYear} {request.vehicleMake} {request.vehicleModel}</div>
-          <div className="text-sm text-muted">{request.vehicleVin || vehicleVin || request.vin || '—'}</div>
+          <div className="text-sm text-muted">{vehicleVin || request.vin || '—'}</div>
         </div>
       </div>
 

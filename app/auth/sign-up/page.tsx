@@ -1,17 +1,17 @@
 'use client';
-import { FormEvent, useEffect, useState, Suspense } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/client';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function AuthPage() {
+export default function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedTab, setSelectedTab] = useState(1); // 0 = Log In, 1 = Sign Up
 
   useEffect(() => {
-    const tab = searchParams?.get('tab');
+    const tab = searchParams.get('tab');
     if (tab === 'login') setSelectedTab(0);
     if (tab === 'signup') setSelectedTab(1);
   }, [searchParams]);
@@ -188,13 +188,5 @@ function AuthPage() {
         )}
       </div>
     </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <Suspense fallback={<div className="card text-center py-12"><div className="loading-spinner mx-auto mb-2"></div>Loading…</div>}>
-      <AuthPage />
-    </Suspense>
   );
 }

@@ -1,22 +1,21 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { applyRetentionOffer, requestMembershipCancellation, updatePaymentMethod, subscribeMyProfile } from '@/lib/firebase/memberActions';
+import { applyRetentionOffer, requestMembershipCancellation, updatePaymentMethod } from '@/lib/firebase/memberActions';
 import BackButton from '@/components/BackButton';
 
-function ManageSubscriptionPageInner() {
+export default function ManageSubscriptionPage() {
   const params = useSearchParams();
-  const vehicleId = params?.get('vehicleId');
+  const vehicleId = params.get('vehicleId');
   const [showCancel, setShowCancel] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<any>(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
-  const [profile, setProfile] = useState<any | null>(null);
   const [paymentForm, setPaymentForm] = useState({
     cardNumber: '',
     expiry: '',
@@ -26,7 +25,6 @@ function ManageSubscriptionPageInner() {
   });
 
   useEffect(() => {
-    const unsub = subscribeMyProfile((p) => setProfile(p));
     async function fetchVehicle() {
       if (!vehicleId) {
         setLoadingVehicle(false);
@@ -46,7 +44,6 @@ function ManageSubscriptionPageInner() {
     }
 
     fetchVehicle();
-    return () => { try { (unsub as any)?.(); } catch {} };
   }, [vehicleId]);
 
   const getVehicleDisplayInfo = () => {
@@ -87,14 +84,16 @@ function ManageSubscriptionPageInner() {
           <p className="text-muted mb-4">DIP Membership</p>
           <div className="space-x-3">
             <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
+            <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
           </div>
         </div>
 
         <div className="card">
-          <h2 className="font-semibold mb-2">Billing History</h2>
-          <p className="text-muted mb-4">View your past charges and receipts.</p>
+          <h2 className="font-semibold mb-2">Actions</h2>
+          <p className="text-muted mb-4">Contact support or view billing history.</p>
           <div className="space-x-3">
-            <Link href="/dashboard/subscription/history" className="btn btn-primary">View Billing History</Link>
+            <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
+            <a className="btn btn-primary" href="mailto:support@dipmembers.com">Contact Support</a>
           </div>
         </div>
       </div>
@@ -128,8 +127,7 @@ function ManageSubscriptionPageInner() {
                   onClick={async () => {
                     setBusy('discount');
                     try {
-                      if (!vehicleId) return;
-                      await applyRetentionOffer(vehicleId, 'DISCOUNT_30_6MO');
+                      await applyRetentionOffer('DISCOUNT_30_6MO');
                       setMessage('🎉 Amazing! 30% off for 6 months activated. You just saved $82!');
                       setShowCancel(false);
                     } finally {
@@ -144,7 +142,7 @@ function ManageSubscriptionPageInner() {
                     <div className="text-3xl">💰</div>
                     <div>
                       <div className="font-bold text-green-700">Save 30% for 6 months!</div>
-                      <div className="text-sm text-green-600">Just $14/month instead of $20 • Save $72 total</div>
+                      <div className="text-sm text-green-600">Just $16.09/month instead of $22.99 • Save $82 total</div>
                     </div>
                   </div>
                   <span className="chev text-green-600">›</span>
@@ -157,8 +155,7 @@ function ManageSubscriptionPageInner() {
                   onClick={async () => {
                     setBusy('pause');
                     try {
-                      if (!vehicleId) return;
-                      await applyRetentionOffer(vehicleId, 'PAUSE_3MO');
+                      await applyRetentionOffer('PAUSE_3MO');
                       setMessage('✅ Membership paused for 3 months. Zero charges until you are ready!');
                       setShowCancel(false);
                     } finally {
@@ -206,19 +203,9 @@ function ManageSubscriptionPageInner() {
                       onClick={async () => {
                         setBusy('cancel');
                         try {
-                          if (!vehicleId) return;
-                          const resp = await fetch('/api/stripe/cancel-vehicle', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ vehicleId }),
-                          });
-                          const data = await resp.json();
-                          if (!resp.ok) throw new Error(data.error || 'Cancellation failed');
-                          // Redirect back to vehicles so user sees immediate inactive state
-                          window.location.href = '/dashboard/vehicles';
-                        } catch (e) {
-                          console.error('cancel vehicle failed', e);
-                          setMessage('We could not cancel automatically. Please try again from the Vehicles page.');
+                          await requestMembershipCancellation('User chose to cancel despite retention offers');
+                          setMessage('💔 Cancellation request submitted. Our team will process this within 24 hours.');
+                          setShowCancel(false);
                         } finally {
                           setBusy(null);
                         }
@@ -275,13 +262,7 @@ function ManageSubscriptionPageInner() {
                 e.preventDefault();
                 setBusy('payment');
                 try {
-                  if (!vehicleId) return;
-                  await updatePaymentMethod(vehicleId, {
-                    ...paymentForm,
-                    streetAddress: '',
-                    city: '',
-                    state: '',
-                  });
+                  await updatePaymentMethod(paymentForm);
                   setMessage('💳 Payment method updated successfully!');
                   setShowPayment(false);
                   setPaymentForm({
@@ -406,14 +387,6 @@ function ManageSubscriptionPageInner() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function ManageSubscriptionPage() {
-  return (
-    <Suspense fallback={<div className="card text-center py-12"><div className="loading-spinner mx-auto mb-2"></div>Loading…</div>}>
-      <ManageSubscriptionPageInner />
-    </Suspense>
   );
 }
 

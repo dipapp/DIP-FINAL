@@ -36,9 +36,9 @@ export default function SupportBubble() {
 
         const unsubTickets = onSnapshot(q, 
           (snapshot) => {
-            const ticketData = snapshot.docs.map(d => ({
-              id: d.id,
-              ...(d.data() as any)
+            const ticketData = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
             }));
             ticketData.sort((a, b) => {
               const aTime = a.createdAt?.toDate?.() || new Date(0);

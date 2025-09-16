@@ -31,8 +31,8 @@ export default function AdminMembershipPage() {
     activeMemberships: vehicles.filter(v => v.isActive).length,
     pendingPayments: vehicles.filter(v => !v.isActive && v.ownerEmail).length, // Inactive vehicles with owners
     cancelledMemberships: 0, // No cancelled status in current system
-    monthlyRevenue: vehicles.filter(v => v.isActive).length * 20,
-    totalRevenue: users.filter(u => u.isActive).length * 20 * 6, // Assuming average 6 months
+    monthlyRevenue: vehicles.filter(v => v.isActive).length * 22.99,
+    totalRevenue: users.filter(u => u.isActive).length * 22.99 * 6, // Assuming average 6 months
   };
 
   const tabs = [
@@ -102,40 +102,28 @@ export default function AdminMembershipPage() {
            <div className="space-y-8">
              {/* Stats Grid */}
              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-               <div
-                 className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 cursor-pointer hover:shadow-lg transition-shadow"
-                 onClick={() => setActiveTab('subscriptions')}
-               >
+               <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                  <div className="text-center">
                    <div className="text-3xl font-bold text-blue-600 mb-2">{membershipStats.totalMembers}</div>
                    <div className="text-sm font-medium text-blue-800">Total Members</div>
                    <div className="text-xs text-blue-600 mt-1">{membershipStats.activeMemberships} active</div>
                  </div>
                </div>
-               <div
-                 className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200 cursor-pointer hover:shadow-lg transition-shadow"
-                 onClick={() => setActiveTab('subscriptions')}
-               >
+               <div className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                  <div className="text-center">
                    <div className="text-3xl font-bold text-green-600 mb-2">{membershipStats.totalSubscriptions}</div>
                    <div className="text-sm font-medium text-green-800">Total Subscriptions</div>
                    <div className="text-xs text-green-600 mt-1">{membershipStats.activeMemberships} active</div>
                  </div>
                </div>
-               <div
-                 className="card bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 cursor-pointer hover:shadow-lg transition-shadow"
-                 onClick={() => setActiveTab('analytics')}
-               >
+               <div className="card bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
                  <div className="text-center">
                    <div className="text-3xl font-bold text-yellow-600 mb-2">${membershipStats.monthlyRevenue.toFixed(2)}</div>
                    <div className="text-sm font-medium text-yellow-800">Monthly Revenue</div>
                    <div className="text-xs text-yellow-600 mt-1">${membershipStats.totalRevenue.toFixed(2)} total</div>
                  </div>
                </div>
-               <div
-                 className="card bg-gradient-to-br from-red-50 to-red-100 border-red-200 cursor-pointer hover:shadow-lg transition-shadow"
-                 onClick={() => setActiveTab('payments')}
-               >
+               <div className="card bg-gradient-to-br from-red-50 to-red-100 border-red-200">
                  <div className="text-center">
                    <div className="text-3xl font-bold text-red-600 mb-2">{membershipStats.pendingPayments}</div>
                    <div className="text-sm font-medium text-red-800">Payment Issues</div>
@@ -244,7 +232,7 @@ export default function AdminMembershipPage() {
                            <td className="px-6 py-4 text-gray-600">
                              {vehicle.lastUpdated ? new Date(vehicle.lastUpdated.seconds * 1000).toLocaleDateString() : 'N/A'}
                            </td>
-                           <td className="px-6 py-4 text-gray-900">$20</td>
+                           <td className="px-6 py-4 text-gray-900">$22.99</td>
                            <td className="px-6 py-4">
                              <button 
                                className="btn btn-secondary btn-sm"
@@ -355,7 +343,7 @@ export default function AdminMembershipPage() {
                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                        <span>Average Revenue Per User</span>
                      </div>
-                     <span className="font-semibold text-purple-600 text-lg">$20</span>
+                     <span className="font-semibold text-purple-600 text-lg">$22.99</span>
                    </div>
                  </div>
                </div>
@@ -469,7 +457,7 @@ export default function AdminMembershipPage() {
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">Monthly Fee:</span>
-                    <div className="font-medium">$20</div>
+                    <div className="font-medium">$22.99</div>
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">Last Updated:</span>
