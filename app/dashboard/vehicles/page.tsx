@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
 import { auth } from '@/lib/firebase/client';
-import carData from '@/dip/dip/car_data.json';
+import carData from './car_data.json';
 import BackButton from '@/components/BackButton';
 
 // United States states (incl. DC) as abbreviations
