@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
 
     const idToken = authHeader.split('Bearer ')[1];
     
+    let decodedToken;
     try {
-      const decodedToken = await getAuth().verifyIdToken(idToken);
+      decodedToken = await getAuth().verifyIdToken(idToken);
       if (decodedToken.uid !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
