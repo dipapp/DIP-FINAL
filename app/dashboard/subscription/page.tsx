@@ -262,7 +262,9 @@ export default function ManageSubscriptionPage() {
                 e.preventDefault();
                 setBusy('payment');
                 try {
-                  await updatePaymentMethod(vehicleId, paymentForm);
+                  if (vehicleId) {
+                    await updatePaymentMethod(vehicleId, paymentForm);
+                  }
                   setMessage('💳 Payment method updated successfully!');
                   setShowPayment(false);
                   setPaymentForm({
