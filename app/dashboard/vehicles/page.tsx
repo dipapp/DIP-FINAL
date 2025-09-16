@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
+import { auth } from '@/lib/firebase/client';
 import carData from '@/dip/dip/car_data.json';
 import BackButton from '@/components/BackButton';
 
@@ -61,6 +63,7 @@ const US_STATES: { code: string; name: string }[] = [
 ];
 
 export default function MyVehiclesPage() {
+  const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -113,6 +116,20 @@ export default function MyVehiclesPage() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [expandedPhoto]);
+
+  // Handle Stripe checkout success/cancel
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    
+    if (success === 'true') {
+      alert('🎉 Payment successful! Your vehicle is now active.');
+      // Refresh the page to show updated vehicle status
+      window.location.href = '/dashboard/vehicles';
+    } else if (canceled === 'true') {
+      alert('Payment was canceled. You can try again anytime.');
+    }
+  }, [searchParams]);
 
   // Car data derived lists similar to iOS app
   const makeOptions: string[] = useMemo(() => carData.map((m: any) => m.make), []);
@@ -473,8 +490,43 @@ export default function MyVehiclesPage() {
                     <button
                       className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
                       onClick={async () => { 
-                        setActivatingVehicleId(vehicle.id);
-                        setShowBillingModal(true);
+                        try {
+                          setActivatingVehicleId(vehicle.id);
+                          
+                          // Get current user
+                          const user = auth.currentUser;
+                          if (!user) {
+                            alert('Please sign in to activate your vehicle');
+                            return;
+                          }
+
+                          // Create Stripe checkout session
+                          const response = await fetch('/api/stripe/checkout', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${await user.getIdToken()}`,
+                            },
+                            body: JSON.stringify({
+                              vehicleId: vehicle.id,
+                              userId: user.uid,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Failed to create checkout session');
+                          }
+
+                          const { url } = await response.json();
+                          
+                          // Redirect to Stripe Checkout
+                          window.location.href = url;
+                        } catch (error) {
+                          console.error('Error creating checkout session:', error);
+                          alert('Failed to start checkout process. Please try again.');
+                          setActivatingVehicleId(null);
+                        }
                       }}
                     >
                       Activate
