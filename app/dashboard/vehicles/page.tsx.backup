@@ -173,8 +173,7 @@ export default function MyVehiclesPage() {
     }
   }
 
-  // Removed - no longer using billing form
-  function validateBillingForm_DISABLED() {
+  function validateBillingForm() {
     const errors: {[key: string]: string} = {};
     
     // Validate cardholder name
@@ -660,7 +659,6 @@ export default function MyVehiclesPage() {
       )}
 
       {/* Billing Modal removed - now using Stripe Checkout */}
-      {false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="card w-full max-w-2xl bg-white">
             <h3 className="text-xl font-semibold mb-4">Billing Information Required</h3>
