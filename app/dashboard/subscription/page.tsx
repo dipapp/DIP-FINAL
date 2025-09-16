@@ -21,6 +21,9 @@ export default function ManageSubscriptionPage() {
     expiry: '',
     cvv: '',
     name: '',
+    streetAddress: '',
+    city: '',
+    state: '',
     zip: ''
   });
 
@@ -272,6 +275,9 @@ export default function ManageSubscriptionPage() {
                     expiry: '',
                     cvv: '',
                     name: '',
+                    streetAddress: '',
+                    city: '',
+                    state: '',
                     zip: ''
                   });
                 } finally {
