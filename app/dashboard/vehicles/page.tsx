@@ -1,11 +1,8 @@
 'use client';
-export const dynamic = 'force-dynamic';
-import { Suspense } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto, subscribeMyProfile } from '@/lib/firebase/memberActions';
-import carData from '@/lib/car_data.json';
+import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
+import carData from '@/dip/dip/car_data.json';
 import BackButton from '@/components/BackButton';
 
 // United States states (incl. DC) as abbreviations
@@ -63,11 +60,8 @@ const US_STATES: { code: string; name: string }[] = [
   { code: 'WY', name: 'Wyoming' },
 ];
 
-function MyVehiclesContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function MyVehiclesPage() {
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [form, setForm] = useState({ make: '', model: '', year: '', vin: '', licensePlate: '', state: '', color: '' });
@@ -102,53 +96,11 @@ function MyVehiclesContent() {
         setVehicles(rows);
         setLoading(false);
       });
-      const unsubProfile = subscribeMyProfile((p) => setProfile(p));
-      return () => { try { (unsub as any)?.(); unsubProfile?.(); } catch {} };
+      return () => { try { (unsub as any)?.(); } catch {} };
     } catch {
       setLoading(false);
     }
   }, []);
-
-  // Handle return from Stripe Checkout (webhook-first)
-  useEffect(() => {
-    const sessionId = searchParams?.get('session_id');
-    const vehicleId = searchParams?.get('vehicleId');
-    if (!sessionId || !vehicleId) return;
-
-    async function finalizeActivation() {
-      try {
-        setActivatingVehicleId(vehicleId as string);
-        // Poll vehicle doc briefly for webhook to flip isActive
-        const start = Date.now();
-        let active = false;
-        while (Date.now() - start < 45000) { // up to 45s
-          const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId as string)}`);
-          const data = await resp.json();
-          if (!resp.ok) throw new Error(data.error || 'Failed to confirm session');
-          active = data.status === 'active' || data.status === 'trialing';
-          if (active) break;
-          await new Promise((r) => setTimeout(r, 3000));
-        }
-
-        // Fallback: immediately flip isActive on the vehicle document for UI responsiveness
-        try {
-          await setVehicleActive(vehicleId as string, true);
-        } catch {}
-      } catch (e) {
-        console.error('Finalize activation failed', e);
-        alert('Activation completed, but we could not update your vehicle automatically. If it still shows inactive, refresh or contact support.');
-      } finally {
-        setActivatingVehicleId(null);
-        // Clean the query string
-        try {
-          router.replace('/dashboard/vehicles');
-        } catch {}
-      }
-    }
-
-    finalizeActivation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
 
   // Handle ESC key to close expanded photo
   useEffect(() => {
@@ -284,8 +236,8 @@ function MyVehiclesContent() {
     // Validate ZIP code
     if (!billingForm.zip.trim()) {
       errors.zip = 'ZIP code is required';
-    } else if (!billingForm.zip.match(/^\d{5}$/)) {
-      errors.zip = 'ZIP code must be 5 digits';
+    } else if (!billingForm.zip.match(/^\d{5}(-\d{4})?$/)) {
+      errors.zip = 'ZIP code must be 5 digits or 5+4 format';
     }
     
     setBillingErrors(errors);
@@ -468,11 +420,7 @@ function MyVehiclesContent() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vehicles.map((vehicle) => {
-              const billingActive = vehicle?.stripe?.status === 'active' || vehicle?.stripe?.status === 'trialing';
-              const showActive = Boolean(billingActive || vehicle?.isActive);
-              const needsBilling = vehicle?.isActive && !billingActive;
-              return (
+            {vehicles.map((vehicle) => (
               <div key={vehicle.id} className="card hover:shadow-lg transition-shadow">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
@@ -489,13 +437,11 @@ function MyVehiclesContent() {
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    showActive
-                      ? 'bg-green-100 text-green-800'
-                      : needsBilling
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-700'
+                    vehicle.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-700'
                   }`}>
-                    {showActive ? 'Active' : needsBilling ? 'Needs Billing' : 'Inactive'}
+                    {vehicle.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 
@@ -523,59 +469,15 @@ function MyVehiclesContent() {
 
                 {/* Primary Actions */}
                 <div className="flex gap-2 mb-3">
-                  {showActive ? (
+                  {!vehicle.isActive && (
                     <button
-                      className="btn bg-red-100 text-red-700 border-red-300 hover:bg-red-200 flex-1"
-                      onClick={async () => {
-                        try {
-                          setActivatingVehicleId(vehicle.id);
-                          const resp = await fetch('/api/stripe/cancel-vehicle', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ vehicleId: vehicle.id }),
-                          });
-                          const data = await resp.json();
-                          if (!resp.ok) throw new Error(data.error || 'Failed to cancel membership');
-                        } catch (e) {
-                          console.error('Cancel membership failed', e);
-                          alert('Failed to cancel membership. Please try again.');
-                        } finally {
-                          setActivatingVehicleId(null);
-                        }
+                      className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
+                      onClick={async () => { 
+                        setActivatingVehicleId(vehicle.id);
+                        setShowBillingModal(true);
                       }}
                     >
-                      {activatingVehicleId === vehicle.id ? 'Processing…' : 'Deactivate'}
-                    </button>
-                  ) : (
-                    <button
-                      className={`btn ${needsBilling ? 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200' : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'} flex-1`}
-                      onClick={async () => {
-                        try {
-                          setActivatingVehicleId(vehicle.id);
-                          const resp = await fetch('/api/stripe/create-checkout-session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              vehicleId: vehicle.id,
-                              userId: profile?.uid,
-                              customerEmail: profile?.email,
-                              customerId: profile?.stripe?.customerId,
-                              vin: vehicle.vin,
-                              licensePlate: vehicle.licensePlate,
-                            }),
-                          });
-                          const data = await resp.json();
-                          if (!resp.ok) throw new Error(data.error || 'Failed to start billing');
-                          if (!data.url) throw new Error('Missing checkout URL');
-                          window.location.href = data.url as string;
-                        } catch (e) {
-                          console.error('Start checkout failed', e);
-                          alert('Failed to start checkout. Please try again.');
-                          setActivatingVehicleId(null);
-                        }
-                      }}
-                    >
-                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : needsBilling ? 'Fix Billing' : 'Activate'}
+                      Activate
                     </button>
                   )}
                   <Link 
@@ -585,6 +487,7 @@ function MyVehiclesContent() {
                     Manage Membership
                   </Link>
                 </div>
+
                 {/* Secondary Actions */}
                 <div className="flex gap-2 mb-2">
                   <button
@@ -624,8 +527,7 @@ function MyVehiclesContent() {
                   </button>
                 </div>
               </div>
-              );
-            })}
+            ))}
           </div>
         )}
       </div>
@@ -942,12 +844,8 @@ function MyVehiclesContent() {
                       className={`input ${billingErrors.zip ? 'border-red-500 bg-red-50' : ''}`}
                       placeholder="90210"
                       value={billingForm.zip}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={5}
                       onChange={(e) => {
-                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 5);
-                        setBillingForm({ ...billingForm, zip: digitsOnly });
+                        setBillingForm({ ...billingForm, zip: e.target.value });
                         if (billingErrors.zip) {
                           setBillingErrors({ ...billingErrors, zip: '' });
                         }
@@ -964,7 +862,7 @@ function MyVehiclesContent() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
                 <div className="flex items-center space-x-2 text-sm text-blue-700">
                   <span>💰</span>
-                  <span>Monthly membership fee: $20/month</span>
+                  <span>Monthly membership fee: $22.99/month</span>
                 </div>
               </div>
 
@@ -1170,14 +1068,6 @@ function MyVehiclesContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function MyVehiclesPage() {
-  return (
-    <Suspense fallback={<div className="card text-center py-12"><div className="loading-spinner mx-auto mb-4"></div><p className="text-muted">Loading…</p></div>}>
-      <MyVehiclesContent />
-    </Suspense>
   );
 }
 

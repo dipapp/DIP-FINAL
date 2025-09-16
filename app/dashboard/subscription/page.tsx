@@ -21,9 +21,6 @@ export default function ManageSubscriptionPage() {
     expiry: '',
     cvv: '',
     name: '',
-    streetAddress: '',
-    city: '',
-    state: '',
     zip: ''
   });
 
@@ -265,7 +262,7 @@ export default function ManageSubscriptionPage() {
                 e.preventDefault();
                 setBusy('payment');
                 try {
-                  await updatePaymentMethod(vehicleId!, paymentForm);
+                  await updatePaymentMethod(paymentForm);
                   setMessage('💳 Payment method updated successfully!');
                   setShowPayment(false);
                   setPaymentForm({
@@ -273,9 +270,6 @@ export default function ManageSubscriptionPage() {
                     expiry: '',
                     cvv: '',
                     name: '',
-                    streetAddress: '',
-                    city: '',
-                    state: '',
                     zip: ''
                   });
                 } finally {

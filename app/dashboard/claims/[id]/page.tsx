@@ -4,13 +4,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { getClaimById, addPhotosToClaim, updateClaimDescription, deleteClaimPhoto } from '@/lib/firebase/memberActions';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/client';
+import BackButton from '@/components/BackButton';
 
-export default function ClaimDetailPage() {
+export default function RequestDetailPage() {
   const params = useParams();
   const router = useRouter();
   const claimId = params.id as string;
   
-  const [claim, setClaim] = useState<any>(null);
+  const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -30,12 +31,12 @@ export default function ClaimDetailPage() {
       setLoading(true);
       setError(null);
       hasLoadedRef.current = true;
-      const claimData = await getClaimById(claimId) as any;
-      setClaim(claimData);
-      setDescription(claimData.description || '');
-      setContactPhone(claimData.userPhoneNumber || '');
+          const requestData = await getClaimById(claimId);
+      setRequest(requestData);
+      setDescription(requestData.description || '');
+      setContactPhone(requestData.userPhoneNumber || '');
     } catch (err: any) {
-      setError(err.message || 'Failed to load claim');
+      setError(err.message || 'Failed to load request');
     } finally {
       setLoading(false);
     }
@@ -165,20 +166,20 @@ export default function ClaimDetailPage() {
         <h3 className="text-xl font-semibold mb-2">Error</h3>
         <p className="text-muted mb-4">{error}</p>
         <button className="btn btn-primary" onClick={() => router.push('/dashboard/claims')}>
-          Back to Claims
+          Back to Requests
         </button>
       </div>
     );
   }
 
-  if (!claim) {
+  if (!request) {
     return (
       <div className="card text-center py-12">
         <div className="text-4xl mb-4">🔍</div>
-        <h3 className="text-xl font-semibold mb-2">Claim Not Found</h3>
-        <p className="text-muted mb-4">The claim you're looking for doesn't exist or you don't have access to it.</p>
+        <h3 className="text-xl font-semibold mb-2">Request Not Found</h3>
+        <p className="text-muted mb-4">The request you're looking for doesn't exist or you don't have access to it.</p>
         <button className="btn btn-primary" onClick={() => router.push('/dashboard/claims')}>
-          Back to Claims
+          Back to Requests
         </button>
       </div>
     );
@@ -189,38 +190,33 @@ export default function ClaimDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <button 
-            className="btn btn-secondary btn-sm"
-            onClick={() => router.push('/dashboard/claims')}
-          >
-            ← Back
-          </button>
-          <h1 className="text-2xl font-bold">Claim Details</h1>
+          <BackButton />
+          <h1 className="text-2xl font-bold">Request Details</h1>
         </div>
-        {getStatusBadge(claim.status)}
+        {getStatusBadge(request.status)}
       </div>
 
       {/* Claim Information */}
       <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Claim Information</h2>
+        <h2 className="text-xl font-semibold mb-4">Request Information</h2>
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <h3 className="font-medium mb-3">Vehicle Details</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Vehicle:</span>
-                <span>{claim.vehicleYear} {claim.vehicleMake} {claim.vehicleModel}</span>
+                <span>{request.vehicleYear} {request.vehicleMake} {request.vehicleModel}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Vehicle VIN Number:</span>
-                <span className="font-mono">{claim.vehicleVin || 'Not provided'}</span>
+                <span className="font-mono">{request.vehicleVin || 'Not provided'}</span>
               </div>
             </div>
           </div>
           
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium">Claim Details</h3>
+              <h3 className="font-medium">Request Details</h3>
               {!editingContact && (
                 <button 
                   className="btn btn-secondary btn-xs"
@@ -234,12 +230,12 @@ export default function ClaimDetailPage() {
               <div className="flex justify-between">
                 <span className="text-muted">Deductible Amount:</span>
                 <span className="font-semibold">
-                  {claim.amount && claim.amount > 0 ? `$${claim.amount.toFixed(2)}` : 'Not specified'}
+                  {request.amount && request.amount > 0 ? `$${request.amount.toFixed(2)}` : 'Not specified'}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Date:</span>
-                <span>{claim.date?.toDate?.()?.toLocaleDateString?.() || 'Unknown'}</span>
+                <span>{request.date?.toDate?.()?.toLocaleDateString?.() || 'Unknown'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Contact:</span>
@@ -262,7 +258,7 @@ export default function ClaimDetailPage() {
                       className="btn btn-secondary btn-xs"
                       onClick={() => {
                         setEditingContact(false);
-                        setContactPhone(claim.userPhoneNumber || '');
+                        setContactPhone(request.userPhoneNumber || '');
                       }}
                       disabled={uploading}
                     >
@@ -270,7 +266,7 @@ export default function ClaimDetailPage() {
                     </button>
                   </div>
                 ) : (
-                  <span>{claim.userPhoneNumber || 'Not provided'}</span>
+                  <span>{request.userPhoneNumber || 'Not provided'}</span>
                 )}
               </div>
             </div>
@@ -313,7 +309,7 @@ export default function ClaimDetailPage() {
                 className="btn btn-secondary btn-sm"
                 onClick={() => {
                   setEditingDescription(false);
-                  setDescription(claim.description || '');
+                  setDescription(request.description || '');
                 }}
                 disabled={uploading}
               >
@@ -323,19 +319,19 @@ export default function ClaimDetailPage() {
           </div>
         ) : (
           <p className="text-muted">
-            {claim.description || 'No description provided.'}
+            {request.description || 'No description provided.'}
           </p>
         )}
       </div>
 
       {/* Photos */}
       <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Photos ({claim.photoURLs?.length || 0})</h2>
+        <h2 className="text-xl font-semibold mb-4">Photos ({request.photoURLs?.length || 0})</h2>
         
         {/* Existing Photos */}
-        {claim.photoURLs && claim.photoURLs.length > 0 && (
+        {request.photoURLs && request.photoURLs.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-            {claim.photoURLs.map((url: string, index: number) => (
+            {request.photoURLs.map((url: string, index: number) => (
               <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
                 <img 
                   src={url} 
@@ -405,11 +401,11 @@ export default function ClaimDetailPage() {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted">Created:</span>
-            <span>{claim.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+            <span>{request.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted">Last Updated:</span>
-            <span>{claim.updatedAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+            <span>{request.updatedAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
           </div>
         </div>
       </div>

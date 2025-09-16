@@ -15,5 +15,5 @@ A Vercel-ready Next.js portal for Dip. Firebase auth only for now (Stripe coming
 
 ## Next steps
 - Add Storage uploads (docs)
-- Add Firestore vehicles & claims
+- Add Firestore vehicles & requests
 - Add Stripe Checkout + webhooks later

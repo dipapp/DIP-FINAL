@@ -1,4 +1,4 @@
-export type ClaimStatus = 'Pending' | 'In Review' | 'Approved' | 'Denied';
+export type RequestStatus = 'Pending' | 'In Review' | 'Approved' | 'Denied';
 
 export type UserProfile = {
   uid: string;
@@ -60,7 +60,7 @@ export type Claim = {
   vehicleYear: string;
   date: any;
   amount: number;
-  status: ClaimStatus;
+  status: RequestStatus;
   description: string;
   photoURLs: string[];
   createdAt: any;

@@ -20,7 +20,7 @@ export default function Page() {
           <li>• Deductible assistance (as part of a member benefits package)</li>
           <li>• Roadside & towing coordination</li>
           <li>• Secure storage for insurance card, registration & photos</li>
-          <li>• Easy claim submission</li>
+          <li>• Easy request submission</li>
         </ul>
         <p className="mt-6 text-sm text-[color:var(--muted)]">
           Dip Membership is a motor club program, not an insurance policy.

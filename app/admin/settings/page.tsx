@@ -1,8 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
-import { getSystemSettings, saveSystemSettings } from '@/lib/firebase/adminActions';
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
@@ -81,28 +80,9 @@ export default function AdminSettingsPage() {
     backupFrequency: 'daily'
   });
 
-  // Load existing settings from Firestore on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const existing = await getSystemSettings();
-        if (existing) {
-          setSettings((prev) => ({ ...prev, ...existing }));
-        }
-      } catch (err) {
-        console.warn('Failed to load system settings', err);
-      }
-    })();
-  }, []);
-
-  const handleSave = async () => {
-    try {
-      await saveSystemSettings(settings);
-      alert('Settings saved successfully!');
-    } catch (err) {
-      alert('Failed to save settings. Please try again.');
-      console.error(err);
-    }
+  const handleSave = () => {
+    // TODO: Implement settings save to Firebase
+    alert('Settings saved successfully!');
   };
 
   const handleReset = () => {

@@ -33,21 +33,6 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  function mapAuthError(err: any): string {
-    const code = err?.code || '';
-    if (
-      code === 'auth/invalid-credential' ||
-      code === 'auth/user-not-found' ||
-      code === 'auth/wrong-password'
-    ) {
-      return 'Incorrect username or password.';
-    }
-    if (code === 'auth/too-many-requests') {
-      return 'Too many attempts. Please try again later or reset your password.';
-    }
-    return 'Something went wrong. Please try again.';
-  }
-
   async function handleSignIn(e: FormEvent) {
     e.preventDefault();
     if (!signInEmail || !signInPassword) {
@@ -60,7 +45,7 @@ export default function AuthPage() {
       await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(mapAuthError(err));
+      setError(err?.message ?? 'Failed to sign in');
     } finally {
       setLoading(false);
     }

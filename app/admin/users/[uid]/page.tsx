@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { subscribeVehiclesByOwner, subscribeClaimsByUser, updateVehicleAdmin, setUserActive } from '@/lib/firebase/adminActions';
+import { subscribeVehiclesByOwner, subscribeClaimsByUser } from '@/lib/firebase/adminActions';
 import BackButton from '@/components/BackButton';
 
 export default function AdminUserDetailPage() {
@@ -17,9 +17,6 @@ export default function AdminUserDetailPage() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [claims, setClaims] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
-  const [savingUserActive, setSavingUserActive] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
@@ -79,29 +76,10 @@ export default function AdminUserDetailPage() {
             <h1 className="text-2xl font-bold">{user.firstName} {user.lastName}</h1>
             <p className="text-muted">{user.email}</p>
           </div>
-          <div className="text-right space-y-2">
-            <div>
-              <span className={`badge ${user.isActive ? 'badge-success' : 'badge-error'}`}>
-                {user.isActive ? '✓ Active' : '✖ Inactive'}
-              </span>
-            </div>
-            <button
-              disabled={savingUserActive}
-              onClick={async () => {
-                try {
-                  setSavingUserActive(true);
-                  await setUserActive(uid, !user.isActive);
-                } catch (e) {
-                  alert('Failed to update member status');
-                  console.error(e);
-                } finally {
-                  setSavingUserActive(false);
-                }
-              }}
-              className={`btn ${user.isActive ? 'btn-danger' : 'btn-success'} btn-sm w-full`}
-            >
-              {user.isActive ? 'Deactivate' : 'Make Active'}
-            </button>
+          <div className="text-right">
+            <span className={`badge ${user.isActive ? 'badge-success' : 'badge-error'}`}>
+              {user.isActive ? '✓ Active' : '✖ Inactive'}
+            </span>
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-4">
@@ -137,14 +115,7 @@ export default function AdminUserDetailPage() {
             </thead>
             <tbody>
               {vehicles.map((v) => (
-                <tr
-                  key={v.id}
-                  className="table-row cursor-pointer hover:bg-gray-50"
-                  onClick={() => {
-                    setSelectedVehicle(v);
-                    setVehicleModalOpen(true);
-                  }}
-                >
+                <tr key={v.id} className="table-row">
                   <td className="py-3 pr-4">
                     <div className="font-medium">{v.year} {v.make} {v.model}</div>
                     <div className="text-xs text-muted">{v.color || '—'}</div>
@@ -182,11 +153,7 @@ export default function AdminUserDetailPage() {
             </thead>
             <tbody>
               {claims.map((c) => (
-                <tr
-                  key={c.id}
-                  className="table-row cursor-pointer hover:bg-gray-50"
-                  onClick={() => router.push(`/admin/requests/${c.id}`)}
-                >
+                <tr key={c.id} className="table-row">
                   <td className="py-3 pr-4"><span className="font-mono text-xs">#{c.id.slice(-8)}</span></td>
                   <td className="py-3 pr-4">{c.vehicleYear} {c.vehicleMake} {c.vehicleModel}</td>
                   <td className="py-3 pr-4">${c.amount?.toFixed?.(2) || '0.00'}</td>
@@ -203,45 +170,6 @@ export default function AdminUserDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Vehicle Quick Actions Modal */}
-      {vehicleModalOpen && selectedVehicle && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Vehicle</h3>
-              <button className="text-2xl" onClick={() => setVehicleModalOpen(false)}>×</button>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="font-medium">{selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}</div>
-              <div className="text-muted">VIN: <span className="font-mono">{selectedVehicle.vin || '—'}</span></div>
-              <div className="text-muted">Plate: {selectedVehicle.licensePlate || '—'}</div>
-              <div>
-                <span className={`badge ${selectedVehicle.isActive ? 'badge-success' : 'badge-error'}`}>
-                  {selectedVehicle.isActive ? '✓ Active' : '✖ Inactive'}
-                </span>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <button className="btn btn-secondary" onClick={() => setVehicleModalOpen(false)}>Close</button>
-              <button
-                className={`btn ${selectedVehicle.isActive ? 'btn-danger' : 'btn-success'}`}
-                onClick={async () => {
-                  try {
-                    await updateVehicleAdmin(selectedVehicle.id, { isActive: !selectedVehicle.isActive });
-                    setSelectedVehicle({ ...selectedVehicle, isActive: !selectedVehicle.isActive });
-                  } catch (e) {
-                    alert('Failed to update vehicle');
-                    console.error(e);
-                  }
-                }}
-              >
-                {selectedVehicle.isActive ? 'Deactivate' : 'Activate'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

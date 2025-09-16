@@ -1,7 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import SupportBubble from '@/components/SupportBubble';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -44,9 +43,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-[60vh]">
         {children}
       </div>
-      
-      {/* Support Bubble */}
-      <SupportBubble />
     </div>
   );
 }

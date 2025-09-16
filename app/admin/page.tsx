@@ -1,20 +1,24 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { subscribeUsers, subscribeVehicles, subscribeClaims, subscribeTowEvents } from '@/lib/firebase/adminActions';
+import BackButton from '@/components/BackButton';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function AdminHome() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [users, setUsers] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [claims, setClaims] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [towEvents, setTowEvents] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<string>(searchParams?.get('tab') || 'overview');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubUsers = subscribeUsers((data) => setUsers(data));
     const unsubVehicles = subscribeVehicles((data) => setVehicles(data));
-    const unsubClaims = subscribeClaims((data) => setClaims(data));
+    const unsubRequests = subscribeClaims((data) => setRequests(data));
     const unsubTowEvents = subscribeTowEvents((data) => setTowEvents(data));
     
     setLoading(false);
@@ -22,19 +26,28 @@ export default function AdminHome() {
     return () => {
       unsubUsers();
       unsubVehicles();
-      unsubClaims();
+      unsubRequests();
       unsubTowEvents();
     };
   }, []);
+
+  // Keep activeTab in sync with URL so refresh preserves the current tab
+  useEffect(() => {
+    const tabFromUrl = searchParams?.get('tab');
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const stats = {
     totalUsers: users.length,
     activeUsers: users.filter(u => u.isActive).length,
     totalVehicles: vehicles.length,
     activeVehicles: vehicles.filter(v => v.isActive).length,
-    totalClaims: claims.length,
-    pendingClaims: claims.filter(c => c.status === 'Pending').length,
-    approvedClaims: claims.filter(c => c.status === 'Approved').length,
+    totalRequests: requests.length,
+    pendingRequests: requests.filter(c => c.status === 'Pending').length,
+    approvedRequests: requests.filter(c => c.status === 'Approved').length,
     totalTowRequests: towEvents.length,
     pendingTowRequests: towEvents.filter(t => !t.status || t.status === 'pending').length,
   };
@@ -42,7 +55,7 @@ export default function AdminHome() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'users', label: 'Users', icon: '👥', count: users.length },
-    { id: 'claims', label: 'Claims', icon: '📋', count: claims.length },
+    { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
   ];
 
@@ -76,7 +89,7 @@ export default function AdminHome() {
       {/* Header */}
       <div className="card">
         <h1 className="text-2xl font-bold mb-2">Admin Console</h1>
-        <p className="text-muted">Manage users, vehicles, claims, and system settings.</p>
+                  <p className="text-muted">Manage users, vehicles, requests, and system settings.</p>
       </div>
 
       {/* Navigation Tabs */}
@@ -85,7 +98,11 @@ export default function AdminHome() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                // Update the URL without adding a new history entry
+                router.replace(`/admin?tab=${tab.id}`);
+              }}
               className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
             >
               <span className="mr-2">{tab.icon}</span>
@@ -115,13 +132,13 @@ export default function AdminHome() {
                 <div className="text-xs text-green-600">{stats.activeVehicles} active</div>
               </div>
               <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                <div className="text-2xl font-bold text-yellow-600">{stats.totalClaims}</div>
-                <div className="text-sm text-yellow-800">Total Claims</div>
-                <div className="text-xs text-yellow-600">{stats.pendingClaims} pending</div>
+                <div className="text-2xl font-bold text-yellow-600">{stats.totalRequests}</div>
+                <div className="text-sm text-yellow-800">Total Requests</div>
+                <div className="text-xs text-yellow-600">{stats.pendingRequests} pending</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                <div className="text-2xl font-bold text-purple-600">{stats.approvedClaims}</div>
-                <div className="text-sm text-purple-800">Approved Claims</div>
+                <div className="text-2xl font-bold text-purple-600">{stats.approvedRequests}</div>
+                <div className="text-sm text-purple-800">Approved Requests</div>
                 <div className="text-xs text-purple-600">This month</div>
               </div>
             </div>
@@ -190,7 +207,7 @@ export default function AdminHome() {
                 </thead>
                 <tbody>
                   {users.slice(0, 25).map((user) => (
-                    <tr key={user.uid} className="table-row cursor-pointer hover:bg-gray-50" onClick={() => window.location.href = `/admin/users/${user.uid}`}>
+                                         <tr key={user.uid} className="table-row cursor-pointer hover:bg-gray-200" onClick={() => window.location.href = `/admin/users/${user.uid}`}>
                       <td className="py-3 pr-4">
                         <div className="font-medium">{user.firstName} {user.lastName}</div>
                       </td>
@@ -269,15 +286,15 @@ export default function AdminHome() {
           </div>
         )}
 
-        {/* Claims Tab */}
-        {activeTab === 'claims' && (
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Claims ({claims.length})</h3>
+            <h3 className="text-lg font-semibold">Requests ({requests.length})</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-muted border-b">
                   <tr>
-                    <th className="py-2 pr-4">Claim ID</th>
+                    <th className="py-2 pr-4">Request ID</th>
                     <th className="py-2 pr-4">Vehicle</th>
                     <th className="py-2 pr-4">User</th>
                     <th className="py-2 pr-4">Amount</th>
@@ -286,10 +303,10 @@ export default function AdminHome() {
                   </tr>
                 </thead>
                 <tbody>
-                  {claims.slice(0, 10).map((claim) => (
+                  {requests.slice(0, 10).map((claim) => (
                     <tr
                       key={claim.id}
-                      className="table-row cursor-pointer hover:bg-gray-50"
+                      className="table-row cursor-pointer hover:bg-gray-200"
                       onClick={() => (window.location.href = `/admin/requests/${claim.id}`)}
                     >
                       <td className="py-3 pr-4">
@@ -313,9 +330,9 @@ export default function AdminHome() {
                   ))}
                 </tbody>
               </table>
-              {claims.length > 10 && (
+              {requests.length > 10 && (
                 <div className="text-center pt-4">
-                  <p className="text-sm text-muted">Showing 10 of {claims.length} claims</p>
+                  <p className="text-sm text-muted">Showing 10 of {requests.length} requests</p>
                 </div>
               )}
             </div>

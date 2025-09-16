@@ -427,16 +427,3 @@ export async function deleteVehiclePhoto(vehicleId: string, photoUrl: string) {
     // The photo will be removed from the UI anyway
   }
 }
-
-// Placeholder functions for subscription management
-export async function applyRetentionOffer(offerType: string) {
-  console.log('Retention offer applied:', offerType);
-  // TODO: Implement retention offer logic
-  return Promise.resolve();
-}
-
-export async function requestMembershipCancellation(reason: string) {
-  console.log('Membership cancellation requested:', reason);
-  // TODO: Implement cancellation request logic
-  return Promise.resolve();
-}
