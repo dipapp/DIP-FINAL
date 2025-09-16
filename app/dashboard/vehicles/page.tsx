@@ -597,10 +597,7 @@ export default function MyVehiclesPage() {
               onSubmit={async (e) => {
                 e.preventDefault();
                 
-                // Validate form and show errors
-                if (!validateBillingForm()) {
-                  return;
-                }
+                // Validation removed - using Stripe Checkout
                 
                 try {
                   setActivatingBilling(true);
