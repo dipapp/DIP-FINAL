@@ -1,15 +1,19 @@
 export const runtime = 'nodejs';
 
-import { PRICE_ID, stripe } from '@/app/lib/stripe';
+import { getPriceId, getStripe } from '@/app/lib/stripe';
 import admin from 'firebase-admin';
 
 function initAdmin() {
   if (!admin.apps.length) {
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY_B64
+      ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf8')
+      : rawKey.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey,
       } as any),
     });
   }
@@ -62,6 +66,9 @@ export async function POST(req: Request) {
     const stripeSubscriptionId: string | undefined = userData?.stripeSubscriptionId || undefined;
     console.log('[billing-sync] ids', { uid, stripeCustomerId, stripeSubscriptionId });
 
+    const stripe = getStripe();
+    const PRICE_ID = getPriceId();
+
     if (quantity === 0) {
       if (stripeSubscriptionId) {
         try {
@@ -76,6 +83,7 @@ export async function POST(req: Request) {
     }
 
     // Ensure customer exists
+    // ensure stripe and PRICE_ID already declared above
     let customerId = stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({ metadata: { firebaseUid: uid } });

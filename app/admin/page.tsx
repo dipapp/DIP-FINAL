@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { subscribeUsers, subscribeVehicles, subscribeClaims, subscribeTowEvents } from '@/lib/firebase/adminActions';
+import { subscribeUsers, subscribeVehicles, subscribeClaims, subscribeTowEvents, deleteUserEverywhere, deleteClaimEverywhere } from '@/lib/firebase/adminActions';
 import Link from 'next/link';
 
 export default function AdminHome() {
@@ -186,11 +186,12 @@ export default function AdminHome() {
                     <th className="py-2 pr-4">Phone</th>
                     <th className="py-2 pr-4">Status</th>
                     <th className="py-2 pr-4">Joined</th>
+                    <th className="py-2 pr-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.slice(0, 25).map((user) => (
-                    <tr key={user.uid} className="table-row cursor-pointer hover:bg-gray-50" onClick={() => window.location.href = `/admin/users/${user.uid}`}>
+                    <tr key={user.uid} className="table-row hover:bg-gray-50">
                       <td className="py-3 pr-4">
                         <div className="font-medium">{user.firstName} {user.lastName}</div>
                       </td>
@@ -203,6 +204,31 @@ export default function AdminHome() {
                       </td>
                       <td className="py-3 pr-4">
                         {user.createdAt?.toDate?.()?.toLocaleDateString?.() || '—'}
+                      </td>
+                      <td className="py-3 pr-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => (window.location.href = `/admin/users/${user.uid}`)}
+                          >
+                            View
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={async () => {
+                              const confirmDelete = window.confirm('Delete this user and all related data? This cannot be undone.');
+                              if (!confirmDelete) return;
+                              try {
+                                await deleteUserEverywhere(user.uid);
+                              } catch (e) {
+                                console.error('Failed to delete user', e);
+                                alert('Failed to delete user. Check console for details.');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -283,15 +309,12 @@ export default function AdminHome() {
                     <th className="py-2 pr-4">Amount</th>
                     <th className="py-2 pr-4">Status</th>
                     <th className="py-2 pr-4">Date</th>
+                    <th className="py-2 pr-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {claims.slice(0, 10).map((claim) => (
-                    <tr
-                      key={claim.id}
-                      className="table-row cursor-pointer hover:bg-gray-50"
-                      onClick={() => (window.location.href = `/admin/requests/${claim.id}`)}
-                    >
+                    <tr key={claim.id} className="table-row hover:bg-gray-50">
                       <td className="py-3 pr-4">
                         <span className="font-mono text-xs">#{claim.id.slice(-8)}</span>
                       </td>
@@ -308,6 +331,31 @@ export default function AdminHome() {
                       <td className="py-3 pr-4">{getStatusBadge(claim.status)}</td>
                       <td className="py-3 pr-4">
                         {claim.date?.toDate?.()?.toLocaleDateString?.() || '—'}
+                      </td>
+                      <td className="py-3 pr-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => (window.location.href = `/admin/requests/${claim.id}`)}
+                          >
+                            View
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={async () => {
+                              const confirmDelete = window.confirm('Delete this claim and all related data? This cannot be undone.');
+                              if (!confirmDelete) return;
+                              try {
+                                await deleteClaimEverywhere(claim.id);
+                              } catch (e) {
+                                console.error('Failed to delete claim', e);
+                                alert('Failed to delete claim. Check console for details.');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

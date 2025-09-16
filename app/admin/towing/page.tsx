@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, orderBy, query, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -76,6 +76,20 @@ export default function AdminTowingPage() {
 
   const saveChanges = (eventId: string) => {
     updateEventStatus(eventId, editForm);
+  };
+
+  const deleteEvent = async (eventId: string) => {
+    const confirmDelete = window.confirm('Delete this towing request? This cannot be undone.');
+    if (!confirmDelete) return;
+    setSaving(eventId);
+    try {
+      await deleteDoc(doc(db, 'admin_events', eventId));
+    } catch (error) {
+      console.error('Error deleting tow event:', error);
+      alert('Failed to delete tow event');
+    } finally {
+      setSaving(null);
+    }
   };
 
   const quickStatusUpdate = (eventId: string, status: TowEvent['status']) => {
@@ -248,6 +262,13 @@ export default function AdminTowingPage() {
                           >
                             Cancel
                           </button>
+                          <button
+                            onClick={() => deleteEvent(event.id)}
+                            disabled={saving === event.id}
+                            className="btn btn-danger text-xs"
+                          >
+                            Delete
+                          </button>
                         </>
                       ) : (
                         <>
@@ -257,6 +278,13 @@ export default function AdminTowingPage() {
                             disabled={saving === event.id}
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => deleteEvent(event.id)}
+                            disabled={saving === event.id}
+                            className="btn btn-danger text-xs"
+                          >
+                            Delete
                           </button>
                           {event.status !== 'completed' && event.status !== 'cancelled' && (
                             <>

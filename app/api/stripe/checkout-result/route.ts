@@ -1,15 +1,20 @@
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-import { stripe } from '@/app/lib/stripe';
+import { getStripe } from '@/app/lib/stripe';
 import admin from 'firebase-admin';
 
 function initAdmin() {
   if (!admin.apps.length) {
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY_B64
+      ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf8')
+      : rawKey.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey,
       } as any),
     });
   }
@@ -29,6 +34,7 @@ export async function GET(req: Request) {
       return new Response(JSON.stringify({ error: 'uid is required' }), { status: 400 });
     }
 
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const subscriptionId = (session.subscription as string) || null;
     const customerId = (session.customer as string) || null;

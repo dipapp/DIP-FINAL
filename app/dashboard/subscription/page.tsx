@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { applyRetentionOffer, requestMembershipCancellation, updatePaymentMethod } from '@/lib/firebase/memberActions';
+import { applyRetentionOffer, requestMembershipCancellation, updatePaymentMethod, subscribeMyProfile } from '@/lib/firebase/memberActions';
 import BackButton from '@/components/BackButton';
 
 function ManageSubscriptionPageInner() {
@@ -16,6 +16,7 @@ function ManageSubscriptionPageInner() {
   const [message, setMessage] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<any>(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
+  const [profile, setProfile] = useState<any | null>(null);
   const [paymentForm, setPaymentForm] = useState({
     cardNumber: '',
     expiry: '',
@@ -25,6 +26,7 @@ function ManageSubscriptionPageInner() {
   });
 
   useEffect(() => {
+    const unsub = subscribeMyProfile((p) => setProfile(p));
     async function fetchVehicle() {
       if (!vehicleId) {
         setLoadingVehicle(false);
@@ -44,6 +46,7 @@ function ManageSubscriptionPageInner() {
     }
 
     fetchVehicle();
+    return () => { try { (unsub as any)?.(); } catch {} };
   }, [vehicleId]);
 
   const getVehicleDisplayInfo = () => {
@@ -84,7 +87,6 @@ function ManageSubscriptionPageInner() {
           <p className="text-muted mb-4">DIP Membership</p>
           <div className="space-x-3">
             <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
-            <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
           </div>
         </div>
 

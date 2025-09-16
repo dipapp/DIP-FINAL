@@ -1,4 +1,6 @@
 'use client';
+export const dynamic = 'force-dynamic';
+import { Suspense } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -61,7 +63,7 @@ const US_STATES: { code: string; name: string }[] = [
   { code: 'WY', name: 'Wyoming' },
 ];
 
-export default function MyVehiclesPage() {
+function MyVehiclesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -115,12 +117,12 @@ export default function MyVehiclesPage() {
 
     async function finalizeActivation() {
       try {
-        setActivatingVehicleId(vehicleId);
+        setActivatingVehicleId(vehicleId as string);
         // Poll vehicle doc briefly for webhook to flip isActive
         const start = Date.now();
         let active = false;
         while (Date.now() - start < 45000) { // up to 45s
-          const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId)}`);
+          const resp = await fetch(`/api/stripe/confirm-session?session_id=${encodeURIComponent(sessionId as string)}`);
           const data = await resp.json();
           if (!resp.ok) throw new Error(data.error || 'Failed to confirm session');
           active = data.status === 'active' || data.status === 'trialing';
@@ -128,11 +130,10 @@ export default function MyVehiclesPage() {
           await new Promise((r) => setTimeout(r, 3000));
         }
 
-        if (active) {
-          alert('Vehicle activated successfully.');
-        } else {
-          alert("We're confirming your payment. If your vehicle doesn't show Active soon, try refreshing this page.");
-        }
+        // Fallback: immediately flip isActive on the vehicle document for UI responsiveness
+        try {
+          await setVehicleActive(vehicleId as string, true);
+        } catch {}
       } catch (e) {
         console.error('Finalize activation failed', e);
         alert('Activation completed, but we could not update your vehicle automatically. If it still shows inactive, refresh or contact support.');
@@ -467,7 +468,11 @@ export default function MyVehiclesPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vehicles.map((vehicle) => (
+            {vehicles.map((vehicle) => {
+              const billingActive = vehicle?.stripe?.status === 'active' || vehicle?.stripe?.status === 'trialing';
+              const showActive = Boolean(billingActive || vehicle?.isActive);
+              const needsBilling = vehicle?.isActive && !billingActive;
+              return (
               <div key={vehicle.id} className="card hover:shadow-lg transition-shadow">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
@@ -484,11 +489,13 @@ export default function MyVehiclesPage() {
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    vehicle.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-700'
+                    showActive
+                      ? 'bg-green-100 text-green-800'
+                      : needsBilling
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-700'
                   }`}>
-                    {vehicle.isActive ? 'Active' : 'Inactive'}
+                    {showActive ? 'Active' : needsBilling ? 'Needs Billing' : 'Inactive'}
                   </span>
                 </div>
 
@@ -516,7 +523,7 @@ export default function MyVehiclesPage() {
 
                 {/* Primary Actions */}
                 <div className="flex gap-2 mb-3">
-                  {vehicle.isActive ? (
+                  {showActive ? (
                     <button
                       className="btn bg-red-100 text-red-700 border-red-300 hover:bg-red-200 flex-1"
                       onClick={async () => {
@@ -541,7 +548,7 @@ export default function MyVehiclesPage() {
                     </button>
                   ) : (
                     <button
-                      className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
+                      className={`btn ${needsBilling ? 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200' : 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'} flex-1`}
                       onClick={async () => {
                         try {
                           setActivatingVehicleId(vehicle.id);
@@ -568,7 +575,7 @@ export default function MyVehiclesPage() {
                         }
                       }}
                     >
-                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : 'Activate'}
+                      {activatingVehicleId === vehicle.id ? 'Redirecting…' : needsBilling ? 'Fix Billing' : 'Activate'}
                     </button>
                   )}
                   <Link 
@@ -578,7 +585,6 @@ export default function MyVehiclesPage() {
                     Manage Membership
                   </Link>
                 </div>
-
                 {/* Secondary Actions */}
                 <div className="flex gap-2 mb-2">
                   <button
@@ -618,7 +624,8 @@ export default function MyVehiclesPage() {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -1163,6 +1170,14 @@ export default function MyVehiclesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyVehiclesPage() {
+  return (
+    <Suspense fallback={<div className="card text-center py-12"><div className="loading-spinner mx-auto mb-4"></div><p className="text-muted">Loading…</p></div>}>
+      <MyVehiclesContent />
+    </Suspense>
   );
 }
 

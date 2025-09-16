@@ -1,10 +1,12 @@
 'use client';
+export const dynamic = 'force-dynamic';
+import { Suspense } from 'react';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export default function BillingSuccessPage() {
 
     async function finalize() {
       try {
-        const resp = await fetch(`/api/stripe/checkout-result?session_id=${encodeURIComponent(sessionId)}&uid=${encodeURIComponent(uid)}`);
+        const resp = await fetch(`/api/stripe/checkout-result?session_id=${encodeURIComponent(sessionId as string)}&uid=${encodeURIComponent(uid as string)}`);
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Failed to store subscription');
         setSubscriptionId(data.subscriptionId || null);
@@ -42,7 +44,6 @@ export default function BillingSuccessPage() {
   }, [searchParams]);
 
   return (
-    <div className="max-w-xl mx-auto py-12">
       <div className="card text-center">
         {loading ? (
           <>
@@ -73,9 +74,20 @@ export default function BillingSuccessPage() {
           </>
         )}
       </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <div className="max-w-xl mx-auto py-12">
+      <Suspense fallback={<div className="card text-center py-12"><div className="loading-spinner mx-auto mb-4"></div><p className="text-muted">Loading…</p></div>}>
+        <BillingSuccessContent />
+      </Suspense>
     </div>
   );
 }
+
+
 
 
 

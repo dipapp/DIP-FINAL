@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="container-app">
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                DIP is a motor club membership program, not insurance. Membership benefits are provided under California Insurance Code §§12140–12164.
+                DIP is a membership program, not an insurance company.
               </p>
             </div>
           </div>

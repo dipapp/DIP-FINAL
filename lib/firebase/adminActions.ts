@@ -1,6 +1,6 @@
 'use client';
 import { db, storage } from '@/lib/firebase/client';
-import { doc, updateDoc, collection, query, orderBy, onSnapshot, getDocs, where, getDoc, setDoc, addDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, orderBy, onSnapshot, getDocs, where, getDoc, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import type { ClaimStatus as RequestStatus, Vehicle } from '@/lib/types';
 
@@ -137,6 +137,105 @@ export async function logClaimMessage(
     console.warn('[logClaimMessage] Failed to write message (likely rules).', error);
     return false;
   }
+}
+
+// --- Dangerous Operation: Delete a user and related data ---
+export async function deleteUserEverywhere(uid: string): Promise<void> {
+  // Load user doc to infer email and attached files
+  const userRef = doc(db, 'users', uid);
+  const userSnap = await getDoc(userRef);
+  const user = userSnap.exists() ? (userSnap.data() as any) : null;
+  const userEmail: string | undefined = user?.email;
+
+  // Best-effort delete of user-specific files
+  const possibleUserFileUrls: (string | undefined)[] = [user?.driverLicenseURL];
+  for (const url of possibleUserFileUrls) {
+    if (typeof url === 'string' && url.startsWith('http')) {
+      try { await deleteByUrl(url); } catch {}
+    }
+  }
+
+  // Delete vehicles owned by the user
+  const vehicleIds = new Set<string>();
+  const byOwnerId = await getDocs(query(collection(db, 'vehicles'), where('ownerId', '==', uid)));
+  byOwnerId.forEach((d) => vehicleIds.add(d.id));
+  if (userEmail) {
+    const byOwnerEmail = await getDocs(query(collection(db, 'vehicles'), where('ownerEmail', '==', userEmail)));
+    byOwnerEmail.forEach((d) => vehicleIds.add(d.id));
+  }
+  for (const vid of Array.from(vehicleIds)) {
+    const vRef = doc(db, 'vehicles', vid);
+    const vSnap = await getDoc(vRef);
+    const v = vSnap.exists() ? (vSnap.data() as any) : null;
+    if (v) {
+      const vehicleFileUrls: string[] = [];
+      try { (v.photos || []).forEach((p: any) => p?.imageURL && vehicleFileUrls.push(p.imageURL)); } catch {}
+      try { (v.insuranceDocuments || []).forEach((d: any) => { if (d?.fileURL) vehicleFileUrls.push(d.fileURL); if (d?.imageURL) vehicleFileUrls.push(d.imageURL); }); } catch {}
+      for (const url of vehicleFileUrls) {
+        if (typeof url === 'string' && url.startsWith('http')) {
+          try { await deleteByUrl(url); } catch {}
+        }
+      }
+    }
+    try { await deleteDoc(vRef); } catch {}
+  }
+
+  // Delete claims belonging to the user
+  const claimIds = new Set<string>();
+  const byUserId = await getDocs(query(collection(db, 'claims'), where('userId', '==', uid)));
+  byUserId.forEach((d) => claimIds.add(d.id));
+  if (userEmail) {
+    const byEmail = await getDocs(query(collection(db, 'claims'), where('userEmail', '==', userEmail)));
+    byEmail.forEach((d) => claimIds.add(d.id));
+  }
+  for (const cid of Array.from(claimIds)) {
+    const cRef = doc(db, 'claims', cid);
+    const cSnap = await getDoc(cRef);
+    const c = cSnap.exists() ? (cSnap.data() as any) : null;
+    if (c) {
+      try {
+        (c.photoURLs || []).forEach(async (u: string) => {
+          if (typeof u === 'string' && u.startsWith('http')) {
+            try { await deleteByUrl(u); } catch {}
+          }
+        });
+      } catch {}
+      // Delete messages subcollection
+      try {
+        const msgs = await getDocs(collection(db, 'claims', cid, 'messages'));
+        for (const m of msgs.docs) {
+          try { await deleteDoc(doc(db, 'claims', cid, 'messages', m.id)); } catch {}
+        }
+      } catch {}
+    }
+    try { await deleteDoc(cRef); } catch {}
+  }
+
+  // Finally delete the user document itself
+  try { await deleteDoc(userRef); } catch {}
+}
+
+// --- Dangerous Operation: Delete a claim and related data ---
+export async function deleteClaimEverywhere(claimId: string): Promise<void> {
+  const cRef = doc(db, 'claims', claimId);
+  const cSnap = await getDoc(cRef);
+  const c = cSnap.exists() ? (cSnap.data() as any) : null;
+  if (c) {
+    try {
+      (c.photoURLs || []).forEach(async (u: string) => {
+        if (typeof u === 'string' && u.startsWith('http')) {
+          try { await deleteByUrl(u); } catch {}
+        }
+      });
+    } catch {}
+    try {
+      const msgs = await getDocs(collection(db, 'claims', claimId, 'messages'));
+      for (const m of msgs.docs) {
+        try { await deleteDoc(doc(db, 'claims', claimId, 'messages', m.id)); } catch {}
+      }
+    } catch {}
+  }
+  try { await deleteDoc(cRef); } catch {}
 }
 
 
