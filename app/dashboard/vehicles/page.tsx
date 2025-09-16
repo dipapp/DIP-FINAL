@@ -75,26 +75,17 @@ function MyVehiclesContent() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ vin: string; licensePlate: string; state: string; color: string }>({ vin: '', licensePlate: '', state: '', color: '' });
   const [savingEdit, setSavingEdit] = useState(false);
-  const [showBillingModal, setShowBillingModal] = useState(false);
+  // Removed billing modal - using Stripe checkout instead
   const [activatingVehicleId, setActivatingVehicleId] = useState<string | null>(null);
-  const [billingForm, setBillingForm] = useState({
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
-    name: '',
-    streetAddress: '',
-    city: '',
-    state: '',
-    zip: ''
-  });
+  // Billing form removed - using Stripe checkout instead
   const [deletingVehicleId, setDeletingVehicleId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [activatingBilling, setActivatingBilling] = useState(false);
+  // Removed activatingBilling - using Stripe checkout instead
   const [deletingVehicle, setDeletingVehicle] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
-  const [billingErrors, setBillingErrors] = useState<{[key: string]: string}>({});
+  // Removed billingErrors - using Stripe checkout instead
 
   useEffect(() => {
     try {
@@ -724,8 +715,8 @@ function MyVehiclesContent() {
         </div>
       )}
 
-      {/* Billing Modal for Vehicle Activation */}
-      {showBillingModal && (
+      {/* Billing modal removed - using Stripe checkout instead */}
+      {false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="card w-full max-w-2xl bg-white">
             <h3 className="text-xl font-semibold mb-4">Billing Information Required</h3>
@@ -758,7 +749,7 @@ function MyVehiclesContent() {
                     throw new Error('No vehicle ID found for activation');
                   }
                   
-                  setShowBillingModal(false);
+                  // Billing modal removed
                   setActivatingVehicleId(null);
                   setBillingForm({
                     cardNumber: '',
@@ -980,7 +971,7 @@ function MyVehiclesContent() {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => {
-                    setShowBillingModal(false);
+                    // Billing modal removed
                     setActivatingVehicleId(null);
                     setBillingErrors({});
                   }}
