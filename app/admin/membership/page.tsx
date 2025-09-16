@@ -485,17 +485,9 @@ export default function AdminMembershipPage() {
                 </button>
                 <button 
                   className={`btn ${selectedVehicle.isActive ? 'btn-danger' : 'btn-success'}`}
-                  onClick={async () => {
-                    try {
-                      // Toggle vehicle active status
-                      const newStatus = !selectedVehicle.isActive;
-                      await updateVehicleAdmin(selectedVehicle.id, { isActive: newStatus });
-                      setSelectedVehicle({ ...selectedVehicle, isActive: newStatus });
-                      alert(`Vehicle ${newStatus ? 'activated' : 'deactivated'} successfully`);
-                    } catch (error) {
-                      console.error('Error toggling vehicle status:', error);
-                      alert('Failed to update vehicle status');
-                    }
+                  onClick={() => {
+                    // TODO: Implement toggle functionality
+                    alert(`${selectedVehicle.isActive ? 'Deactivate' : 'Activate'} functionality would go here`);
                   }}
                 >
                   {selectedVehicle.isActive ? 'Deactivate' : 'Activate'} Subscription

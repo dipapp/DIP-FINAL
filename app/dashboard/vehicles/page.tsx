@@ -204,7 +204,9 @@ function MyVehiclesContent() {
   async function handleDeleteVehicle(vehicleId: string) {
     try {
       setDeletingVehicle(true);
+      console.log('Attempting to delete vehicle:', vehicleId);
       await deleteVehicle(vehicleId);
+      console.log('Vehicle deleted successfully');
       setShowDeleteModal(false);
       setDeletingVehicleId(null);
     } catch (error) {
@@ -735,9 +737,16 @@ function MyVehiclesContent() {
                 
                 try {
                   setActivatingBilling(true);
+                  console.log('Submitting billing form:', billingForm);
+                  
                   if (activatingVehicleId) {
+                    console.log('Updating payment method for vehicle:', activatingVehicleId);
                     await updatePaymentMethod(activatingVehicleId, billingForm);
+                    console.log('Payment method updated successfully');
+                    
+                    console.log('Activating vehicle:', activatingVehicleId);
                     await setVehicleActive(activatingVehicleId, true);
+                    console.log('Vehicle activated successfully');
                   } else {
                     throw new Error('No vehicle ID found for activation');
                   }
