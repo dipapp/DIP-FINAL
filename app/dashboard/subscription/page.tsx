@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { applyRetentionOffer, requestMembershipCancellation, updatePaymentMethod } from '@/lib/firebase/memberActions';
+import { updatePaymentMethod } from '@/lib/firebase/memberActions';
 import BackButton from '@/components/BackButton';
 
 export default function ManageSubscriptionPage() {
