@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { subscribeUsers, subscribeVehicles, subscribeClaims, subscribeTowEvents } from '@/lib/firebase/adminActions';
 import BackButton from '@/components/BackButton';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AdminHome() {
+function AdminHomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<any[]>([]);
@@ -406,6 +406,14 @@ export default function AdminHome() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminHome() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminHomeContent />
+    </Suspense>
   );
 }
 

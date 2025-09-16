@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase/client';
 import { updatePaymentMethod } from '@/lib/firebase/memberActions';
 import BackButton from '@/components/BackButton';
 
-export default function ManageSubscriptionPage() {
+function ManageSubscriptionPageContent() {
   const params = useSearchParams();
   const vehicleId = params.get('vehicleId');
   const [showCancel, setShowCancel] = useState(false);
@@ -395,6 +395,14 @@ export default function ManageSubscriptionPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ManageSubscriptionPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ManageSubscriptionPageContent />
+    </Suspense>
   );
 }
 

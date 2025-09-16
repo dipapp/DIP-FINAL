@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { addVehicle, setVehicleActive, subscribeMyVehicles, updateVehicle, uploadMyVehiclePhoto, updatePaymentMethod, deleteVehicle, deleteVehiclePhoto } from '@/lib/firebase/memberActions';
@@ -62,7 +62,7 @@ const US_STATES: { code: string; name: string }[] = [
   { code: 'WY', name: 'Wyoming' },
 ];
 
-export default function MyVehiclesPage() {
+function MyVehiclesPageContent() {
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -748,6 +748,14 @@ export default function MyVehiclesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyVehiclesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MyVehiclesPageContent />
+    </Suspense>
   );
 }
 
