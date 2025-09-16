@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Always create a new subscription via Checkout Session for this specific vehicle
 
-    const origin = (req.headers.origin as string) || `https://${req.headers.host}` || 'http://localhost:3000';
+    const origin = (req.headers.origin as string) || `https://${req.headers.host}` || 'https://www.dipmembers.com';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
