@@ -7,29 +7,29 @@ import { useRouter } from 'next/navigation';
 const features = [
   {
     icon: '🛡️',
-    title: 'Complete Protection',
-    description: 'Your deductible is fully covered when accidents happen',
+    title: 'Complete Support',
+    description: 'Full assistance when unexpected incidents occur',
     color: '#10b981', // green
     bgColor: 'rgba(16, 185, 129, 0.1)',
   },
   {
     icon: '💵',
     title: 'Just $20/month',
-    description: 'Affordable monthly coverage that saves you thousands',
+    description: 'Affordable monthly membership that provides peace of mind',
     color: '#3b82f6', // blue
     bgColor: 'rgba(59, 130, 246, 0.1)',
   },
   {
     icon: '⚡',
-    title: 'Instant Claims & Roadside Accident Towing',
-    description: 'File claims in minutes with our streamlined process',
+    title: 'Instant Support & Roadside Assistance',
+    description: 'Get help in minutes with our streamlined process',
     color: '#f59e0b', // orange/amber
     bgColor: 'rgba(245, 158, 11, 0.1)',
   },
   {
     icon: '✅',
     title: 'Trusted Partner Network',
-    description: 'Guaranteed quality repairs at our certified shops only',
+    description: 'Quality service at our certified partner locations',
     color: '#8b5cf6', // purple
     bgColor: 'rgba(139, 92, 246, 0.1)',
   },
@@ -62,9 +62,9 @@ export default function HomePage() {
             alt="DIP Logo" 
             className="h-10 w-auto mx-auto" 
           />
-          <h2 className="text-lg font-light text-gray-900">deductible impact protection</h2>
+          <h2 className="text-lg font-light text-gray-900">driver impact protection</h2>
           <p className="text-base text-gray-700">
-            Drive with confidence knowing you're protected
+            Drive with confidence knowing you're supported
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export default function HomePage() {
         {/* CTA Section */}
         <div className="space-y-3 text-center">
           <div className="space-y-1">
-            <h2 className="text-xl font-bold text-gray-900">Ready to get protected?</h2>
+            <h2 className="text-xl font-bold text-gray-900">Ready to get started?</h2>
             <p className="text-sm text-gray-600">
               Join thousands of drivers who trust DIP
             </p>
