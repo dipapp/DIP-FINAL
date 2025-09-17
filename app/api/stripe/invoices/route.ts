@@ -4,6 +4,10 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
+// Force this route to be dynamic since it uses request headers
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
   try {
@@ -42,9 +46,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil',
 });
-
-// Force this route to be dynamic since it uses request headers
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
