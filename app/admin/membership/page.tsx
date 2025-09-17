@@ -31,8 +31,8 @@ export default function AdminMembershipPage() {
     activeMemberships: vehicles.filter(v => v.isActive).length,
     pendingPayments: vehicles.filter(v => !v.isActive && v.ownerEmail).length, // Inactive vehicles with owners
     cancelledMemberships: 0, // No cancelled status in current system
-    monthlyRevenue: vehicles.filter(v => v.isActive).length * 20.00,
-    totalRevenue: users.filter(u => u.isActive).length * 20.00 * 6, // Assuming average 6 months
+    monthlyRevenue: vehicles.filter(v => v.isActive).length * 20,
+    totalRevenue: users.filter(u => u.isActive).length * 20 * 6, // Assuming average 6 months
   };
 
   const tabs = [
@@ -232,7 +232,7 @@ export default function AdminMembershipPage() {
                            <td className="px-6 py-4 text-gray-600">
                              {vehicle.lastUpdated ? new Date(vehicle.lastUpdated.seconds * 1000).toLocaleDateString() : 'N/A'}
                            </td>
-                           <td className="px-6 py-4 text-gray-900">$20.00</td>
+                           <td className="px-6 py-4 text-gray-900">$20</td>
                            <td className="px-6 py-4">
                              <button 
                                className="btn btn-secondary btn-sm"
@@ -343,7 +343,7 @@ export default function AdminMembershipPage() {
                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                        <span>Average Revenue Per User</span>
                      </div>
-                     <span className="font-semibold text-purple-600 text-lg">$20.00</span>
+                     <span className="font-semibold text-purple-600 text-lg">$20</span>
                    </div>
                  </div>
                </div>
@@ -457,7 +457,7 @@ export default function AdminMembershipPage() {
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">Monthly Fee:</span>
-                    <div className="font-medium">$20.00</div>
+                    <div className="font-medium">$20</div>
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">Last Updated:</span>

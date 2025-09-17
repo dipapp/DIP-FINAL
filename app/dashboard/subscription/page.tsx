@@ -80,7 +80,7 @@ function ManageSubscriptionPageContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900">DIP Membership</p>
-                <p className="text-sm text-gray-600">$20.00/month</p>
+                <p className="text-sm text-gray-600">$20/month</p>
               </div>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Active
