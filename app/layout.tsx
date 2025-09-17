@@ -6,13 +6,13 @@ export const metadata = {
   description: 'Membership for California drivers',
   icons: {
     icon: [
-      { url: '/favicon.ico?v=3' },
-      { url: '/favicon-16x16.png?v=3', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png?v=3', sizes: '32x32', type: 'image/png' },
-      { url: '/dip-logo.png?v=3', sizes: 'any', type: 'image/png' },
+      { url: '/favicon.ico?v=4' },
+      { url: '/favicon-16x16.png?v=4', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png?v=4', sizes: '32x32', type: 'image/png' },
+      { url: '/dip-logo.png?v=4', sizes: 'any', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico?v=3',
-    apple: '/dip-logo.png?v=3',
+    shortcut: '/favicon.ico?v=4',
+    apple: '/dip-logo.png?v=4',
   },
 };
 
@@ -20,13 +20,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.ico?v=3" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=3" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=3" />
-        <link rel="icon" type="image/png" href="/dip-logo.png?v=3" />
-        <link rel="shortcut icon" href="/favicon.ico?v=3" />
-        <link rel="apple-touch-icon" href="/dip-logo.png?v=3" />
-        <meta name="msapplication-TileImage" content="/dip-logo.png?v=3" />
+        <link rel="preload" href="/favicon.ico?v=4" as="image" />
+        <link rel="preload" href="/dip-logo.png?v=4" as="image" />
+        <link rel="icon" href="/favicon.ico?v=4" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=4" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=4" />
+        <link rel="icon" type="image/png" href="/dip-logo.png?v=4" />
+        <link rel="shortcut icon" href="/favicon.ico?v=4" />
+        <link rel="apple-touch-icon" href="/dip-logo.png?v=4" />
+        <meta name="msapplication-TileImage" content="/dip-logo.png?v=4" />
+        <meta name="theme-color" content="#3b82f6" />
       </head>
       <body>
         <Navbar />
