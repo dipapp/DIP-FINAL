@@ -83,18 +83,7 @@ function ManageSubscriptionPageContent() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="card">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-semibold">Current Plan</h2>
-            {vehicle && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                vehicle.isActive 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {vehicle.isActive ? 'Active' : 'Inactive'}
-              </span>
-            )}
-          </div>
+          <h2 className="font-semibold mb-2">Current Plan</h2>
           <p className="text-muted mb-4">DIP Membership</p>
           <div className="space-x-3">
             <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
