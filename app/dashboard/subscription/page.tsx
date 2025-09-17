@@ -5,27 +5,19 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { updatePaymentMethod } from '@/lib/firebase/memberActions';
+import { auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
+import BillingInterface from '@/components/BillingInterface';
 
 function ManageSubscriptionPageContent() {
   const params = useSearchParams();
   const vehicleId = params.get('vehicleId');
   const [showCancel, setShowCancel] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showBilling, setShowBilling] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<any>(null);
   const [loadingVehicle, setLoadingVehicle] = useState(true);
-  const [paymentForm, setPaymentForm] = useState({
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
-    name: '',
-    streetAddress: '',
-    city: '',
-    state: '',
-    zip: ''
-  });
 
   useEffect(() => {
     async function fetchVehicle() {
@@ -84,19 +76,72 @@ function ManageSubscriptionPageContent() {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="card">
           <h2 className="font-semibold mb-2">Current Plan</h2>
-          <p className="text-muted mb-4">DIP Membership</p>
-          <div className="space-x-3">
-            <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
-            <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">DIP Membership</p>
+                <p className="text-sm text-gray-600">$20/month</p>
+              </div>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Active
+              </span>
+            </div>
+            <div className="pt-2 border-t border-gray-200">
+              <button 
+                className="btn btn-secondary w-full" 
+                onClick={async () => {
+                  if (!vehicleId) {
+                    alert('Vehicle ID not found');
+                    return;
+                  }
+
+                  try {
+                    const user = auth.currentUser;
+                    if (!user) {
+                      alert('Please sign in to update payment method');
+                      return;
+                    }
+
+                    // Create Stripe customer portal session for payment method updates
+                    const response = await fetch('/api/stripe/portal', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await user.getIdToken()}`,
+                      },
+                      body: JSON.stringify({ vehicleId }),
+                    });
+
+                    if (!response.ok) {
+                      const error = await response.json();
+                      throw new Error(error.error || 'Failed to create portal session');
+                    }
+
+                    const { url } = await response.json();
+                    window.location.href = url;
+                  } catch (error) {
+                    console.error('Error opening payment portal:', error);
+                    alert('Failed to open payment portal. Please try again.');
+                  }
+                }}
+              >
+                Update Payment Method
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="card">
-          <h2 className="font-semibold mb-2">Actions</h2>
-          <p className="text-muted mb-4">Contact support or view billing history.</p>
+          <h2 className="font-semibold mb-2">Billing & Invoices</h2>
+          <p className="text-muted mb-4">View and download your payment history.</p>
           <div className="space-x-3">
+            <button 
+              className="btn btn-primary" 
+              onClick={() => setShowBilling(true)}
+            >
+              📄 View Invoices
+            </button>
             <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
-            <a className="btn btn-primary" href="mailto:support@dipmembers.com">Contact Support</a>
           </div>
         </div>
       </div>
@@ -255,144 +300,13 @@ function ManageSubscriptionPageContent() {
         </div>
       )}
 
-      {/* Payment Method Modal */}
-      {showPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="card w-full max-w-md bg-white">
-            <h3 className="text-xl font-semibold mb-4">Update Payment Method</h3>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setBusy('payment');
-                try {
-                  if (vehicleId) {
-                    await updatePaymentMethod(vehicleId, paymentForm);
-                  }
-                  setMessage('💳 Payment method updated successfully!');
-                  setShowPayment(false);
-                  setPaymentForm({
-                    cardNumber: '',
-                    expiry: '',
-                    cvv: '',
-                    name: '',
-                    streetAddress: '',
-                    city: '',
-                    state: '',
-                    zip: ''
-                  });
-                } finally {
-                  setBusy(null);
-                }
-              }}
-              className="space-y-4"
-            >
-              <div>
-                <label className="label">Cardholder Name</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="John Doe"
-                  value={paymentForm.name}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, name: e.target.value })}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="label">Card Number</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="1234 5678 9012 3456"
-                  value={paymentForm.cardNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ');
-                    if (value.length <= 19) setPaymentForm({ ...paymentForm, cardNumber: value });
-                  }}
-                  required
-                />
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Expiry Date</label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="MM/YY"
-                    value={paymentForm.expiry}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, '');
-                      if (value.length >= 2) {
-                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                      }
-                      if (value.length <= 5) setPaymentForm({ ...paymentForm, expiry: value });
-                    }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label">CVV</label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="123"
-                    value={paymentForm.cvv}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 4) setPaymentForm({ ...paymentForm, cvv: value });
-                    }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="label">ZIP Code</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="90210"
-                  value={paymentForm.zip}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, zip: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowPayment(false)}
-                  disabled={busy === 'payment'}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={busy === 'payment'}
-                >
-                  {busy === 'payment' ? (
-                    <>
-                      <div className="loading-spinner mr-2"></div>
-                      Updating...
-                    </>
-                  ) : (
-                    'Update Payment Method'
-                  )}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <span>🔒</span>
-                <span>Your payment information is secure and encrypted</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Custom Billing Interface */}
+      {showBilling && vehicleId && (
+        <BillingInterface 
+          vehicleId={vehicleId} 
+          onClose={() => setShowBilling(false)} 
+        />
       )}
     </div>
   );
