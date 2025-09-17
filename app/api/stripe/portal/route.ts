@@ -6,47 +6,93 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+  try {
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY_B64) {
+      console.error('Missing Firebase Admin environment variables:', {
+        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY_B64: !!process.env.FIREBASE_PRIVATE_KEY_B64
+      });
+      throw new Error('Missing Firebase Admin environment variables');
+    }
+
+    const privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8');
+
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      }),
+    });
+    console.log('Firebase Admin initialized successfully');
+  } catch (error) {
+    console.error('Firebase Admin initialization error:', error);
+    throw error;
+  }
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY || !process.env.NEXT_PUBLIC_APP_URL) {
+  console.error('Missing Stripe environment variables:', {
+    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+    NEXT_PUBLIC_APP_URL: !!process.env.NEXT_PUBLIC_APP_URL
+  });
+  throw new Error('Missing Stripe environment variables');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-08-27.basil',
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Missing or invalid authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await getAuth().verifyIdToken(token);
-    const userId = decodedToken.uid;
-
-    const { vehicleId } = await request.json();
+    console.log('Stripe portal request received');
     
+    const { vehicleId } = await request.json();
+    console.log('Request data:', { vehicleId });
+
     if (!vehicleId) {
+      console.log('Missing vehicleId');
       return NextResponse.json(
         { error: 'Vehicle ID is required' },
         { status: 400 }
       );
     }
 
+    // Verify the user is authenticated
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No authorization header');
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    console.log('Verifying ID token...');
+    
+    let decodedToken;
+    try {
+      decodedToken = await getAuth().verifyIdToken(idToken);
+      console.log('Token verified for user:', decodedToken.uid);
+    } catch (error) {
+      console.error('Token verification error:', error);
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      );
+    }
+
+    const userId = decodedToken.uid;
+
     // Get vehicle data to find Stripe customer ID
+    console.log('Fetching vehicle from Firestore...');
     const db = getFirestore();
     const vehicleDoc = await db.collection('vehicles').doc(vehicleId).get();
     
     if (!vehicleDoc.exists) {
+      console.log('Vehicle not found:', vehicleId);
       return NextResponse.json(
         { error: 'Vehicle not found' },
         { status: 404 }
@@ -55,6 +101,7 @@ export async function POST(request: NextRequest) {
 
     const vehicleData = vehicleDoc.data();
     if (!vehicleData || vehicleData.ownerId !== userId) {
+      console.log('Vehicle ownership mismatch');
       return NextResponse.json(
         { error: 'Unauthorized - vehicle does not belong to user' },
         { status: 403 }
@@ -63,18 +110,21 @@ export async function POST(request: NextRequest) {
 
     const stripeCustomerId = vehicleData.stripeCustomerId;
     if (!stripeCustomerId) {
+      console.log('No Stripe customer ID found for vehicle:', vehicleId);
       return NextResponse.json(
         { error: 'No Stripe customer found for this vehicle' },
         { status: 404 }
       );
     }
 
+    console.log('Creating Stripe customer portal session...');
     // Create Stripe customer portal session
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?vehicleId=${vehicleId}`,
     });
 
+    console.log('Stripe portal session created:', portalSession.id);
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
     console.error('Stripe portal error:', error);
