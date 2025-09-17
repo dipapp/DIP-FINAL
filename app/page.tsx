@@ -64,7 +64,7 @@ export default function HomePage() {
           />
           <h2 className="text-lg font-light text-gray-900">driver impact protection</h2>
           <p className="text-base text-gray-700">
-            Drive with confidence knowing you're supported
+            Drive with confidence knowing you're protected
           </p>
         </div>
 
