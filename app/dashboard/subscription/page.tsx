@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { updatePaymentMethod } from '@/lib/firebase/memberActions';
+import { auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 
 function ManageSubscriptionPageContent() {
@@ -87,16 +88,64 @@ function ManageSubscriptionPageContent() {
           <p className="text-muted mb-4">DIP Membership</p>
           <div className="space-x-3">
             <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
-            <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
           </div>
         </div>
 
         <div className="card">
-          <h2 className="font-semibold mb-2">Actions</h2>
-          <p className="text-muted mb-4">Contact support or view billing history.</p>
+          <h2 className="font-semibold mb-2">Billing & Invoices</h2>
+          <p className="text-muted mb-4">View and download your payment history.</p>
           <div className="space-x-3">
+            <button 
+              className="btn btn-primary" 
+              disabled={busy === 'portal'}
+              onClick={async () => {
+                if (!vehicleId) {
+                  alert('Vehicle ID not found');
+                  return;
+                }
+
+                setBusy('portal');
+                try {
+                  const user = auth.currentUser;
+                  if (!user) {
+                    alert('Please sign in to view invoices');
+                    return;
+                  }
+
+                  const response = await fetch('/api/stripe/portal', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${await user.getIdToken()}`,
+                    },
+                    body: JSON.stringify({ vehicleId }),
+                  });
+
+                  if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to create portal session');
+                  }
+
+                  const { url } = await response.json();
+                  window.location.href = url;
+                } catch (error) {
+                  console.error('Error opening portal:', error);
+                  alert('Failed to open billing portal. Please try again.');
+                } finally {
+                  setBusy(null);
+                }
+              }}
+            >
+              {busy === 'portal' ? (
+                <>
+                  <div className="loading-spinner mr-2"></div>
+                  Opening...
+                </>
+              ) : (
+                '📄 View Invoices'
+              )}
+            </button>
             <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
-            <a className="btn btn-primary" href="mailto:support@dipmembers.com">Contact Support</a>
           </div>
         </div>
       </div>
