@@ -7,12 +7,14 @@ import { db } from '@/lib/firebase/client';
 import { updatePaymentMethod } from '@/lib/firebase/memberActions';
 import { auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
+import BillingInterface from '@/components/BillingInterface';
 
 function ManageSubscriptionPageContent() {
   const params = useSearchParams();
   const vehicleId = params.get('vehicleId');
   const [showCancel, setShowCancel] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showBilling, setShowBilling] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<any>(null);
@@ -97,67 +99,9 @@ function ManageSubscriptionPageContent() {
           <div className="space-x-3">
             <button 
               className="btn btn-primary" 
-              disabled={busy === 'portal'}
-              onClick={async () => {
-                if (!vehicleId) {
-                  alert('Vehicle ID not found');
-                  return;
-                }
-
-                setBusy('portal');
-                try {
-                  const user = auth.currentUser;
-                  if (!user) {
-                    alert('Please sign in to view invoices');
-                    return;
-                  }
-
-                  const response = await fetch('/api/stripe/portal', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${await user.getIdToken()}`,
-                    },
-                    body: JSON.stringify({ vehicleId }),
-                  });
-
-                  if (!response.ok) {
-                    const error = await response.json();
-                    
-                    // Handle specific portal configuration error
-                    if (error.error === 'Billing portal not configured') {
-                      setMessage(`⚠️ ${error.message} Contact ${error.supportEmail} for assistance.`);
-                      
-                      // Show a temporary fallback option
-                      setTimeout(() => {
-                        if (confirm('Would you like to access your billing information directly through Stripe? This will open a new tab.')) {
-                          window.open('https://billing.stripe.com/p/login', '_blank');
-                        }
-                      }, 2000);
-                      return;
-                    }
-                    
-                    throw new Error(error.error || 'Failed to create portal session');
-                  }
-
-                  const { url } = await response.json();
-                  window.location.href = url;
-                } catch (error) {
-                  console.error('Error opening portal:', error);
-                  alert('Failed to open billing portal. Please try again.');
-                } finally {
-                  setBusy(null);
-                }
-              }}
+              onClick={() => setShowBilling(true)}
             >
-              {busy === 'portal' ? (
-                <>
-                  <div className="loading-spinner mr-2"></div>
-                  Opening...
-                </>
-              ) : (
-                '📄 View Invoices'
-              )}
+              📄 View Invoices
             </button>
             <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
           </div>
@@ -456,6 +400,14 @@ function ManageSubscriptionPageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Custom Billing Interface */}
+      {showBilling && vehicleId && (
+        <BillingInterface 
+          vehicleId={vehicleId} 
+          onClose={() => setShowBilling(false)} 
+        />
       )}
     </div>
   );
