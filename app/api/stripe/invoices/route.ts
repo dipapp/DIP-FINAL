@@ -145,9 +145,9 @@ export async function GET(request: NextRequest) {
         description: invoice.description || 'DIP Membership',
         period_start: invoice.period_start,
         period_end: invoice.period_end,
-        subscription: invoice.subscription ? {
-          id: typeof invoice.subscription === 'string' ? invoice.subscription : (invoice.subscription as any)?.id || null,
-          status: typeof invoice.subscription === 'string' ? null : (invoice.subscription as any)?.status || null
+        subscription: (invoice as any).subscription ? {
+          id: typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : (invoice as any).subscription?.id || null,
+          status: typeof (invoice as any).subscription === 'string' ? null : (invoice as any).subscription?.status || null
         } : null
       }));
 
