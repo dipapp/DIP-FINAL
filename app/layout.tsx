@@ -6,10 +6,11 @@ export const metadata = {
   description: 'Membership for California drivers',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/dip-logo.png', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/dip-logo.png', sizes: 'any', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/dip-logo.png',
     apple: '/dip-logo.png',
   },
 };
@@ -17,6 +18,13 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" href="/dip-logo.png" />
+        <link rel="shortcut icon" href="/dip-logo.png" />
+        <link rel="apple-touch-icon" href="/dip-logo.png" />
+      </head>
       <body>
         <Navbar />
         <main className="container-app py-4">{children}</main>
