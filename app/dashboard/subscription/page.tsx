@@ -87,9 +87,19 @@ function ManageSubscriptionPageContent() {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="card">
           <h2 className="font-semibold mb-2">Current Plan</h2>
-          <p className="text-muted mb-4">DIP Membership</p>
-          <div className="space-x-3">
-            <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">DIP Membership</p>
+                <p className="text-sm text-gray-600">$20.00/month</p>
+              </div>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Active
+              </span>
+            </div>
+            <div className="pt-2 border-t border-gray-200">
+              <button className="btn btn-secondary w-full" onClick={() => setShowPayment(true)}>Update Payment Method</button>
+            </div>
           </div>
         </div>
 
