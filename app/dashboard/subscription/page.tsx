@@ -123,6 +123,20 @@ function ManageSubscriptionPageContent() {
 
                   if (!response.ok) {
                     const error = await response.json();
+                    
+                    // Handle specific portal configuration error
+                    if (error.error === 'Billing portal not configured') {
+                      setMessage(`⚠️ ${error.message} Contact ${error.supportEmail} for assistance.`);
+                      
+                      // Show a temporary fallback option
+                      setTimeout(() => {
+                        if (confirm('Would you like to access your billing information directly through Stripe? This will open a new tab.')) {
+                          window.open('https://billing.stripe.com/p/login', '_blank');
+                        }
+                      }, 2000);
+                      return;
+                    }
+                    
                     throw new Error(error.error || 'Failed to create portal session');
                   }
 

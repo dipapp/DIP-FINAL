@@ -118,14 +118,35 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Creating Stripe customer portal session...');
-    // Create Stripe customer portal session
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?vehicleId=${vehicleId}`,
-    });
+    
+    try {
+      // Create Stripe customer portal session
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: stripeCustomerId,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?vehicleId=${vehicleId}`,
+      });
 
-    console.log('Stripe portal session created:', portalSession.id);
-    return NextResponse.json({ url: portalSession.url });
+      console.log('Stripe portal session created:', portalSession.id);
+      return NextResponse.json({ url: portalSession.url });
+    } catch (portalError: any) {
+      console.error('Stripe portal creation failed:', portalError);
+      
+      // If portal configuration is missing, provide a helpful error message
+      if (portalError.type === 'StripeInvalidRequestError' && 
+          portalError.message?.includes('No configuration provided')) {
+        return NextResponse.json(
+          { 
+            error: 'Billing portal not configured', 
+            message: 'The billing portal needs to be configured in your Stripe dashboard. Please contact support for assistance with viewing your invoices.',
+            supportEmail: 'support@dipmembers.com'
+          },
+          { status: 503 }
+        );
+      }
+      
+      // Re-throw other errors to be handled by the outer catch
+      throw portalError;
+    }
   } catch (error) {
     console.error('Stripe portal error:', error);
     return NextResponse.json(
