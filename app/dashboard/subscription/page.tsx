@@ -82,67 +82,99 @@ function ManageSubscriptionPageContent() {
                 <p className="font-medium text-gray-900">DIP Membership</p>
                 <p className="text-sm text-gray-600">$20/month</p>
               </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                vehicle?.isActive 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {vehicle?.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div className="pt-2 border-t border-gray-200">
-              <button 
-                className="btn btn-secondary w-full" 
-                onClick={async () => {
-                  if (!vehicleId) {
-                    alert('Vehicle ID not found');
-                    return;
-                  }
-
-                  try {
-                    const user = auth.currentUser;
-                    if (!user) {
-                      alert('Please sign in to update payment method');
+              {vehicle?.isActive ? (
+                <button 
+                  className="btn btn-secondary w-full" 
+                  onClick={async () => {
+                    if (!vehicleId) {
+                      alert('Vehicle ID not found');
                       return;
                     }
 
-                    // Create Stripe customer portal session for payment method updates
-                    const response = await fetch('/api/stripe/portal', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await user.getIdToken()}`,
-                      },
-                      body: JSON.stringify({ vehicleId }),
-                    });
+                    try {
+                      const user = auth.currentUser;
+                      if (!user) {
+                        alert('Please sign in to update payment method');
+                        return;
+                      }
 
-                    if (!response.ok) {
-                      const error = await response.json();
-                      throw new Error(error.error || 'Failed to create portal session');
+                      // Create Stripe customer portal session for payment method updates
+                      const response = await fetch('/api/stripe/portal', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${await user.getIdToken()}`,
+                        },
+                        body: JSON.stringify({ vehicleId }),
+                      });
+
+                      if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Failed to create portal session');
+                      }
+
+                      const { url } = await response.json();
+                      window.location.href = url;
+                    } catch (error) {
+                      console.error('Error opening payment portal:', error);
+                      alert('Failed to open payment portal. Please try again.');
                     }
-
-                    const { url } = await response.json();
-                    window.location.href = url;
-                  } catch (error) {
-                    console.error('Error opening payment portal:', error);
-                    alert('Failed to open payment portal. Please try again.');
-                  }
-                }}
-              >
-                Update Payment Method
-              </button>
+                  }}
+                >
+                  Update Payment Method
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600 text-center">
+                    No active subscription. Activate your membership to get started.
+                  </p>
+                  <button 
+                    className="btn btn-primary w-full" 
+                    onClick={() => {
+                      // Redirect to checkout page with vehicle ID
+                      window.location.href = `/dashboard/vehicles?activate=${vehicleId}`;
+                    }}
+                  >
+                    Activate Subscription
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         <div className="card">
           <h2 className="font-semibold mb-2">Billing & Invoices</h2>
-          <p className="text-muted mb-4">View and download your payment history.</p>
-          <div className="space-x-3">
-            <button 
-              className="btn btn-primary" 
-              onClick={() => setShowBilling(true)}
-            >
-              📄 View Invoices
-            </button>
-            <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
-          </div>
+          {vehicle?.isActive ? (
+            <>
+              <p className="text-muted mb-4">View and download your payment history.</p>
+              <div className="space-x-3">
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => setShowBilling(true)}
+                >
+                  📄 View Invoices
+                </button>
+                <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-muted mb-4">No billing history available. Activate your subscription to start generating invoices.</p>
+              <div className="space-x-3">
+                <Link href="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
