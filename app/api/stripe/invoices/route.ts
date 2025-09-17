@@ -45,55 +45,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Stripe invoices request received');
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Missing or invalid authorization header' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.split('Bearer ')[1];
     
+    // Verify the Firebase token
+    const decodedToken = await getAuth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+
+    // Get vehicleId from query parameters
     const { searchParams } = new URL(request.url);
     const vehicleId = searchParams.get('vehicleId');
     
-    console.log('Request data:', { vehicleId });
-
     if (!vehicleId) {
-      console.log('Missing vehicleId');
       return NextResponse.json(
         { error: 'Vehicle ID is required' },
         { status: 400 }
       );
     }
 
-    // Verify the user is authenticated
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('No authorization header');
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const idToken = authHeader.split('Bearer ')[1];
-    console.log('Verifying ID token...');
-    
-    let decodedToken;
-    try {
-      decodedToken = await getAuth().verifyIdToken(idToken);
-      console.log('Token verified for user:', decodedToken.uid);
-    } catch (error) {
-      console.error('Token verification error:', error);
-      return NextResponse.json(
-        { error: 'Invalid authentication token' },
-        { status: 401 }
-      );
-    }
-
-    const userId = decodedToken.uid;
-
-    // Get vehicle data to find Stripe customer ID
-    console.log('Fetching vehicle from Firestore...');
+    // Verify vehicle ownership
     const db = getFirestore();
     const vehicleDoc = await db.collection('vehicles').doc(vehicleId).get();
     
     if (!vehicleDoc.exists) {
-      console.log('Vehicle not found:', vehicleId);
       return NextResponse.json(
         { error: 'Vehicle not found' },
         { status: 404 }
@@ -102,7 +84,6 @@ export async function GET(request: NextRequest) {
 
     const vehicleData = vehicleDoc.data();
     if (!vehicleData || vehicleData.ownerId !== userId) {
-      console.log('Vehicle ownership mismatch');
       return NextResponse.json(
         { error: 'Unauthorized - vehicle does not belong to user' },
         { status: 403 }
@@ -112,58 +93,24 @@ export async function GET(request: NextRequest) {
     const stripeCustomerId = vehicleData.stripeCustomerId;
     if (!stripeCustomerId) {
       console.log('No Stripe customer ID found for vehicle:', vehicleId);
-      return NextResponse.json(
-        { error: 'No Stripe customer found for this vehicle' },
-        { status: 404 }
-      );
+      return NextResponse.json({ invoices: [] });
     }
 
-    console.log('Fetching Stripe invoices...');
+    console.log('Fetching invoices for customer:', stripeCustomerId);
     
-    try {
-      // Fetch invoices from Stripe
-      const invoices = await stripe.invoices.list({
-        customer: stripeCustomerId,
-        limit: 20, // Get last 20 invoices
-        expand: ['data.subscription', 'data.payment_intent']
-      });
+    // Fetch invoices from Stripe
+    const invoices = await stripe.invoices.list({
+      customer: stripeCustomerId,
+      limit: 50, // Limit to last 50 invoices
+    });
 
-      // Format the invoices for the frontend
-      const formattedInvoices = invoices.data.map(invoice => ({
-        id: invoice.id,
-        number: invoice.number,
-        status: invoice.status,
-        amount_paid: invoice.amount_paid,
-        amount_due: invoice.amount_due,
-        total: invoice.total,
-        currency: invoice.currency,
-        created: invoice.created,
-        due_date: invoice.due_date,
-        paid_at: invoice.status_transitions?.paid_at,
-        hosted_invoice_url: invoice.hosted_invoice_url,
-        invoice_pdf: invoice.invoice_pdf,
-        description: invoice.description || 'DIP Membership',
-        period_start: invoice.period_start,
-        period_end: invoice.period_end,
-        subscription: (invoice as any).subscription ? {
-          id: typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : (invoice as any).subscription?.id || null,
-          status: typeof (invoice as any).subscription === 'string' ? null : (invoice as any).subscription?.status || null
-        } : null
-      }));
-
-      console.log(`Found ${formattedInvoices.length} invoices for customer ${stripeCustomerId}`);
-      return NextResponse.json({ invoices: formattedInvoices });
-      
-    } catch (stripeError: any) {
-      console.error('Stripe invoices fetch failed:', stripeError);
-      return NextResponse.json(
-        { 
-          error: 'Failed to fetch invoices', 
-          details: stripeError.message || 'Unknown error'
-        },
-        { status: 500 }
-      );
-    }
+    console.log(`Found ${invoices.data.length} invoices for customer ${stripeCustomerId}`);
+    
+    return NextResponse.json({ 
+      invoices: invoices.data,
+      has_more: invoices.has_more 
+    });
+    
   } catch (error) {
     console.error('Stripe invoices error:', error);
     return NextResponse.json(
