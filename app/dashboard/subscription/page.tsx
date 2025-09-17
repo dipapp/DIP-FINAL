@@ -98,7 +98,9 @@ function ManageSubscriptionPageContent() {
           <p className="text-muted mb-4">DIP Membership</p>
           <div className="space-x-3">
             <button className="btn btn-secondary" onClick={() => setShowPayment(true)}>Update Payment Method</button>
-            <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
+            {vehicle?.isActive && (
+              <button className="btn btn-danger" onClick={() => setShowCancel(true)}>Cancel Membership</button>
+            )}
           </div>
         </div>
 
