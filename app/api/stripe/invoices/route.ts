@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Stripe invoices request received');
     
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const vehicleId = searchParams.get('vehicleId');
     
     console.log('Request data:', { vehicleId });
