@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
         period_start: invoice.period_start,
         period_end: invoice.period_end,
         subscription: invoice.subscription ? {
-          id: typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id,
-          status: typeof invoice.subscription === 'string' ? null : invoice.subscription.status
+          id: typeof invoice.subscription === 'string' ? invoice.subscription : (invoice.subscription as any)?.id || null,
+          status: typeof invoice.subscription === 'string' ? null : (invoice.subscription as any)?.status || null
         } : null
       }));
 
