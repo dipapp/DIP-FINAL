@@ -4,6 +4,14 @@ import Navbar from '@/components/Navbar'
 export const metadata = {
   title: 'Dip Members',
   description: 'Membership for California drivers',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/dip-logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/dip-logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
