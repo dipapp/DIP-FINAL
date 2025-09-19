@@ -1,281 +1,215 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { subscribeVehicles, uploadVehiclePhoto, updateVehicleAdmin } from '@/lib/firebase/adminActions';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import BackButton from '@/components/BackButton';
 
-type Vehicle = {
+type AdminVehicle = {
   id: string;
   make: string;
   model: string;
-  year: string;
+  year: number;
+  licensePlate: string;
+  state: string;
+  vin: string;
+  color: string;
   ownerId: string;
   ownerEmail: string;
-  vin?: string;
-  licensePlate?: string;
-  state?: string;
-  color?: string;
-  isActive?: boolean;
-  lastUpdated?: any;
+  isActive: boolean;
+  createdAt: any;
+  updatedAt: any;
+  photos?: string[];
 };
 
 export default function AdminVehiclesPage() {
-  const router = useRouter();
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicles, setVehicles] = useState<AdminVehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingVehicle, setEditingVehicle] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Vehicle>>({});
-  const [saving, setSaving] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
-    const unsub = subscribeVehicles((rows) => {
-      setVehicles(rows as Vehicle[]);
+    const unsub = subscribeVehicles((vehicleData: any[]) => {
+      setVehicles(vehicleData as AdminVehicle[]);
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
-  const startEditing = (vehicle: Vehicle) => {
-    setEditingVehicle(vehicle.id);
-    setEditForm({
-      vin: vehicle.vin || '',
-      licensePlate: vehicle.licensePlate || '',
-      state: vehicle.state || '',
-      color: vehicle.color || '',
-    });
-  };
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const matchesSearch = !searchTerm || 
+      vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.ownerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filterStatus === 'all' || 
+      (filterStatus === 'active' && vehicle.isActive) ||
+      (filterStatus === 'inactive' && !vehicle.isActive);
+    
+    return matchesSearch && matchesStatus;
+  });
 
-  const saveChanges = async (vehicleId: string) => {
-    setSaving(vehicleId);
-    try {
-      await updateVehicleAdmin(vehicleId, editForm);
-      setEditingVehicle(null);
-      setEditForm({});
-    } catch (error) {
-      console.error('Error updating vehicle:', error);
-      alert('Failed to update vehicle');
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  const cancelEditing = () => {
-    setEditingVehicle(null);
-    setEditForm({});
-  };
-
-  const toggleActive = async (vehicleId: string, currentStatus: boolean) => {
-    setSaving(vehicleId);
+  const handleToggleActive = async (vehicleId: string, currentStatus: boolean) => {
     try {
       await updateVehicleAdmin(vehicleId, { isActive: !currentStatus });
     } catch (error) {
-      console.error('Error updating vehicle status:', error);
+      console.error('Error updating vehicle:', error);
       alert('Failed to update vehicle status');
-    } finally {
-      setSaving(null);
     }
   };
 
-  const vehiclesWithMissingInfo = vehicles.filter(v => !v.vin || !v.licensePlate);
-
-  if (loading) return <div className="card">Loading vehicles...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading vehicles...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header with Back Button */}
-      <div className="card">
-        <div className="flex items-center space-x-4 mb-4">
-          <BackButton />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Vehicle Management</h1>
-            <p className="text-muted">Manage all registered vehicles and their information</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">{vehicles.length}</div>
-            <div className="text-sm text-muted">Total Vehicles</div>
-          </div>
-        </div>
-
-        {vehiclesWithMissingInfo.length > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-orange-500">⚠️</span>
-              <div>
-                <p className="font-medium text-orange-800">Incomplete Vehicle Information</p>
-                <p className="text-sm text-orange-600">
-                  {vehiclesWithMissingInfo.length} vehicle(s) are missing VIN or license plate information
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="flex items-center justify-between">
+        <BackButton />
       </div>
 
-      {/* Vehicles Table */}
       <div className="card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-muted border-b">
-              <tr>
-                <th className="py-3 pr-4">Vehicle</th>
-                <th className="py-3 pr-4">Owner</th>
-                <th className="py-3 pr-4">VIN</th>
-                <th className="py-3 pr-4">License Plate</th>
-                <th className="py-3 pr-4">State</th>
-                <th className="py-3 pr-4">Status</th>
-                <th className="py-3 pr-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((vehicle) => (
-                <tr key={vehicle.id} className="table-row">
-                  <td className="py-3 pr-4">
-                    <div className="font-medium">{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                    <div className="text-xs text-muted">{vehicle.color || 'Color not specified'}</div>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <div className="font-medium">{vehicle.ownerEmail}</div>
-                    <div className="text-xs text-muted font-mono">{vehicle.ownerId.slice(-8)}</div>
-                  </td>
-                  <td className="py-3 pr-4">
-                    {editingVehicle === vehicle.id ? (
-                      <input
-                        type="text"
-                        className="input text-xs font-mono"
-                        placeholder="Enter VIN"
-                        value={editForm.vin || ''}
-                        onChange={(e) => setEditForm({ ...editForm, vin: e.target.value.toUpperCase() })}
-                        maxLength={17}
-                      />
-                    ) : (
-                      <div className={`font-mono text-xs ${!vehicle.vin ? 'text-red-500' : ''}`}>
-                        {vehicle.vin || 'Missing VIN'}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-3 pr-4">
-                    {editingVehicle === vehicle.id ? (
-                      <input
-                        type="text"
-                        className="input text-xs font-mono"
-                        placeholder="Enter license plate"
-                        value={editForm.licensePlate || ''}
-                        onChange={(e) => setEditForm({ ...editForm, licensePlate: e.target.value.toUpperCase() })}
-                      />
-                    ) : (
-                      <div className={`font-mono text-xs ${!vehicle.licensePlate ? 'text-red-500' : ''}`}>
-                        {vehicle.licensePlate || 'Missing Plate'}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-3 pr-4">
-                    {editingVehicle === vehicle.id ? (
-                      <select
-                        className="input text-xs"
-                        value={editForm.state || ''}
-                        onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-                      >
-                        <option value="">Select State</option>
-                        <option value="CA">California</option>
-                        <option value="NY">New York</option>
-                        <option value="TX">Texas</option>
-                        <option value="FL">Florida</option>
-                        <option value="IL">Illinois</option>
-                        <option value="PA">Pennsylvania</option>
-                        <option value="OH">Ohio</option>
-                        <option value="GA">Georgia</option>
-                        <option value="NC">North Carolina</option>
-                        <option value="MI">Michigan</option>
-                      </select>
-                    ) : (
-                      <span className="text-xs">{vehicle.state || '—'}</span>
-                    )}
-                  </td>
-                  <td className="py-3 pr-4">
-                    <button
-                      onClick={() => toggleActive(vehicle.id, vehicle.isActive || false)}
-                      disabled={saving === vehicle.id}
-                      className={`badge ${vehicle.isActive ? 'badge-success' : 'badge-error'} cursor-pointer hover:opacity-75 transition-opacity`}
-                    >
-                      {vehicle.isActive ? '✓ Active' : '✖ Inactive'}
-                    </button>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <div className="flex items-center space-x-2">
-                      {editingVehicle === vehicle.id ? (
-                        <>
-                          <button
-                            onClick={() => saveChanges(vehicle.id)}
-                            disabled={saving === vehicle.id}
-                            className="btn btn-success text-xs"
-                          >
-                            {saving === vehicle.id ? (
-                              <>
-                                <div className="loading-spinner mr-1"></div>
-                                Saving...
-                              </>
-                            ) : (
-                              'Save'
-                            )}
-                          </button>
-                          <button
-                            onClick={cancelEditing}
-                            disabled={saving === vehicle.id}
-                            className="btn btn-secondary text-xs"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEditing(vehicle)}
-                            className="btn btn-secondary text-xs"
-                            disabled={saving === vehicle.id}
-                          >
-                            {(!vehicle.vin || !vehicle.licensePlate) ? (
-                              <>
-                                <span className="mr-1">⚠️</span>
-                                Edit
-                              </>
-                            ) : (
-                              'Edit'
-                            )}
-                          </button>
-                          <label className="btn btn-secondary text-xs cursor-pointer">
-                            Photo
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                await uploadVehiclePhoto(vehicle.id, file);
-                              }}
-                            />
-                          </label>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="card-header">
+          <h1 className="text-2xl font-bold text-gray-900">Vehicle Management</h1>
+          <p className="text-gray-600 mt-1">Manage all member vehicles and their protection status</p>
         </div>
-
-        {vehicles.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">🚗</div>
-            <h3 className="text-lg font-semibold mb-2">No vehicles found</h3>
-            <p className="text-muted">No vehicles have been registered yet.</p>
+        
+        <div className="card-body">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search vehicles, plates, or owners..."
+                className="input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <select
+              className="input sm:w-48"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Vehicles</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
           </div>
-        )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">{vehicles.length}</div>
+              <div className="text-gray-700 text-sm">Total Vehicles</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {vehicles.filter(v => v.isActive).length}
+              </div>
+              <div className="text-gray-700 text-sm">Active</div>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600 mb-1">
+                {vehicles.filter(v => !v.isActive).length}
+              </div>
+              <div className="text-gray-700 text-sm">Inactive</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">
+                {new Set(vehicles.map(v => v.ownerId)).size}
+              </div>
+              <div className="text-gray-700 text-sm">Owners</div>
+            </div>
+          </div>
+
+          {/* Vehicles Table */}
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Owner</th>
+                  <th>License Plate</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVehicles.map((vehicle) => (
+                  <tr key={vehicle.id} className="table-row">
+                    <td>
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {vehicle.year} {vehicle.make} {vehicle.model}
+                        </div>
+                        <div className="text-sm text-gray-500">{vehicle.color}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{vehicle.ownerEmail}</div>
+                        <div className="text-gray-500">ID: {vehicle.ownerId.slice(-8)}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="font-mono text-sm">
+                        {vehicle.licensePlate}
+                        <div className="text-gray-500">{vehicle.state}</div>
+                      </div>
+                    </td>
+                    <td>
+                      {vehicle.isActive ? (
+                        <span className="badge badge-success">Active</span>
+                      ) : (
+                        <span className="badge badge-gray">Inactive</span>
+                      )}
+                    </td>
+                    <td className="text-sm text-gray-500">
+                      {vehicle.createdAt?.toDate?.()?.toLocaleDateString?.()}
+                    </td>
+                    <td>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleToggleActive(vehicle.id, vehicle.isActive)}
+                          className={`btn text-sm ${
+                            vehicle.isActive ? 'btn-warning' : 'btn-success'
+                          }`}
+                        >
+                          {vehicle.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <a
+                          href={`/admin/vehicles/${vehicle.id}`}
+                          className="btn btn-secondary text-sm"
+                        >
+                          View
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredVehicles.length === 0 && (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Vehicles Found</h3>
+              <p className="text-gray-600">No vehicles match your current filters.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
-

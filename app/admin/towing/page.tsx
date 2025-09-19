@@ -2,44 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, orderBy, query, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import BackButton from '@/components/BackButton';
 
-type TowEvent = {
-  id: string;
-  event: string;
-  timestamp: any;
-  user_id: string;
-  user_email: string;
-  user_first_name: string;
-  user_last_name: string;
-  user_phone: string;
-  status?: 'pending' | 'contacted' | 'dispatched' | 'completed' | 'cancelled';
-  dispatcher_notes?: string;
-  completed_at?: any;
-  tow_company?: string;
-  eta?: string;
-};
-
 export default function AdminTowingPage() {
-  const router = useRouter();
-  const [towEvents, setTowEvents] = useState<TowEvent[]>([]);
+  const [towEvents, setTowEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingEvent, setEditingEvent] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<TowEvent>>({});
-  const [saving, setSaving] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'admin_events'),
-      orderBy('timestamp', 'desc')
-    );
-    
+    const q = query(collection(db, 'towEvents'), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snapshot) => {
-      const events = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() } as TowEvent))
-        .filter(event => event.event === 'tow_call');
+      const events = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       setTowEvents(events);
       setLoading(false);
     });
@@ -47,293 +24,203 @@ export default function AdminTowingPage() {
     return () => unsub();
   }, []);
 
-  const updateEventStatus = async (eventId: string, updates: Partial<TowEvent>) => {
-    setSaving(eventId);
+  const filteredEvents = towEvents.filter(event => {
+    const matchesSearch = !searchTerm || 
+      event.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.vehicleInfo?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const updateEventStatus = async (eventId: string, newStatus: string) => {
     try {
-      await updateDoc(doc(db, 'admin_events', eventId), {
-        ...updates,
-        updated_at: serverTimestamp(),
+      await updateDoc(doc(db, 'towEvents', eventId), {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
       });
-      setEditingEvent(null);
-      setEditForm({});
     } catch (error) {
-      console.error('Error updating tow event:', error);
-      alert('Failed to update tow event');
-    } finally {
-      setSaving(null);
+      console.error('Error updating event:', error);
+      alert('Failed to update event status');
     }
   };
 
-  const startEditing = (event: TowEvent) => {
-    setEditingEvent(event.id);
-    setEditForm({
-      status: event.status || 'pending',
-      dispatcher_notes: event.dispatcher_notes || '',
-      tow_company: event.tow_company || '',
-      eta: event.eta || '',
-    });
-  };
-
-  const saveChanges = (eventId: string) => {
-    updateEventStatus(eventId, editForm);
-  };
-
-  const quickStatusUpdate = (eventId: string, status: TowEvent['status']) => {
-    const updates: Partial<TowEvent> = { status };
-    if (status === 'completed') {
-      updates.completed_at = serverTimestamp();
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <span className="badge badge-warning">Pending</span>;
+      case 'dispatched':
+        return <span className="badge badge-info">Dispatched</span>;
+      case 'in-progress':
+        return <span className="badge badge-info">In Progress</span>;
+      case 'completed':
+        return <span className="badge badge-success">Completed</span>;
+      case 'cancelled':
+        return <span className="badge badge-error">Cancelled</span>;
+      default:
+        return <span className="badge badge-gray">Unknown</span>;
     }
-    updateEventStatus(eventId, updates);
   };
-
-  const getStatusBadge = (status?: string) => {
-    const badges = {
-      'pending': { className: 'badge-warning', icon: '⏳', text: 'Pending' },
-      'contacted': { className: 'badge-info', icon: '📞', text: 'Contacted' },
-      'dispatched': { className: 'badge-info', icon: '🚛', text: 'Dispatched' },
-      'completed': { className: 'badge-success', icon: '✅', text: 'Completed' },
-      'cancelled': { className: 'badge-error', icon: '❌', text: 'Cancelled' }
-    };
-    const badge = badges[status as keyof typeof badges] || badges.pending;
-    return (
-      <span className={`badge ${badge.className}`}>
-        {badge.icon} {badge.text}
-      </span>
-    );
-  };
-
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return '—';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleString();
-  };
-
-  const pendingEvents = towEvents.filter(e => !e.status || e.status === 'pending');
-  const activeEvents = towEvents.filter(e => e.status === 'contacted' || e.status === 'dispatched');
-  const completedEvents = towEvents.filter(e => e.status === 'completed');
 
   if (loading) {
     return (
-      <div className="card text-center py-12">
-        <div className="loading-spinner mx-auto mb-4"></div>
-        <p className="text-muted">Loading towing requests...</p>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading towing events...</p>
+        </div>
       </div>
     );
   }
 
+  const pendingEvents = towEvents.filter(e => e.status === 'pending');
+  const activeEvents = towEvents.filter(e => ['dispatched', 'in-progress'].includes(e.status));
+  const completedEvents = towEvents.filter(e => e.status === 'completed');
+
   return (
     <div className="space-y-6">
-      {/* Header with Back Button */}
-      <div className="card">
-        <div className="flex items-center space-x-4 mb-4">
-          <BackButton />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Towing Management</h1>
-            <p className="text-muted">Manage roadside assistance and towing requests</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">{towEvents.length}</div>
-            <div className="text-sm text-muted">Total Requests</div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-            <div className="text-lg font-bold text-yellow-600">{pendingEvents.length}</div>
-            <div className="text-sm text-yellow-800">Pending</div>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <div className="text-lg font-bold text-blue-600">{activeEvents.length}</div>
-            <div className="text-sm text-blue-800">Active</div>
-          </div>
-          <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-            <div className="text-lg font-bold text-green-600">{completedEvents.length}</div>
-            <div className="text-sm text-green-800">Completed</div>
-          </div>
-          <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-            <div className="text-lg font-bold text-purple-600">714-766-1669</div>
-            <div className="text-sm text-purple-800">Tow Service</div>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <BackButton />
       </div>
 
-      {/* Towing Requests Table */}
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Towing Requests</h2>
-          <div className="text-sm text-muted">
-            Real-time updates from mobile app
-          </div>
+        <div className="card-header">
+          <h1 className="text-2xl font-bold text-gray-900">Towing Management</h1>
+          <p className="text-gray-600 mt-1">Monitor and manage roadside assistance requests</p>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-muted border-b">
-              <tr>
-                <th className="py-3 pr-4">Time</th>
-                <th className="py-3 pr-4">Customer</th>
-                <th className="py-3 pr-4">Contact</th>
-                <th className="py-3 pr-4">Status</th>
-                <th className="py-3 pr-4">Tow Company</th>
-                <th className="py-3 pr-4">ETA</th>
-                <th className="py-3 pr-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {towEvents.map((event) => (
-                <tr key={event.id} className="table-row">
-                  <td className="py-3 pr-4">
-                    <div className="font-medium">{formatDate(event.timestamp)}</div>
-                    <div className="text-xs text-muted">
-                      {event.completed_at && `Completed: ${formatDate(event.completed_at)}`}
-                    </div>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <div className="font-medium">{event.user_first_name} {event.user_last_name}</div>
-                    <div className="text-xs text-muted">{event.user_email}</div>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <a 
-                      href={`tel:${event.user_phone}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {event.user_phone}
-                    </a>
-                  </td>
-                  <td className="py-3 pr-4">
-                    {getStatusBadge(event.status)}
-                  </td>
-                  <td className="py-3 pr-4">
-                    {editingEvent === event.id ? (
-                      <input
-                        type="text"
-                        className="input text-xs"
-                        placeholder="Tow company name"
-                        value={editForm.tow_company || ''}
-                        onChange={(e) => setEditForm({ ...editForm, tow_company: e.target.value })}
-                      />
-                    ) : (
-                      <span className="text-xs">{event.tow_company || '—'}</span>
-                    )}
-                  </td>
-                  <td className="py-3 pr-4">
-                    {editingEvent === event.id ? (
-                      <input
-                        type="text"
-                        className="input text-xs"
-                        placeholder="ETA (e.g., 30 min)"
-                        value={editForm.eta || ''}
-                        onChange={(e) => setEditForm({ ...editForm, eta: e.target.value })}
-                      />
-                    ) : (
-                      <span className="text-xs">{event.eta || '—'}</span>
-                    )}
-                  </td>
-                  <td className="py-3 pr-4">
-                    <div className="flex items-center space-x-1">
-                      {editingEvent === event.id ? (
-                        <>
-                          <button
-                            onClick={() => saveChanges(event.id)}
-                            disabled={saving === event.id}
-                            className="btn btn-success text-xs"
-                          >
-                            {saving === event.id ? 'Saving...' : 'Save'}
-                          </button>
-                          <button
-                            onClick={() => setEditingEvent(null)}
-                            disabled={saving === event.id}
-                            className="btn btn-secondary text-xs"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEditing(event)}
-                            className="btn btn-secondary text-xs"
-                            disabled={saving === event.id}
-                          >
-                            Edit
-                          </button>
-                          {event.status !== 'completed' && event.status !== 'cancelled' && (
-                            <>
-                              <button
-                                onClick={() => quickStatusUpdate(event.id, 'contacted')}
-                                disabled={saving === event.id}
-                                className="btn btn-primary text-xs"
-                              >
-                                📞
-                              </button>
-                              <button
-                                onClick={() => quickStatusUpdate(event.id, 'dispatched')}
-                                disabled={saving === event.id}
-                                className="btn btn-info text-xs"
-                              >
-                                🚛
-                              </button>
-                              <button
-                                onClick={() => quickStatusUpdate(event.id, 'completed')}
-                                disabled={saving === event.id}
-                                className="btn btn-success text-xs"
-                              >
-                                ✅
-                              </button>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {towEvents.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">🚛</div>
-            <h3 className="text-lg font-semibold mb-2">No Towing Requests</h3>
-            <p className="text-muted">Towing requests from the mobile app will appear here.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Notes Section for Editing */}
-      {editingEvent && (
-        <div className="card">
-          <h3 className="text-lg font-semibold mb-4">Dispatcher Notes</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="label">Status</label>
-              <select
-                className="input"
-                value={editForm.status || 'pending'}
-                onChange={(e) => setEditForm({ ...editForm, status: e.target.value as TowEvent['status'] })}
-              >
-                <option value="pending">Pending</option>
-                <option value="contacted">Contacted</option>
-                <option value="dispatched">Dispatched</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+        
+        <div className="card-body">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-orange-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600 mb-1">{pendingEvents.length}</div>
+              <div className="text-gray-700 text-sm">Pending</div>
             </div>
-            <div>
-              <label className="label">Notes</label>
-              <textarea
+            <div className="bg-blue-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">{activeEvents.length}</div>
+              <div className="text-gray-700 text-sm">Active</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">{completedEvents.length}</div>
+              <div className="text-gray-700 text-sm">Completed</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-purple-600 mb-1">24/7</div>
+              <div className="text-gray-700 text-sm">Support</div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search by member, location, or vehicle..."
                 className="input"
-                rows={3}
-                placeholder="Add dispatcher notes..."
-                value={editForm.dispatcher_notes || ''}
-                onChange={(e) => setEditForm({ ...editForm, dispatcher_notes: e.target.value })}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <select
+              className="input sm:w-48"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="dispatched">Dispatched</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
           </div>
+
+          {/* Towing Events Table */}
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Vehicle</th>
+                  <th>Location</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEvents.map((event) => (
+                  <tr key={event.id} className="table-row">
+                    <td>
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{event.userEmail}</div>
+                        <div className="text-gray-500">{event.userPhone}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{event.vehicleInfo}</div>
+                        <div className="text-gray-500">{event.licensePlate}</div>
+                      </div>
+                    </td>
+                    <td className="text-sm text-gray-900 max-w-xs truncate">
+                      {event.location}
+                    </td>
+                    <td>
+                      <span className="badge badge-info">{event.type}</span>
+                    </td>
+                    <td>
+                      {getStatusBadge(event.status)}
+                    </td>
+                    <td className="text-sm text-gray-500">
+                      {event.createdAt?.toDate?.()?.toLocaleString?.()}
+                    </td>
+                    <td>
+                      <div className="flex items-center space-x-2">
+                        {event.status === 'pending' && (
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'dispatched')}
+                            className="btn btn-primary text-sm"
+                          >
+                            Dispatch
+                          </button>
+                        )}
+                        {event.status === 'dispatched' && (
+                          <button
+                            onClick={() => updateEventStatus(event.id, 'completed')}
+                            className="btn btn-success text-sm"
+                          >
+                            Complete
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateEventStatus(event.id, 'cancelled')}
+                          className="btn btn-danger text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredEvents.length === 0 && (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Towing Events</h3>
+              <p className="text-gray-600">No towing events match your current filters.</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
