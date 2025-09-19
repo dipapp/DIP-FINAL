@@ -56,239 +56,145 @@ export default function DashboardPage() {
     : profile?.displayName || user.email?.split('@')[0] || 'Member';
 
   return (
-    <div className="space-y-8">
-      {/* Premium Welcome Section */}
-      <div className="grid lg:grid-cols-2 gap-8">
+    <div className="space-y-6">
+      {/* Clean Welcome Section */}
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Welcome Card */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl"></div>
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full blur-2xl animate-pulse"></div>
-          
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl shadow-blue-500/10 p-6 sm:p-8">
-            <div className="mb-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-xl">👋</span>
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
-                </div>
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    Welcome back, {displayName}!
-                  </h2>
-                  <p className="text-gray-600 font-medium">
-                    Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}
-                  </p>
-                </div>
-              </div>
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <span className="text-xl text-white">👋</span>
             </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-100 rounded-2xl p-4 text-center shadow-lg">
-                  <div className="text-3xl font-black text-blue-600 mb-2">{stats.vehicles}</div>
-                  <div className="text-sm font-bold text-blue-800">Vehicles</div>
-                </div>
-              </div>
-              
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-100 rounded-2xl p-4 text-center shadow-lg">
-                  <div className="text-3xl font-black text-emerald-600 mb-2">{stats.activeVehicles}</div>
-                  <div className="text-sm font-bold text-emerald-800">Active</div>
-                </div>
-              </div>
-              
-              <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-                <div className="relative bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-100 rounded-2xl p-4 text-center shadow-lg">
-                  <div className="text-3xl font-black text-purple-600 mb-2">{stats.requests}</div>
-                  <div className="text-sm font-bold text-purple-800">Requests</div>
-                </div>
-              </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Welcome back, {displayName}!</h2>
+              <p className="text-gray-500">Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">{stats.vehicles}</div>
+              <div className="text-sm text-blue-700 font-medium">Vehicles</div>
+            </div>
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-emerald-600 mb-1">{stats.activeVehicles}</div>
+              <div className="text-sm text-emerald-700 font-medium">Active</div>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-purple-600 mb-1">{stats.requests}</div>
+              <div className="text-sm text-purple-700 font-medium">Requests</div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions Card */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-3xl"></div>
-          <div className="absolute -top-6 -left-6 w-28 h-28 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <span className="text-sm text-white">⚡</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+          </div>
           
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl shadow-emerald-500/10 p-6 sm:p-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl">⚡</span>
+          <div className="space-y-3">
+            <Link href="/dashboard/vehicles" className="group flex items-center space-x-3 p-3 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
+              <div className="w-10 h-10 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <span className="text-lg">🚗</span>
               </div>
-              <h3 className="text-2xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                Quick Actions
-              </h3>
-            </div>
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900">Add Vehicle</div>
+                <div className="text-sm text-gray-500">Register new vehicle</div>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
             
-            <div className="space-y-4">
-              <Link href="/dashboard/vehicles" className="group relative overflow-hidden rounded-2xl transition-all duration-300 transform hover:scale-105 block">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm border-2 border-gray-200 group-hover:border-white/50 group-hover:bg-white/20 transition-all duration-300 rounded-2xl p-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-violet-100 to-purple-100 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition-all duration-300">
-                      <span className="text-2xl">🚗</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-gray-900 group-hover:text-white transition-colors duration-300">
-                        Add Vehicle
-                      </div>
-                      <div className="text-gray-600 group-hover:text-white/80 transition-colors duration-300">
-                        Register a new vehicle
-                      </div>
-                    </div>
-                    <div className="text-violet-500 group-hover:text-white transition-colors duration-300">
-                      <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-2xl"></div>
-              </Link>
-              
-              <Link href="/dashboard/claims" className="group relative overflow-hidden rounded-2xl transition-all duration-300 transform hover:scale-105 block">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm border-2 border-gray-200 group-hover:border-white/50 group-hover:bg-white/20 transition-all duration-300 rounded-2xl p-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition-all duration-300">
-                      <span className="text-2xl">📋</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-gray-900 group-hover:text-white transition-colors duration-300">
-                        Submit Request
-                      </div>
-                      <div className="text-gray-600 group-hover:text-white/80 transition-colors duration-300">
-                        Request assistance
-                      </div>
-                    </div>
-                    <div className="text-emerald-500 group-hover:text-white transition-colors duration-300">
-                      <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-2xl"></div>
-              </Link>
-              
-              <Link href="/dashboard/profile" className="group relative overflow-hidden rounded-2xl transition-all duration-300 transform hover:scale-105 block">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm border-2 border-gray-200 group-hover:border-white/50 group-hover:bg-white/20 transition-all duration-300 rounded-2xl p-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition-all duration-300">
-                      <span className="text-2xl">⚙️</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-gray-900 group-hover:text-white transition-colors duration-300">
-                        Update Profile
-                      </div>
-                      <div className="text-gray-600 group-hover:text-white/80 transition-colors duration-300">
-                        Edit your information
-                      </div>
-                    </div>
-                    <div className="text-orange-500 group-hover:text-white transition-colors duration-300">
-                      <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-2xl"></div>
-              </Link>
-            </div>
+            <Link href="/dashboard/claims" className="group flex items-center space-x-3 p-3 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-200">
+              <div className="w-10 h-10 bg-emerald-100 group-hover:bg-emerald-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <span className="text-lg">📋</span>
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900">Submit Request</div>
+                <div className="text-sm text-gray-500">Get assistance</div>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            
+            <Link href="/dashboard/profile" className="group flex items-center space-x-3 p-3 rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200">
+              <div className="w-10 h-10 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <span className="text-lg">⚙️</span>
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900">Update Profile</div>
+                <div className="text-sm text-gray-500">Edit information</div>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Premium Admin Section */}
+      {/* Admin Section */}
       {user?.email === 'admin@dipmembers.com' && (
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 rounded-3xl"></div>
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-2xl animate-pulse"></div>
-          
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl shadow-yellow-500/10 p-6 sm:p-8">
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-xl">
-                  <span className="text-3xl">👑</span>
-                </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-400 rounded-full animate-ping"></div>
-              </div>
-              <div>
-                <h2 className="text-3xl font-black bg-gradient-to-r from-yellow-600 via-orange-600 to-red-600 bg-clip-text text-transparent">
-                  Admin Access
-                </h2>
-                <p className="text-gray-600 font-medium">
-                  Administrator privileges activated
-                </p>
-              </div>
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <span className="text-xl text-white">👑</span>
             </div>
-            
-            <p className="text-gray-700 mb-6 text-lg">
-              You have administrator privileges. Access the admin console to manage all users, vehicles, and requests.
-            </p>
-            
-            <Link href="/admin" className="group relative overflow-hidden inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white rounded-2xl shadow-xl transform transition-all duration-300 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 hover:shadow-2xl hover:shadow-orange-500/25 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <span className="mr-3 text-2xl">🚀</span>
-              <span className="relative">Open Admin Console</span>
-            </Link>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Admin Access</h2>
+              <p className="text-gray-600">Administrator privileges</p>
+            </div>
           </div>
+          
+          <p className="text-gray-700 mb-4">
+            Access the admin console to manage users, vehicles, and requests.
+          </p>
+          
+          <Link href="/admin" className="inline-flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200">
+            <span>🚀</span>
+            <span>Open Admin Console</span>
+          </Link>
         </div>
       )}
 
-      {/* Premium Tips Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 rounded-3xl"></div>
-        <div className="absolute -top-6 -left-6 w-28 h-28 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      {/* Tips Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <span className="text-sm text-white">💡</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">Tips & Information</h3>
+        </div>
         
-        <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl shadow-cyan-500/10 p-6 sm:p-8">
-          <div className="flex items-center space-x-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl">💡</span>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-xs text-white">✨</span>
+              </div>
+              <h4 className="font-bold text-blue-800">Active Vehicle Benefits</h4>
             </div>
-            <h3 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Tips & Information
-            </h3>
+            <p className="text-blue-700 text-sm leading-relaxed">
+              Ensure your vehicles are marked as "Active" to receive full membership benefits.
+            </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-              <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-100 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-                    <span className="text-xl">✨</span>
-                  </div>
-                  <h4 className="text-xl font-black text-blue-800">Active Vehicle Benefits</h4>
-                </div>
-                <p className="text-blue-700 font-medium leading-relaxed">
-                  Make sure your vehicles are marked as "Active" to receive full membership benefits and premium protection.
-                </p>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center">
+                <span className="text-xs text-white">⚡</span>
               </div>
+              <h4 className="font-bold text-emerald-800">Request Process</h4>
             </div>
-            
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
-              <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-100 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md">
-                    <span className="text-xl">⚡</span>
-                  </div>
-                  <h4 className="text-xl font-black text-emerald-800">Request Process</h4>
-                </div>
-                <p className="text-emerald-700 font-medium leading-relaxed">
-                  Upload clear photos and provide accurate details for faster assistance and premium service experience.
-                </p>
-              </div>
-            </div>
+            <p className="text-emerald-700 text-sm leading-relaxed">
+              Upload clear photos and provide accurate details for faster assistance.
+            </p>
           </div>
         </div>
       </div>
