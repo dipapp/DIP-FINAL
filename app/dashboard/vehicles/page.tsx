@@ -230,62 +230,59 @@ function MyVehiclesPageContent() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
-            {/* Premium Header */}
-            <div className="text-center mb-8">
-              <div className="relative inline-flex items-center justify-center mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
-                <div className="relative bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 p-4 rounded-3xl shadow-xl">
-                  <span className="text-3xl filter drop-shadow-sm">🚗</span>
+          <div className="p-4 sm:p-5">
+            {/* Compact Header */}
+            <div className="text-center mb-5">
+              <div className="relative inline-flex items-center justify-center mb-3">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 rounded-2xl blur opacity-20 animate-pulse"></div>
+                <div className="relative bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 p-2.5 rounded-2xl shadow-lg">
+                  <span className="text-2xl filter drop-shadow-sm">🚗</span>
                 </div>
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-emerald-400 rounded-full animate-ping"></div>
-                <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></div>
+                <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
               </div>
               
-              <h2 className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-gray-900 via-purple-800 to-indigo-900 bg-clip-text text-transparent mb-3 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-gray-900 via-purple-800 to-indigo-900 bg-clip-text text-transparent mb-2 tracking-tight">
                 Add Your Vehicle
               </h2>
-              <p className="text-gray-600 text-lg font-medium max-w-md mx-auto leading-relaxed">
-                Experience premium protection with our intelligent vehicle registration
+              <p className="text-gray-600 text-sm font-medium max-w-sm mx-auto">
+                Premium protection registration
               </p>
             </div>
 
-            {/* Ultra-Modern Form */}
-            <div className="max-w-4xl mx-auto space-y-8">
+            {/* Compact Form */}
+            <div className="max-w-3xl mx-auto space-y-5">
               {/* Step 1: Vehicle Intelligence */}
               <div className="group relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                <div className="relative bg-white rounded-2xl p-6 shadow-xl border border-white/50">
-                  <div className="flex items-center mb-6">
-                    <div className={`relative flex items-center justify-center w-12 h-12 rounded-2xl mr-4 transition-all duration-500 transform ${
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl blur opacity-15 group-hover:opacity-25 transition duration-500"></div>
+                <div className="relative bg-white rounded-xl p-4 shadow-lg border border-white/50">
+                  <div className="flex items-center mb-4">
+                    <div className={`relative flex items-center justify-center w-8 h-8 rounded-xl mr-3 transition-all duration-300 ${
                       form.make && form.model && form.year 
-                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-110' 
-                        : 'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/30'
+                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-500/30' 
+                        : 'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-md shadow-violet-500/30'
                     }`}>
                       {form.make && form.model && form.year ? (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
-                        <span className="text-lg font-bold">1</span>
-                      )}
-                      {form.make && form.model && form.year && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl animate-pulse opacity-50"></div>
+                        <span className="text-sm font-bold">1</span>
                       )}
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Vehicle Intelligence</h3>
-                      <p className="text-gray-500 font-medium">Smart vehicle identification system</p>
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Vehicle Intelligence</h3>
+                      <p className="text-gray-500 text-xs font-medium">Smart identification</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Year Selector */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">Year</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">Year</label>
                       <div className="relative">
                         <select
-                          className="w-full px-4 py-4 bg-gradient-to-r from-white to-gray-50 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-100 transition-all duration-300 text-gray-900 font-semibold appearance-none cursor-pointer shadow-sm hover:shadow-md group-hover/field:border-violet-300"
+                          className="w-full px-3 py-3 bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all duration-200 text-gray-900 font-semibold appearance-none cursor-pointer text-sm hover:shadow-sm"
                           value={form.year}
                           onChange={(e) => setForm({ ...form, year: e.target.value })}
                         >
@@ -294,14 +291,14 @@ function MyVehiclesPageContent() {
                             <option key={y} value={y}>{y}</option>
                           ))}
                         </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                          <svg className="w-5 h-5 text-violet-500 transition-transform group-hover/field:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                         {form.year && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
@@ -309,10 +306,10 @@ function MyVehiclesPageContent() {
                     
                     {/* Make Selector */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">Make</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">Make</label>
                       <div className="relative">
                         <select
-                          className="w-full px-4 py-4 bg-gradient-to-r from-white to-gray-50 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-100 transition-all duration-300 text-gray-900 font-semibold appearance-none cursor-pointer shadow-sm hover:shadow-md group-hover/field:border-violet-300"
+                          className="w-full px-3 py-3 bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all duration-200 text-gray-900 font-semibold appearance-none cursor-pointer text-sm hover:shadow-sm"
                           value={form.make}
                           onChange={(e) => {
                             setForm({ ...form, make: e.target.value, model: '' });
@@ -323,14 +320,14 @@ function MyVehiclesPageContent() {
                             <option key={mk} value={mk}>{mk}</option>
                           ))}
                         </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                          <svg className="w-5 h-5 text-violet-500 transition-transform group-hover/field:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                         {form.make && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
@@ -338,13 +335,13 @@ function MyVehiclesPageContent() {
                     
                     {/* Model Selector */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">Model</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">Model</label>
                       <div className="relative">
                         <select
-                          className={`w-full px-4 py-4 border-2 rounded-xl transition-all duration-300 font-semibold appearance-none shadow-sm ${
+                          className={`w-full px-3 py-3 border rounded-lg transition-all duration-200 font-semibold appearance-none text-sm ${
                             !form.make 
                               ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed' 
-                              : 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 cursor-pointer focus:border-violet-500 focus:ring-4 focus:ring-violet-100 hover:shadow-md group-hover/field:border-violet-300'
+                              : 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 cursor-pointer focus:border-violet-500 focus:ring-2 focus:ring-violet-100 hover:shadow-sm'
                           }`}
                           value={form.model}
                           onChange={(e) => {
@@ -361,14 +358,14 @@ function MyVehiclesPageContent() {
                             <option key={md} value={md}>{md}</option>
                           ))}
                         </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                          <svg className={`w-5 h-5 transition-transform ${!form.make ? 'text-gray-400' : 'text-violet-500 group-hover/field:scale-110'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <svg className={`w-4 h-4 ${!form.make ? 'text-gray-400' : 'text-violet-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                         {form.model && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
@@ -379,50 +376,47 @@ function MyVehiclesPageContent() {
 
               {/* Step 2: Registration Vault */}
               <div className="group relative">
-                <div className={`absolute -inset-1 rounded-2xl blur transition duration-1000 ${
+                <div className={`absolute -inset-0.5 rounded-xl blur transition duration-500 ${
                   form.make && form.model && form.year
-                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 opacity-20 group-hover:opacity-30'
-                    : 'bg-gradient-to-r from-gray-400 to-gray-500 opacity-10'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 opacity-15 group-hover:opacity-25'
+                    : 'bg-gradient-to-r from-gray-400 to-gray-500 opacity-5'
                 }`}></div>
-                <div className={`relative rounded-2xl p-6 shadow-xl border transition-all duration-500 ${
+                <div className={`relative rounded-xl p-4 shadow-lg border transition-all duration-300 ${
                   form.make && form.model && form.year
                     ? 'bg-white border-white/50'
                     : 'bg-gray-50/80 border-gray-200/50'
                 }`}>
-                  <div className="flex items-center mb-6">
-                    <div className={`relative flex items-center justify-center w-12 h-12 rounded-2xl mr-4 transition-all duration-500 transform ${
+                  <div className="flex items-center mb-4">
+                    <div className={`relative flex items-center justify-center w-8 h-8 rounded-xl mr-3 transition-all duration-300 ${
                       form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)
-                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-110' 
+                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-500/30' 
                         : form.make && form.model && form.year
-                          ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
-                          : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white shadow-lg'
+                          ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-md shadow-cyan-500/30'
+                          : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white shadow-md'
                     }`}>
                       {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
-                        <span className="text-lg font-bold">2</span>
-                      )}
-                      {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl animate-pulse opacity-50"></div>
+                        <span className="text-sm font-bold">2</span>
                       )}
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Registration Vault</h3>
-                      <p className="text-gray-500 font-medium">Secure vehicle identification</p>
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Registration Vault</h3>
+                      <p className="text-gray-500 text-xs font-medium">Secure identification</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* State Input */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">State</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">State</label>
                       <div className="relative">
                         <input 
-                          className={`w-full px-4 py-4 border-2 rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-sm ${
+                          className={`w-full px-3 py-3 border rounded-lg transition-all duration-200 font-black text-center text-sm uppercase tracking-wider ${
                             form.make && form.model && form.year
-                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:shadow-md group-hover/field:border-emerald-300'
+                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 hover:shadow-sm'
                               : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
                           placeholder="CA"
@@ -436,22 +430,22 @@ function MyVehiclesPageContent() {
                           }}
                         />
                         {form.state && form.state.length === 2 && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 mt-2 font-medium">State abbreviation</p>
+                      <p className="text-xs text-gray-500 mt-1">State code</p>
                     </div>
                     
                     {/* VIN Input */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">VIN</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">VIN</label>
                       <div className="relative">
                         <input 
-                          className={`w-full px-4 py-4 border-2 rounded-xl transition-all duration-300 font-mono text-sm uppercase tracking-wide shadow-sm ${
+                          className={`w-full px-3 py-3 border rounded-lg transition-all duration-200 font-mono text-xs uppercase tracking-wide ${
                             form.make && form.model && form.year
-                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:shadow-md group-hover/field:border-emerald-300'
+                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 hover:shadow-sm'
                               : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
                           placeholder="1HGBH41JXMN109186"
@@ -465,26 +459,26 @@ function MyVehiclesPageContent() {
                           }}
                         />
                         {form.vin.length === 17 && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
-                      <p className="text-xs mt-2 font-medium">
-                        <span className={form.vin.length === 17 ? 'text-emerald-600' : 'text-gray-500'}>
-                          {form.vin.length}/17 characters
+                      <p className="text-xs mt-1">
+                        <span className={form.vin.length === 17 ? 'text-emerald-600 font-medium' : 'text-gray-500'}>
+                          {form.vin.length}/17 chars
                         </span>
                       </p>
                     </div>
                     
                     {/* License Plate Input */}
                     <div className="relative group/field">
-                      <label className="block text-sm font-bold text-gray-800 mb-3 tracking-wide">License Plate</label>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">License Plate</label>
                       <div className="relative">
                         <input 
-                          className={`w-full px-4 py-4 border-2 rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-sm ${
+                          className={`w-full px-3 py-3 border rounded-lg transition-all duration-200 font-black text-center text-sm uppercase tracking-wider ${
                             form.make && form.model && form.year
-                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:shadow-md group-hover/field:border-emerald-300'
+                              ? 'bg-gradient-to-r from-white to-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 hover:shadow-sm'
                               : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
                           placeholder="ABC123"
@@ -498,14 +492,14 @@ function MyVehiclesPageContent() {
                           }}
                         />
                         {(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) && (
-                          <div className="absolute top-0 right-0 -mt-2 -mr-2">
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 right-0 -mt-1 -mr-1">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                           </div>
                         )}
                       </div>
-                      <p className="text-xs mt-2 font-medium">
-                        <span className={(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 'text-emerald-600' : 'text-gray-500'}>
-                          {form.licensePlate.length}/6-7 characters
+                      <p className="text-xs mt-1">
+                        <span className={(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 'text-emerald-600 font-medium' : 'text-gray-500'}>
+                          {form.licensePlate.length}/6-7 chars
                         </span>
                       </p>
                     </div>
@@ -513,17 +507,17 @@ function MyVehiclesPageContent() {
                 </div>
               </div>
 
-              {/* Premium Submit Section */}
-              <div className="text-center pt-6">
+              {/* Compact Submit Section */}
+              <div className="text-center pt-4">
                 <div className="relative inline-block">
                   <button 
-                    className={`group relative overflow-hidden inline-flex items-center justify-center px-12 py-5 text-xl font-black text-white rounded-2xl shadow-2xl transform transition-all duration-500 ${
+                    className={`group relative overflow-hidden inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white rounded-xl shadow-xl transform transition-all duration-300 ${
                       (!form.make || !form.model || !form.year || !form.state ||
                        form.vin.length !== 17 ||
                        form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
                        adding)
-                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed scale-95'
-                        : 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-110 cursor-pointer'
+                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 cursor-pointer'
                     }`}
                     onClick={createVehicle}
                     disabled={
@@ -533,48 +527,47 @@ function MyVehiclesPageContent() {
                       adding
                     }
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                     
                     {adding ? (
                       <div className="relative flex items-center">
-                        <div className="loading-spinner mr-3"></div>
-                        <span className="tracking-wide">Activating Protection...</span>
+                        <div className="loading-spinner mr-2"></div>
+                        <span>Activating Protection...</span>
                       </div>
                     ) : (
                       <div className="relative flex items-center">
-                        <span className="mr-3 text-2xl">🚗</span>
-                        <span className="tracking-wide">Activate Protection</span>
-                        <span className="ml-3 text-2xl">⚡</span>
+                        <span className="mr-2 text-xl">🚗</span>
+                        <span>Activate Protection</span>
+                        <span className="ml-2 text-xl">⚡</span>
                       </div>
                     )}
                   </button>
                   
-                  {/* Floating Action Indicators */}
+                  {/* Compact Action Indicators */}
                   {!adding && (form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
                     <>
-                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-emerald-400 rounded-full animate-ping"></div>
-                      <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
+                      <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
                     </>
                   )}
                 </div>
                 
-                {/* Success Preview Card */}
+                {/* Compact Success Preview */}
                 {(form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
-                  <div className="mt-8 relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl blur opacity-30 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6 shadow-xl">
-                      <div className="flex items-center justify-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="mt-4 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-lg blur opacity-20 animate-pulse"></div>
+                    <div className="relative bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-3 shadow-lg">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                         <div className="text-center">
-                          <p className="font-black text-lg text-emerald-800 tracking-wide">
-                            Ready to Protect Your {form.year} {form.make} {form.model}
+                          <p className="font-bold text-sm text-emerald-800">
+                            Ready: {form.year} {form.make} {form.model}
                           </p>
-                          <p className="text-emerald-600 font-medium">Premium DIP coverage awaits</p>
+                          <p className="text-emerald-600 text-xs">Premium coverage awaits</p>
                         </div>
                       </div>
                     </div>
