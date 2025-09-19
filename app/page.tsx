@@ -79,12 +79,8 @@ export default function HomePage() {
               <img 
                 src="/dip-logo.png" 
                 alt="DIP Logo" 
-                className="h-32 w-auto mx-auto mb-4" 
+                className="h-32 w-auto mx-auto" 
               />
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <div className="text-3xl font-bold mb-2">$20/month</div>
-                <div className="text-blue-200">Complete Protection</div>
-              </div>
             </div>
           </div>
         </div>
