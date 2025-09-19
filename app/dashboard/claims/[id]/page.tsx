@@ -115,14 +115,14 @@ export default function RequestDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { class: string; icon: string }> = {
-      'Pending': { class: 'badge-warning', icon: '⏳' },
-      'In Review': { class: 'badge-info', icon: '👀' },
-      'Approved': { class: 'badge-success', icon: '✅' },
-      'Denied': { class: 'badge-error', icon: '❌' }
+      'Pending': { class: 'px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full', icon: '⏳' },
+      'In Review': { class: 'px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full', icon: '👀' },
+      'Approved': { class: 'px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full', icon: '✅' },
+      'Denied': { class: 'px-3 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full', icon: '❌' }
     };
-    const config = statusConfig[status] || { class: 'badge-info', icon: '❓' };
+    const config = statusConfig[status] || { class: 'px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full', icon: '❓' };
     return (
-      <span className={`badge ${config.class}`}>
+      <span className={config.class}>
         {config.icon} {status}
       </span>
     );
@@ -130,20 +130,30 @@ export default function RequestDetailPage() {
 
   if (isAuthenticated === null) {
     return (
-      <div className="card text-center py-12">
-        <div className="loading-spinner mx-auto mb-4"></div>
-        <p className="text-muted">Checking authentication...</p>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="text-gray-600">Checking authentication...</p>
       </div>
     );
   }
 
   if (isAuthenticated === false) {
     return (
-      <div className="card text-center py-12">
-        <div className="text-4xl mb-4">🔒</div>
-        <h3 className="text-xl font-semibold mb-2">Authentication Required</h3>
-        <p className="text-muted mb-4">Please sign in to view claim details.</p>
-        <button className="btn btn-primary" onClick={() => router.push('/auth/sign-in')}>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h3>
+        <p className="text-gray-600 mb-4">Please sign in to view claim details.</p>
+        <button 
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors" 
+          onClick={() => router.push('/auth/sign-in')}
+        >
           Sign In
         </button>
       </div>
@@ -152,20 +162,30 @@ export default function RequestDetailPage() {
 
   if (loading) {
     return (
-      <div className="card text-center py-12">
-        <div className="loading-spinner mx-auto mb-4"></div>
-        <p className="text-muted">Loading claim details...</p>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="text-gray-600">Loading claim details...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="card text-center py-12">
-        <div className="text-4xl mb-4">❌</div>
-        <h3 className="text-xl font-semibold mb-2">Error</h3>
-        <p className="text-muted mb-4">{error}</p>
-        <button className="btn btn-primary" onClick={() => router.push('/dashboard/claims')}>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Error</h3>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <button 
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors" 
+          onClick={() => router.push('/dashboard/claims')}
+        >
           Back to Requests
         </button>
       </div>
@@ -174,11 +194,18 @@ export default function RequestDetailPage() {
 
   if (!request) {
     return (
-      <div className="card text-center py-12">
-        <div className="text-4xl mb-4">🔍</div>
-        <h3 className="text-xl font-semibold mb-2">Request Not Found</h3>
-        <p className="text-muted mb-4">The request you're looking for doesn't exist or you don't have access to it.</p>
-        <button className="btn btn-primary" onClick={() => router.push('/dashboard/claims')}>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Request Not Found</h3>
+        <p className="text-gray-600 mb-4">The request you're looking for doesn't exist or you don't have access to it.</p>
+        <button 
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors" 
+          onClick={() => router.push('/dashboard/claims')}
+        >
           Back to Requests
         </button>
       </div>
@@ -191,71 +218,78 @@ export default function RequestDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <BackButton />
-          <h1 className="text-2xl font-bold">Request Details</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Request Details</h1>
         </div>
         {getStatusBadge(request.status)}
       </div>
 
       {/* Claim Information */}
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Request Information</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="font-medium mb-3">Vehicle Details</h3>
-            <div className="space-y-2 text-sm">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Request Information</h2>
+        </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold text-gray-900 mb-4">Vehicle Details</h3>
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted">Vehicle:</span>
-                <span>{request.vehicleYear} {request.vehicleMake} {request.vehicleModel}</span>
+                <span className="text-gray-600">Vehicle:</span>
+                <span className="font-medium text-gray-900">{request.vehicleYear} {request.vehicleMake} {request.vehicleModel}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Vehicle VIN Number:</span>
-                <span className="font-mono">{request.vehicleVin || 'Not provided'}</span>
+                <span className="text-gray-600">Vehicle VIN Number:</span>
+                <span className="font-mono text-gray-900">{request.vehicleVin || 'Not provided'}</span>
               </div>
             </div>
           </div>
           
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium">Request Details</h3>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Request Details</h3>
               {!editingContact && (
                 <button 
-                  className="btn btn-secondary btn-xs"
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   onClick={() => setEditingContact(true)}
                 >
                   Edit Contact
                 </button>
               )}
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted">Deductible Amount:</span>
-                <span className="font-semibold">
+                <span className="text-gray-600">Deductible Amount:</span>
+                <span className="font-semibold text-gray-900">
                   {request.amount && request.amount > 0 ? `$${request.amount.toFixed(2)}` : 'Not specified'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Date:</span>
-                <span>{request.date?.toDate?.()?.toLocaleDateString?.() || 'Unknown'}</span>
+                <span className="text-gray-600">Date:</span>
+                <span className="text-gray-900">{request.date?.toDate?.()?.toLocaleDateString?.() || 'Unknown'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Contact:</span>
+                <span className="text-gray-600">Contact:</span>
                 {editingContact ? (
                   <div className="flex items-center space-x-2">
                     <input 
-                      className="input input-sm w-32" 
+                      className="w-32 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       placeholder="Phone number"
                     />
                     <button 
-                      className="btn btn-success btn-xs"
+                      className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
                       onClick={handleContactUpdate}
                       disabled={uploading}
                     >
                       {uploading ? 'Saving...' : 'Save'}
                     </button>
                     <button 
-                      className="btn btn-secondary btn-xs"
+                      className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
                       onClick={() => {
                         setEditingContact(false);
                         setContactPhone(request.userPhoneNumber || '');
@@ -266,7 +300,7 @@ export default function RequestDetailPage() {
                     </button>
                   </div>
                 ) : (
-                  <span>{request.userPhoneNumber || 'Not provided'}</span>
+                  <span className="text-gray-900">{request.userPhoneNumber || 'Not provided'}</span>
                 )}
               </div>
             </div>
@@ -275,12 +309,19 @@ export default function RequestDetailPage() {
       </div>
 
       {/* Description */}
-      <div className="card">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Description</h2>
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Description</h2>
+          </div>
           {!editingDescription && (
             <button 
-              className="btn btn-secondary btn-sm"
+              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
               onClick={() => setEditingDescription(true)}
             >
               Edit
@@ -289,24 +330,24 @@ export default function RequestDetailPage() {
         </div>
         
         {editingDescription ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <textarea 
-              className="input w-full" 
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" 
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what happened..."
             />
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <button 
-                className="btn btn-success btn-sm"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
                 onClick={handleDescriptionUpdate}
                 disabled={uploading}
               >
                 {uploading ? 'Saving...' : 'Save'}
               </button>
               <button 
-                className="btn btn-secondary btn-sm"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
                 onClick={() => {
                   setEditingDescription(false);
                   setDescription(request.description || '');
@@ -318,15 +359,22 @@ export default function RequestDetailPage() {
             </div>
           </div>
         ) : (
-          <p className="text-muted">
+          <p className="text-gray-600 bg-gray-50 rounded-lg p-4">
             {request.description || 'No description provided.'}
           </p>
         )}
       </div>
 
       {/* Photos */}
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Photos ({request.photoURLs?.length || 0})</h2>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Photos ({request.photoURLs?.length || 0})</h2>
+        </div>
         
         {/* Existing Photos */}
         {request.photoURLs && request.photoURLs.length > 0 && (
@@ -345,12 +393,15 @@ export default function RequestDetailPage() {
                       handleDeletePhoto(url);
                     }}
                     disabled={deletingPhoto === url}
-                    className="btn btn-error btn-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="px-2 py-1 bg-red-600 text-white rounded text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50"
                   >
                     {deletingPhoto === url ? (
-                      <div className="loading-spinner"></div>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
                     ) : (
-                      '🗑️'
+                      '🗑️ Delete'
                     )}
                   </button>
                 </div>
@@ -360,34 +411,43 @@ export default function RequestDetailPage() {
         )}
 
         {/* Add More Photos */}
-        <div className="border-t pt-4">
-          <h3 className="font-medium mb-3">Add More Photos</h3>
-          <div className="space-y-3">
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Add More Photos</h3>
+          <div className="space-y-4">
             <input 
               type="file" 
               accept="image/*" 
               multiple 
-              className="input" 
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
               onChange={(e) => setNewPhotos(Array.from(e.target.files || []))} 
             />
             {newPhotos.length > 0 && (
-              <div className="text-sm text-green-600">
-                ✓ {newPhotos.length} photo(s) selected
+              <div className="flex items-center text-sm text-green-600 bg-green-50 rounded-lg p-3">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {newPhotos.length} photo(s) selected
               </div>
             )}
             <button 
-              className="btn btn-primary"
+              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handlePhotoUpload}
               disabled={newPhotos.length === 0 || uploading}
             >
               {uploading ? (
                 <>
-                  <div className="loading-spinner mr-2"></div>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
                   Uploading...
                 </>
               ) : (
                 <>
-                  📸 Upload Photos
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Upload Photos
                 </>
               )}
             </button>
@@ -395,17 +455,28 @@ export default function RequestDetailPage() {
         </div>
       </div>
 
-      {/* Timestamps */}
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-4">Timeline</h2>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted">Created:</span>
-            <span>{request.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+      {/* Timeline */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted">Last Updated:</span>
-            <span>{request.updatedAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+          <h2 className="text-xl font-bold text-gray-900">Timeline</h2>
+        </div>
+        <div className="space-y-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 font-medium">Created:</span>
+              <span className="text-gray-900">{request.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+            </div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 font-medium">Last Updated:</span>
+              <span className="text-gray-900">{request.updatedAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}</span>
+            </div>
           </div>
         </div>
       </div>

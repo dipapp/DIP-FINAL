@@ -74,34 +74,39 @@ export default function AdminVehiclesPage() {
         <BackButton />
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h1 className="text-2xl font-bold text-gray-900">Vehicle Management</h1>
-          <p className="text-gray-600 mt-1">Manage all member vehicles and their protection status</p>
-        </div>
-        
-        <div className="card-body">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search vehicles, plates, or owners..."
-                className="input"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              className="input sm:w-48"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">All Vehicles</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
           </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Vehicle Management</h1>
+            <p className="text-gray-600">Manage all member vehicles and their protection status</p>
+          </div>
+        </div>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search vehicles, plates, or owners..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select
+            className="w-full sm:w-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">All Vehicles</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
+        </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -167,9 +172,9 @@ export default function AdminVehiclesPage() {
                     </td>
                     <td>
                       {vehicle.isActive ? (
-                        <span className="badge badge-success">Active</span>
+                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
                       ) : (
-                        <span className="badge badge-gray">Inactive</span>
+                        <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Inactive</span>
                       )}
                     </td>
                     <td className="text-sm text-gray-500">
@@ -179,15 +184,17 @@ export default function AdminVehiclesPage() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleToggleActive(vehicle.id, vehicle.isActive)}
-                          className={`btn text-sm ${
-                            vehicle.isActive ? 'btn-warning' : 'btn-success'
+                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                            vehicle.isActive 
+                              ? 'bg-yellow-600 text-white hover:bg-yellow-700' 
+                              : 'bg-green-600 text-white hover:bg-green-700'
                           }`}
                         >
                           {vehicle.isActive ? 'Deactivate' : 'Activate'}
                         </button>
                         <a
                           href={`/admin/vehicles/${vehicle.id}`}
-                          className="btn btn-secondary text-sm"
+                          className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           View
                         </a>
