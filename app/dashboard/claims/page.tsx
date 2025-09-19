@@ -247,8 +247,7 @@ export default function MyRequestsPage() {
                 )}
               </button>
             </div>
-            </form>
-          </div>
+          </form>
         </div>
       )}
 
