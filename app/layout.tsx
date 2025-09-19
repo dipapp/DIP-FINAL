@@ -26,16 +26,64 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           
-          {/* Simple Footer */}
-          <footer className="bg-gray-50 border-t border-gray-200 py-12 mt-16">
-            <div className="container-app">
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  DIP is a membership program, not an insurance company.
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  © 2025 DIP. All rights reserved.
-                </p>
+          {/* Professional Footer */}
+          <footer className="bg-slate-900 text-white py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid md:grid-cols-4 gap-8 mb-8">
+                {/* Brand */}
+                <div className="md:col-span-1">
+                  <div className="flex items-center space-x-3 mb-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/dip-logo.png" alt="DIP Logo" className="h-8 w-auto" />
+                    <span className="text-xl font-bold">DIP</span>
+                  </div>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Professional vehicle protection services for California drivers.
+                  </p>
+                </div>
+                
+                {/* Services */}
+                <div>
+                  <h4 className="font-semibold mb-4">Services</h4>
+                  <div className="space-y-2 text-sm text-slate-400">
+                    <div>Vehicle Protection</div>
+                    <div>Roadside Assistance</div>
+                    <div>Emergency Support</div>
+                    <div>Claims Processing</div>
+                  </div>
+                </div>
+                
+                {/* Support */}
+                <div>
+                  <h4 className="font-semibold mb-4">Support</h4>
+                  <div className="space-y-2 text-sm text-slate-400">
+                    <div>24/7 Emergency Line</div>
+                    <div>Member Support</div>
+                    <div>Online Resources</div>
+                    <div>Documentation</div>
+                  </div>
+                </div>
+                
+                {/* Contact */}
+                <div>
+                  <h4 className="font-semibold mb-4">Contact</h4>
+                  <div className="space-y-2 text-sm text-slate-400">
+                    <div>support@dipmembers.com</div>
+                    <div>California, USA</div>
+                    <div>License #ABC123</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-800 pt-8">
+                <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                  <p className="text-slate-400 text-sm">
+                    DIP is a membership program, not an insurance company.
+                  </p>
+                  <p className="text-slate-500 text-sm">
+                    © 2025 Driver Impact Protection. All rights reserved.
+                  </p>
+                </div>
               </div>
             </div>
           </footer>

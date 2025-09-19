@@ -94,95 +94,221 @@ function AuthPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full space-y-6">
-        {/* Logo Section */}
-        <div className="text-center space-y-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/dip-logo.png" alt="DIP Logo" className="h-16 w-auto mx-auto" />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome to DIP</h1>
-            <p className="text-gray-600">Secure access to your membership benefits</p>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/dip-logo.png" alt="DIP Logo" className="h-12 w-auto mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Member Access</h1>
+            <p className="text-slate-600">Sign in to your DIP account or create a new membership</p>
           </div>
-        </div>
 
-        {/* Tab Selector */}
-        <div className="bg-gray-100 p-1 rounded-lg">
-          <div className="grid grid-cols-2 gap-1">
-            <button
-              className={`py-2 px-4 rounded-md font-medium transition-colors ${
-                selectedTab === 0 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-              onClick={() => setSelectedTab(0)}
-            >
-              Log In
-            </button>
-            <button
-              className={`py-2 px-4 rounded-md font-medium transition-colors ${
-                selectedTab === 1 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-              onClick={() => setSelectedTab(1)}
-            >
-              Sign Up
-            </button>
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600 text-sm text-center">{error}</p>
-          </div>
-        )}
-
-        {/* Sign In Form */}
-        {selectedTab === 0 && (
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <input type="email" placeholder="Email" className="input" value={signInEmail} onChange={(e) => setSignInEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" className="input" value={signInPassword} onChange={(e) => setSignInPassword(e.target.value)} required />
-            <button type="submit" disabled={loading} className="btn btn-primary w-full">
-              {loading ? (<div className="flex items-center justify-center"><div className="loading-spinner mr-2"></div>Signing In...</div>) : ('Log In')}
-            </button>
-            <div className="text-center">
-              <button type="button" className="text-sm text-blue-600 hover:underline">Forgot password?</button>
+          {/* Tab Selector */}
+          <div className="bg-slate-100 p-1 rounded-lg mb-6">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                className={`py-3 px-4 rounded-md font-medium transition-colors ${
+                  selectedTab === 0 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                onClick={() => setSelectedTab(0)}
+              >
+                Sign In
+              </button>
+              <button
+                className={`py-3 px-4 rounded-md font-medium transition-colors ${
+                  selectedTab === 1 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                onClick={() => setSelectedTab(1)}
+              >
+                Create Account
+              </button>
             </div>
-          </form>
-        )}
+          </div>
 
-        {/* Sign Up Form */}
-        {selectedTab === 1 && (
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <input type="text" placeholder="First Name" className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-            <input type="text" placeholder="Last Name" className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-            <div>
-              <input type="tel" placeholder="Phone Number" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
-              <p className="text-xs text-gray-500 mt-1">Phone number will be used for request communications</p>
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-700 text-sm text-center font-medium">{error}</p>
             </div>
-            <input type="email" placeholder="Email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <input type="password" placeholder="Confirm Password" className="input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <button type="button" onClick={() => setAgreedToTerms(!agreedToTerms)} className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center ${agreedToTerms ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}>{agreedToTerms && <span className="text-xs">✓</span>}</button>
-                <div className="text-sm">
-                  <p className="text-gray-700">I agree to the Terms of Service and acknowledge the Privacy Policy. I consent to receive disclosures electronically and to use electronic signatures.</p>
-                  <div className="flex space-x-4 mt-2">
-                    <a href="#" className="text-blue-600 hover:underline text-xs">Terms of Service</a>
-                    <a href="#" className="text-blue-600 hover:underline text-xs">Privacy Policy</a>
+          )}
+
+          {/* Sign In Form */}
+          {selectedTab === 0 && (
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={signInEmail} 
+                  onChange={(e) => setSignInEmail(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <input 
+                  type="password" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={signInPassword} 
+                  onChange={(e) => setSignInPassword(e.target.value)} 
+                  required 
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full bg-slate-900 text-white font-semibold py-3 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
+                    Signing In...
                   </div>
+                ) : (
+                  'Sign In to Dashboard'
+                )}
+              </button>
+              <div className="text-center">
+                <button type="button" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  Forgot your password?
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Sign Up Form */}
+          {selectedTab === 1 && (
+            <form onSubmit={handleSignUp} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                    value={firstName} 
+                    onChange={(e) => setFirstName(e.target.value)} 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                    value={lastName} 
+                    onChange={(e) => setLastName(e.target.value)} 
+                    required 
+                  />
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <button type="button" onClick={() => setOptedInMarketing(!optedInMarketing)} className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center ${optedInMarketing ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}>{optedInMarketing && <span className="text-xs">✓</span>}</button>
-                <p className="text-sm text-gray-700">I'd like to receive product updates and promotions.</p>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
+                <input 
+                  type="tel" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={phoneNumber} 
+                  onChange={(e) => setPhoneNumber(e.target.value)} 
+                />
+                <p className="text-xs text-slate-500 mt-1">Used for emergency communications and service requests</p>
               </div>
-              <p className="text-xs text-gray-500">We collect identity (name, driver's license image), vehicle (VIN, photos), insurance details (insurance card image), and contact information to set up your account, verify identity, assist with requests, and prevent fraud. We retain this data only as necessary for these purposes. Learn more in our Privacy Policy.</p>
-            </div>
-            <button type="submit" disabled={!agreedToTerms || loading} className={`btn w-full ${agreedToTerms ? 'btn-primary' : 'btn-secondary cursor-not-allowed'}`}>
-              {loading ? (<div className="flex items-center justify-center"><div className="loading-spinner mr-2"></div>Creating Account...</div>) : ('Sign Up')}
-            </button>
-          </form>
-        )}
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <input 
+                  type="password" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                />
+                <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Confirm Password</label>
+                <input 
+                  type="password" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-colors" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  required 
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setAgreedToTerms(!agreedToTerms)} 
+                    className={`mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      agreedToTerms ? 'bg-slate-900 border-slate-900 text-white' : 'border-slate-300 hover:border-slate-400'
+                    }`}
+                  >
+                    {agreedToTerms && <span className="text-xs font-bold">✓</span>}
+                  </button>
+                  <div className="text-sm">
+                    <p className="text-slate-700 leading-relaxed">
+                      I agree to the <a href="#" className="text-slate-900 font-medium hover:underline">Terms of Service</a> and acknowledge the <a href="#" className="text-slate-900 font-medium hover:underline">Privacy Policy</a>. I consent to receive disclosures electronically.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setOptedInMarketing(!optedInMarketing)} 
+                    className={`mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      optedInMarketing ? 'bg-slate-900 border-slate-900 text-white' : 'border-slate-300 hover:border-slate-400'
+                    }`}
+                  >
+                    {optedInMarketing && <span className="text-xs font-bold">✓</span>}
+                  </button>
+                  <p className="text-sm text-slate-700">Send me updates about new features and services.</p>
+                </div>
+                
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    <strong>Privacy Notice:</strong> We collect personal and vehicle information to provide membership services, verify identity, process service requests, and prevent fraud. Data is securely stored and only retained as necessary. Review our Privacy Policy for complete details.
+                  </p>
+                </div>
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={!agreedToTerms || loading} 
+                className={`w-full font-semibold py-3 rounded-lg transition-colors ${
+                  agreedToTerms 
+                    ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
+                    Creating Account...
+                  </div>
+                ) : (
+                  'Create Membership Account'
+                )}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
