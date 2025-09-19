@@ -202,262 +202,388 @@ function MyVehiclesPageContent() {
         <BackButton />
       </div>
       
-      {/* Clean Add Vehicle Form */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Progress Bar */}
-        <div className="h-1 bg-gray-100">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 ease-out"
-            style={{ 
-              width: `${
-                (!form.make ? 0 : 
-                 !form.model ? 25 : 
-                 !form.year ? 50 : 
-                 !form.state ? 70 : 
-                 form.vin.length !== 17 ? 85 : 
-                 (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 100 : 85)
-              }%` 
-            }}
-          ></div>
-        </div>
-
-        <div className="p-6">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <span className="text-2xl text-white">🚗</span>
+      {/* Quantum Vehicle Registration Portal */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-violet-400 via-purple-500 to-fuchsia-600 rounded-3xl blur-lg opacity-40 group-hover:opacity-60 transition-all duration-500"></div>
+        <div className="relative bg-black/70 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-2xl shadow-purple-500/20 overflow-hidden">
+          {/* Quantum Progress Matrix */}
+          <div className="h-2 bg-gradient-to-r from-black via-gray-800 to-black relative overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-1000 ease-out relative"
+              style={{ 
+                width: `${
+                  (!form.make ? 0 : 
+                   !form.model ? 25 : 
+                   !form.year ? 50 : 
+                   !form.state ? 70 : 
+                   form.vin.length !== 17 ? 85 : 
+                   (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 100 : 85)
+                }%` 
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer"></div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Add Your Vehicle</h2>
-            <p className="text-gray-600">Enter your vehicle details to get started with DIP protection</p>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
           </div>
 
-          {/* Form Steps */}
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Step 1: Vehicle Details */}
-            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-              <div className="flex items-center mb-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold ${
-                  form.make && form.model && form.year 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-blue-500 text-white'
-                }`}>
-                  {form.make && form.model && form.year ? '✓' : '1'}
+          <div className="p-8">
+            {/* Holographic Header */}
+            <div className="text-center mb-10">
+              <div className="relative inline-flex items-center justify-center mb-6">
+                <div className="absolute -inset-4 rounded-full border-2 border-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-spin" style={{ animationDuration: '6s' }}></div>
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 opacity-30 blur-lg animate-pulse"></div>
+                
+                <div className="relative w-20 h-20 bg-gradient-to-br from-violet-400 via-purple-500 to-fuchsia-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50">
+                  <span className="text-3xl">🚗</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Vehicle Information</h3>
-                  <p className="text-gray-600 text-sm">Tell us about your vehicle</p>
-                </div>
+                
+                <div className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></div>
+                <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute top-0 left-0 w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Year</label>
-                  <select
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-gray-900"
-                    value={form.year}
-                    onChange={(e) => setForm({ ...form, year: e.target.value })}
-                  >
-                    <option value="">Select year</option>
-                    {yearOptions.map((y) => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Make</label>
-                  <select
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-gray-900"
-                    value={form.make}
-                    onChange={(e) => {
-                      setForm({ ...form, make: e.target.value, model: '' });
-                    }}
-                  >
-                    <option value="">Select make</option>
-                    {makeOptions.map((mk) => (
-                      <option key={mk} value={mk}>{mk}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Model</label>
-                  <select
-                    className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 ${
-                      !form.make 
-                        ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' 
-                        : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-                    }`}
-                    value={form.model}
-                    onChange={(e) => {
-                      const nextModel = e.target.value;
-                      const makeEntry: any = carData.find((m: any) => m.make === form.make);
-                      const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
-                      const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
-                      setForm({ ...form, model: nextModel, year: years[0] || '' });
-                    }}
-                    disabled={!form.make}
-                  >
-                    <option value="">Select model</option>
-                    {modelOptions.map((md) => (
-                      <option key={md} value={md}>{md}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <h2 className="text-4xl font-black bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent mb-4 tracking-tight">
+                QUANTUM VEHICLE PORTAL
+              </h2>
+              <p className="text-gray-300 text-xl font-medium tracking-wide">
+                Advanced Vehicle Registration Matrix
+              </p>
             </div>
 
-            {/* Step 2: Registration Details */}
-            <div className={`rounded-xl p-6 border transition-all duration-300 ${
-              form.make && form.model && form.year
-                ? 'bg-emerald-50 border-emerald-200'
-                : 'bg-gray-50 border-gray-200'
-            }`}>
-              <div className="flex items-center mb-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold ${
-                  form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)
-                    ? 'bg-green-500 text-white' 
-                    : form.make && form.model && form.year
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-400 text-white'
-                }`}>
-                  {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? '✓' : '2'}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Registration Details</h3>
-                  <p className="text-gray-600 text-sm">Vehicle identification information</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
-                  <input 
-                    className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 font-bold text-center uppercase ${
-                      form.make && form.model && form.year
-                        ? 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
-                        : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
-                    }`}
-                    placeholder="CA"
-                    value={form.state}
-                    maxLength={2}
-                    disabled={!form.make || !form.model || !form.year}
-                    style={{ textTransform: 'uppercase' }}
-                    onChange={(e) => {
-                      const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-                      setForm({ ...form, state: value });
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">2-letter state code</p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">VIN</label>
-                  <input 
-                    className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 font-mono text-sm uppercase ${
-                      form.make && form.model && form.year
-                        ? 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
-                        : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
-                    }`}
-                    placeholder="1HGBH41JXMN109186"
-                    value={form.vin}
-                    maxLength={17}
-                    disabled={!form.make || !form.model || !form.year}
-                    style={{ textTransform: 'uppercase' }}
-                    onChange={(e) => {
-                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
-                      setForm({ ...form, vin: value });
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    <span className={form.vin.length === 17 ? 'text-green-600 font-medium' : ''}>
-                      {form.vin.length}/17 characters
-                    </span>
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">License Plate</label>
-                  <input 
-                    className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 font-bold text-center uppercase ${
-                      form.make && form.model && form.year
-                        ? 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
-                        : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
-                    }`}
-                    placeholder="ABC123"
-                    value={form.licensePlate}
-                    maxLength={7}
-                    disabled={!form.make || !form.model || !form.year}
-                    style={{ textTransform: 'uppercase' }}
-                    onChange={(e) => {
-                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
-                      setForm({ ...form, licensePlate: value });
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    <span className={(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 'text-green-600 font-medium' : ''}>
-                      {form.licensePlate.length}/6-7 characters
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="text-center pt-4">
-              <button 
-                className={`inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white rounded-xl shadow-lg transition-all duration-200 ${
-                  (!form.make || !form.model || !form.year || !form.state ||
-                   form.vin.length !== 17 ||
-                   form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
-                   adding)
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-xl hover:scale-105'
-                }`}
-                onClick={createVehicle}
-                disabled={
-                  !form.make || !form.model || !form.year || !form.state ||
-                  form.vin.length !== 17 ||
-                  form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
-                  adding
-                }
-              >
-                {adding ? (
-                  <>
-                    <div className="loading-spinner mr-2"></div>
-                    <span>Adding Vehicle...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="mr-2">🚗</span>
-                    <span>Add Vehicle</span>
-                  </>
-                )}
-              </button>
-              
-              {/* Success Message */}
-              {(form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
-                <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="flex items-center justify-center space-x-2 text-green-700">
-                    <span>✅</span>
-                    <span className="font-semibold">Ready to add your {form.year} {form.make} {form.model}!</span>
+            {/* Holographic Form Matrix */}
+            <div className="max-w-5xl mx-auto space-y-8">
+              {/* Phase 1: Vehicle Intelligence */}
+              <div className="group/phase relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-2xl blur opacity-30 group-hover/phase:opacity-50 transition-all duration-500"></div>
+                <div className="relative bg-black/50 backdrop-blur-2xl border border-cyan-400/30 rounded-2xl p-8 shadow-2xl shadow-cyan-500/20">
+                  <div className="flex items-center mb-6">
+                    <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mr-4 transition-all duration-500 ${
+                      form.make && form.model && form.year 
+                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50' 
+                        : 'bg-gradient-to-br from-cyan-400 to-blue-500 shadow-2xl shadow-cyan-500/50'
+                    }`}>
+                      {form.make && form.model && form.year ? (
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="text-xl font-black text-white">1</span>
+                      )}
+                      {form.make && form.model && form.year && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl animate-pulse opacity-50"></div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent tracking-wide">
+                        VEHICLE INTELLIGENCE
+                      </h3>
+                      <p className="text-cyan-300 font-medium">Neural vehicle identification</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Year</label>
+                      <div className="relative">
+                        <select
+                          className="w-full px-4 py-4 bg-black/40 backdrop-blur-xl border border-cyan-400/30 rounded-xl focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 text-white font-bold shadow-lg shadow-cyan-500/10"
+                          value={form.year}
+                          onChange={(e) => setForm({ ...form, year: e.target.value })}
+                        >
+                          <option value="" className="bg-black text-gray-400">Select year</option>
+                          {yearOptions.map((y) => (
+                            <option key={y} value={y} className="bg-black text-white">{y}</option>
+                          ))}
+                        </select>
+                        {form.year && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Make</label>
+                      <div className="relative">
+                        <select
+                          className="w-full px-4 py-4 bg-black/40 backdrop-blur-xl border border-cyan-400/30 rounded-xl focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 text-white font-bold shadow-lg shadow-cyan-500/10"
+                          value={form.make}
+                          onChange={(e) => {
+                            setForm({ ...form, make: e.target.value, model: '' });
+                          }}
+                        >
+                          <option value="" className="bg-black text-gray-400">Select make</option>
+                          {makeOptions.map((mk) => (
+                            <option key={mk} value={mk} className="bg-black text-white">{mk}</option>
+                          ))}
+                        </select>
+                        {form.make && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Model</label>
+                      <div className="relative">
+                        <select
+                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-bold shadow-lg ${
+                            !form.make 
+                              ? 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed' 
+                              : 'bg-black/40 border-cyan-400/30 text-white focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 shadow-cyan-500/10'
+                          }`}
+                          value={form.model}
+                          onChange={(e) => {
+                            const nextModel = e.target.value;
+                            const makeEntry: any = carData.find((m: any) => m.make === form.make);
+                            const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
+                            const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
+                            setForm({ ...form, model: nextModel, year: years[0] || '' });
+                          }}
+                          disabled={!form.make}
+                        >
+                          <option value="" className="bg-black text-gray-400">Select model</option>
+                          {modelOptions.map((md) => (
+                            <option key={md} value={md} className="bg-black text-white">{md}</option>
+                          ))}
+                        </select>
+                        {form.model && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Phase 2: Quantum Registration */}
+              <div className="group/phase relative">
+                <div className={`absolute -inset-1 rounded-2xl blur transition-all duration-500 ${
+                  form.make && form.model && form.year
+                    ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-green-600 opacity-30 group-hover/phase:opacity-50'
+                    : 'bg-gradient-to-r from-gray-600 to-gray-700 opacity-20'
+                }`}></div>
+                <div className={`relative backdrop-blur-2xl border rounded-2xl p-8 shadow-2xl transition-all duration-500 ${
+                  form.make && form.model && form.year
+                    ? 'bg-black/50 border-emerald-400/30 shadow-emerald-500/20'
+                    : 'bg-black/30 border-gray-600/30 shadow-gray-500/10'
+                }`}>
+                  <div className="flex items-center mb-6">
+                    <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mr-4 transition-all duration-500 ${
+                      form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)
+                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50' 
+                        : form.make && form.model && form.year
+                          ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50'
+                          : 'bg-gradient-to-br from-gray-500 to-gray-600 shadow-xl shadow-gray-500/30'
+                    }`}>
+                      {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? (
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="text-xl font-black text-white">2</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black bg-gradient-to-r from-white via-emerald-200 to-teal-200 bg-clip-text text-transparent tracking-wide">
+                        QUANTUM REGISTRATION
+                      </h3>
+                      <p className="text-emerald-300 font-medium">Secure identification matrix</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">State</label>
+                      <div className="relative">
+                        <input 
+                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-lg ${
+                            form.make && form.model && form.year
+                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
+                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
+                          }`}
+                          placeholder="CA"
+                          value={form.state}
+                          maxLength={2}
+                          disabled={!form.make || !form.model || !form.year}
+                          style={{ textTransform: 'uppercase' }}
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+                            setForm({ ...form, state: value });
+                          }}
+                        />
+                        {form.state && form.state.length === 2 && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">VIN Matrix</label>
+                      <div className="relative">
+                        <input 
+                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-mono text-sm uppercase tracking-wide shadow-lg ${
+                            form.make && form.model && form.year
+                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
+                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
+                          }`}
+                          placeholder="1HGBH41JXMN109186"
+                          value={form.vin}
+                          maxLength={17}
+                          disabled={!form.make || !form.model || !form.year}
+                          style={{ textTransform: 'uppercase' }}
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+                            setForm({ ...form, vin: value });
+                          }}
+                        />
+                        <div className="absolute bottom-1 left-2 text-xs text-emerald-400 font-mono">
+                          <span className={form.vin.length === 17 ? 'text-emerald-300 font-bold' : 'text-gray-500'}>
+                            [{form.vin.length}/17] CHARS
+                          </span>
+                        </div>
+                        {form.vin.length === 17 && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="group/field relative">
+                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">License ID</label>
+                      <div className="relative">
+                        <input 
+                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-lg ${
+                            form.make && form.model && form.year
+                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
+                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
+                          }`}
+                          placeholder="ABC123"
+                          value={form.licensePlate}
+                          maxLength={7}
+                          disabled={!form.make || !form.model || !form.year}
+                          style={{ textTransform: 'uppercase' }}
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+                            setForm({ ...form, licensePlate: value });
+                          }}
+                        />
+                        <div className="absolute bottom-1 left-2 text-xs text-emerald-400 font-mono">
+                          <span className={(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 'text-emerald-300 font-bold' : 'text-gray-500'}>
+                            [{form.licensePlate.length}/6-7] CHARS
+                          </span>
+                        </div>
+                        {(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantum Activation Portal */}
+              <div className="text-center pt-8">
+                <div className="relative inline-block">
+                  <button 
+                    className={`group/quantum relative overflow-hidden inline-flex items-center justify-center px-12 py-6 text-2xl font-black text-white rounded-2xl shadow-2xl transform transition-all duration-500 ${
+                      (!form.make || !form.model || !form.year || !form.state ||
+                       form.vin.length !== 17 ||
+                       form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
+                       adding)
+                        ? 'bg-gradient-to-r from-gray-600 to-gray-700 cursor-not-allowed scale-95 shadow-gray-500/20'
+                        : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:shadow-2xl hover:shadow-purple-500/30 hover:scale-110 cursor-pointer'
+                    }`}
+                    onClick={createVehicle}
+                    disabled={
+                      !form.make || !form.model || !form.year || !form.state ||
+                      form.vin.length !== 17 ||
+                      form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
+                      adding
+                    }
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 opacity-0 group-hover/quantum:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/quantum:translate-x-full transition-transform duration-1000"></div>
+                    
+                    {adding ? (
+                      <div className="relative flex items-center">
+                        <div className="loading-spinner mr-4"></div>
+                        <span className="tracking-wider">QUANTUM ACTIVATION...</span>
+                      </div>
+                    ) : (
+                      <div className="relative flex items-center">
+                        <span className="mr-4 text-3xl">🚗</span>
+                        <span className="tracking-wider">ACTIVATE QUANTUM PROTECTION</span>
+                        <span className="ml-4 text-3xl">⚡</span>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Quantum Indicators */}
+                  {!adding && (form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
+                    <>
+                      <div className="absolute -top-3 -right-3 w-6 h-6 bg-emerald-400 rounded-full animate-ping"></div>
+                      <div className="absolute -bottom-3 -left-3 w-4 h-4 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                      <div className="absolute -top-3 -left-3 w-3 h-3 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                      <div className="absolute -bottom-3 -right-3 w-5 h-5 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Quantum Success Matrix */}
+                {(form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
+                  <div className="mt-8 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl blur-xl opacity-40 animate-pulse"></div>
+                    <div className="relative bg-black/60 backdrop-blur-2xl border border-emerald-400/40 rounded-2xl p-6 shadow-2xl shadow-emerald-500/30">
+                      <div className="flex items-center justify-center space-x-4">
+                        <div className="relative">
+                          <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/50">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-30"></div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-black text-white tracking-wider mb-1">
+                            QUANTUM LOCK: {form.year} {form.make} {form.model}
+                          </p>
+                          <p className="text-emerald-300 font-bold tracking-wide">PROTECTION MATRIX READY</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Vehicles Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">My Vehicles</h2>
-          <div className="flex items-center space-x-2 text-sm text-muted">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{vehicles.filter(v => v.isActive).length} active</span>
-            <span>•</span>
-            <span>{vehicles.length} total</span>
+      {/* Quantum Vehicle Fleet */}
+      <div className="relative">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-500/50">
+              <span className="text-xl text-white">🚗</span>
+            </div>
+            <h2 className="text-3xl font-black bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent tracking-wide">
+              QUANTUM FLEET
+            </h2>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="bg-black/50 backdrop-blur-xl border border-emerald-400/30 rounded-xl px-4 py-2 shadow-lg shadow-emerald-500/20">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span className="text-emerald-300 font-bold text-sm tracking-wider">{vehicles.filter(v => v.isActive).length} ACTIVE</span>
+              </div>
+            </div>
+            <div className="bg-black/50 backdrop-blur-xl border border-cyan-400/30 rounded-xl px-4 py-2 shadow-lg shadow-cyan-500/20">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                <span className="text-cyan-300 font-bold text-sm tracking-wider">{vehicles.length} TOTAL</span>
+              </div>
+            </div>
           </div>
         </div>
 
