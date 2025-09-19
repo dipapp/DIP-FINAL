@@ -110,7 +110,6 @@ function ManageSubscriptionPageContent() {
               </div>
             </div>
           </div>
-        </div>
       </div>
 
       {/* Billing Management */}

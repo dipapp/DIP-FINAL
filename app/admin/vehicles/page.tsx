@@ -86,6 +86,7 @@ export default function AdminVehiclesPage() {
             <p className="text-gray-600">Manage all member vehicles and their protection status</p>
           </div>
         </div>
+        
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
