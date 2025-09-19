@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { subscribeMyProfile, updateMyProfile } from '@/lib/firebase/memberActions';
 import BackButton from '@/components/BackButton';
 

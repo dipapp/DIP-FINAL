@@ -1,3 +1,4 @@
+import React from 'react'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Footer Background Effects */}
             <div className="absolute inset-0">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900 via-slate-900 to-black"></div>
-              <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%239C92AC" fill-opacity="0.03"%3E%3Ccircle cx="20" cy="20" r="1"/%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-full opacity-50">
+                <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(156, 146, 172, 0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+              </div>
               
               {/* Floating Orbs */}
               <div className="absolute top-10 left-20 w-32 h-32 bg-gradient-to-r from-cyan-400/10 to-blue-500/10 rounded-full blur-2xl animate-pulse"></div>
