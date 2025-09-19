@@ -11,59 +11,55 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
     return () => unsub();
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const isAdmin = !!user && user.email === 'admin@dipmembers.com';
-  const isHomePage = pathname === '/';
-  const isDashboard = pathname?.startsWith('/dashboard');
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo - AAA Style */}
           <Link href="/" className="flex items-center space-x-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/dip-logo.png" 
               alt="DIP Logo" 
-              className="h-8 w-auto" 
+              className="h-10 w-auto" 
             />
-            <span className="text-xl font-bold text-slate-900">DIP</span>
+            <div className="text-2xl font-bold text-blue-600">DIP</div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - AAA Style */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 
-              className={`font-medium transition-colors ${
-                pathname === '/' 
-                  ? 'text-slate-900 border-b-2 border-slate-900 pb-1' 
-                  : 'text-slate-600 hover:text-slate-900'
+              className={`font-medium transition-colors hover:text-blue-600 ${
+                pathname === '/' ? 'text-blue-600' : 'text-gray-700'
               }`}
               href={user ? '/dashboard' : '/'}
             >
               Home
             </Link>
             
+            {user && (
+              <Link 
+                className={`font-medium transition-colors hover:text-blue-600 ${
+                  pathname?.startsWith('/dashboard') ? 'text-blue-600' : 'text-gray-700'
+                }`}
+                href="/dashboard"
+              >
+                My Account
+              </Link>
+            )}
+            
             {isAdmin && (
               <Link 
-                className={`font-medium transition-colors ${
-                  pathname?.startsWith('/admin') 
-                    ? 'text-slate-900 border-b-2 border-slate-900 pb-1' 
-                    : 'text-slate-600 hover:text-slate-900'
+                className={`font-medium transition-colors hover:text-blue-600 ${
+                  pathname?.startsWith('/admin') ? 'text-blue-600' : 'text-gray-700'
                 }`}
                 href="/admin"
               >
@@ -72,59 +68,40 @@ export default function Navbar() {
             )}
             
             {user ? (
-              <>
-                <Link 
-                  className={`font-medium transition-colors ${
-                    pathname?.startsWith('/dashboard') 
-                      ? 'text-slate-900 border-b-2 border-slate-900 pb-1' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                  href="/dashboard"
-                >
-                  Dashboard
-                </Link>
-                
-                <button
-                  className="font-medium text-slate-600 hover:text-slate-900 transition-colors"
-                  onClick={async () => {
-                    await signOut(auth);
-                    router.push('/');
-                  }}
-                >
-                  Sign out
-                </button>
-              </>
+              <button
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                onClick={async () => {
+                  await signOut(auth);
+                  router.push('/');
+                }}
+              >
+                Sign Out
+              </button>
             ) : (
-              <>
+              <div className="flex items-center space-x-4">
                 <Link 
-                  className="font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                   href="/auth/sign-up?tab=login"
                 >
-                  Sign in
+                  Sign In
                 </Link>
-                
                 <Link 
-                  className="bg-slate-900 text-white font-medium px-6 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+                  className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   href="/auth/sign-up?tab=signup"
                 >
-                  Get Started
+                  Join Now
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
+            className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle mobile menu"
           >
-            <svg 
-              className="w-6 h-6" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
@@ -136,13 +113,11 @@ export default function Navbar() {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white">
-            <div className="py-6 space-y-1 px-4">
+          <div className="md:hidden border-t border-gray-200 bg-white">
+            <div className="py-4 space-y-2 px-4">
               <Link 
-                className={`block px-3 py-2 font-medium rounded-lg transition-colors ${
-                  pathname === '/' 
-                    ? 'bg-slate-900 text-white' 
-                    : 'text-slate-700 hover:bg-slate-100'
+                className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
+                  pathname === '/' ? 'text-blue-600' : 'text-gray-700'
                 }`}
                 href={user ? '/dashboard' : '/'}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -150,12 +125,22 @@ export default function Navbar() {
                 Home
               </Link>
               
+              {user && (
+                <Link 
+                  className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
+                    pathname?.startsWith('/dashboard') ? 'text-blue-600' : 'text-gray-700'
+                  }`}
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Account
+                </Link>
+              )}
+              
               {isAdmin && (
                 <Link 
-                  className={`block px-3 py-2 font-medium rounded-lg transition-colors ${
-                    pathname?.startsWith('/admin') 
-                      ? 'bg-slate-900 text-white' 
-                      : 'text-slate-700 hover:bg-slate-100'
+                  className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
+                    pathname?.startsWith('/admin') ? 'text-blue-600' : 'text-gray-700'
                   }`}
                   href="/admin"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -165,48 +150,33 @@ export default function Navbar() {
               )}
               
               {user ? (
-                <>
-                  <Link 
-                    className={`block px-3 py-2 font-medium rounded-lg transition-colors ${
-                      pathname?.startsWith('/dashboard') 
-                        ? 'bg-slate-900 text-white' 
-                        : 'text-slate-700 hover:bg-slate-100'
-                    }`}
-                    href="/dashboard"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  
-                  <button
-                    className="w-full text-left px-3 py-2 font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                    onClick={async () => {
-                      await signOut(auth);
-                      router.push('/');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Sign out
-                  </button>
-                </>
+                <button
+                  className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  onClick={async () => {
+                    await signOut(auth);
+                    router.push('/');
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </button>
               ) : (
-                <>
+                <div className="space-y-2 pt-2">
                   <Link 
-                    className="block px-3 py-2 font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="block py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
                     href="/auth/sign-up?tab=login"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sign in
+                    Sign In
                   </Link>
-                  
                   <Link 
-                    className="block px-3 py-2 font-medium bg-slate-900 text-white hover:bg-slate-800 rounded-lg transition-colors mt-4"
+                    className="block bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
                     href="/auth/sign-up?tab=signup"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Get Started
+                    Join Now
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>

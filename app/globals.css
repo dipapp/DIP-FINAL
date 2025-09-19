@@ -2,243 +2,160 @@
 @tailwind components;
 @tailwind utilities;
 
+/* AAA-Style Design System */
 :root {
-  --bg: #ffffff;
-  --card: #ffffff;
-  --card-hover: #f8fafc;
-  --text: #1e293b;
-  --muted: #64748b;
-  --brand: #87ceeb;
-  --brand-dark: #5fb3d4;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --border: #e2e8f0;
+  --primary-blue: #2563eb;
+  --primary-blue-dark: #1d4ed8;
+  --primary-blue-light: #3b82f6;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-900: #111827;
 }
 
 html, body {
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.container-app {
-  @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-.card {
-  @apply rounded-2xl p-4 sm:p-6 shadow-lg border transition-all duration-300;
-  background: var(--card);
-  border-color: var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.card:hover {
-  background: var(--card-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.card-accent {
-  @apply card;
-  background: linear-gradient(135deg, rgba(135, 206, 235, 0.1) 0%, rgba(135, 206, 235, 0.05) 100%);
-  border: 1px solid rgba(135, 206, 235, 0.3);
-}
-
+/* AAA-Style Components */
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition-all duration-200 shadow-md border;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  @apply inline-flex items-center justify-center px-6 py-3 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
 }
 
 .btn-primary {
-  background: var(--brand);
-  color: white;
-  border-color: var(--brand-dark);
-}
-
-.btn-primary:hover {
-  background: var(--brand-dark);
-  border-color: var(--brand-dark);
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
 }
 
 .btn-secondary {
-  background: white;
-  color: var(--text);
-  border-color: var(--border);
-}
-
-.btn-secondary:hover {
-  background: var(--card-hover);
+  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500;
 }
 
 .btn-success {
-  background: var(--success);
-  color: white;
-  border-color: #059669;
-}
-
-.btn-success:hover {
-  background: #059669;
+  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
 }
 
 .btn-warning {
-  background: var(--warning);
-  color: white;
-  border-color: #d97706;
-}
-
-.btn-warning:hover {
-  background: #d97706;
+  @apply bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500;
 }
 
 .btn-danger {
-  background: var(--error);
-  color: white;
-  border-color: #dc2626;
-}
-
-.btn-danger:hover {
-  background: #dc2626;
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
 }
 
 .input {
-  @apply w-full rounded-xl px-4 py-3 outline-none border transition-all duration-200 text-base;
-  background: white;
-  border-color: var(--border);
-  color: #000000;
-}
-
-.input:focus {
-  border-color: var(--brand);
-  background: white;
-  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.1);
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
 }
 
 .label {
-  @apply block text-base font-medium mb-2;
-  color: #000000;
+  @apply block text-sm font-medium text-gray-700 mb-2;
 }
 
-.link {
-  @apply transition-all duration-200 font-medium;
-  color: var(--brand);
+.card {
+  @apply bg-white rounded-lg border border-gray-200 shadow-sm;
 }
 
-.link:hover {
-  color: #60a5fa;
-  text-decoration: underline;
+.card-header {
+  @apply px-6 py-4 border-b border-gray-200;
 }
 
+.card-body {
+  @apply p-6;
+}
+
+/* Status Badges - AAA Style */
 .badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
 }
 
 .badge-success {
-  @apply badge;
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  @apply bg-green-100 text-green-800;
 }
 
 .badge-warning {
-  @apply badge;
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  @apply bg-orange-100 text-orange-800;
 }
 
 .badge-error {
-  @apply badge;
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  @apply bg-red-100 text-red-800;
 }
 
 .badge-info {
-  @apply badge;
-  background: rgba(135, 206, 235, 0.1);
-  color: var(--brand-dark);
-  border: 1px solid rgba(135, 206, 235, 0.3);
+  @apply bg-blue-100 text-blue-800;
 }
 
-.table-row {
-  @apply border-t transition-all duration-200 cursor-pointer;
-  border-color: var(--border);
+.badge-gray {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  @apply inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin;
+}
+
+/* Table Styles - AAA Style */
+.table {
+  @apply w-full border-collapse;
+}
+
+.table th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50;
+}
+
+.table td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200;
 }
 
 .table-row:hover {
-  background: rgba(135, 206, 235, 0.08);
-  border-color: rgba(135, 206, 235, 0.4);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px -4px rgba(135, 206, 235, 0.2);
+  @apply bg-gray-50;
 }
 
-.loading-spinner {
-  @apply inline-block animate-spin rounded-full border-2 border-solid border-current border-r-transparent;
-  width: 1rem;
-  height: 1rem;
+/* Form Groups */
+.form-group {
+  @apply space-y-4;
+}
+
+.form-row {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+/* Navigation Tabs - AAA Style */
+.nav-tabs {
+  @apply flex border-b border-gray-200;
 }
 
 .nav-tab {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer border;
-  color: #000000;
-  border-color: var(--border);
+  @apply px-6 py-3 font-medium border-b-2 transition-colors;
 }
 
 .nav-tab.active {
-  background: rgba(135, 206, 235, 0.15);
-  color: var(--brand-dark);
-  border: 1px solid rgba(135, 206, 235, 0.3);
+  @apply border-blue-600 text-blue-600;
 }
 
-.nav-tab:hover:not(.active) {
-  background: rgba(135, 206, 235, 0.12);
-  color: var(--brand-dark);
-  border-color: rgba(135, 206, 235, 0.4);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 14px -8px rgba(0, 0, 0, 0.15);
+.nav-tab:not(.active) {
+  @apply border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Alert Components - AAA Style */
+.alert {
+  @apply p-4 rounded-lg border;
 }
 
-/* Selectable row for lists/quick actions */
-.selectable-row {
-  @apply flex items-center justify-between p-3 rounded-lg border transition-all duration-200 cursor-pointer;
-  border-color: var(--border);
-  background: white;
+.alert-success {
+  @apply bg-green-50 border-green-200 text-green-700;
 }
 
-.selectable-row:hover {
-  background: rgba(135, 206, 235, 0.08);
-  border-color: rgba(135, 206, 235, 0.4);
-  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.08);
+.alert-warning {
+  @apply bg-orange-50 border-orange-200 text-orange-700;
 }
 
-.selectable-row .chev {
-  @apply text-gray-400 transition-transform;
+.alert-error {
+  @apply bg-red-50 border-red-200 text-red-700;
 }
 
-.selectable-row:hover .chev {
-  transform: translateX(4px);
-  color: var(--brand-dark);
-}
-
-/* Animation for shimmer effect */
-@keyframes shimmer {
-  0% { transform: translateX(-100%) skewX(-12deg); }
-  100% { transform: translateX(200%) skewX(-12deg); }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+.alert-info {
+  @apply bg-blue-50 border-blue-200 text-blue-700;
 }

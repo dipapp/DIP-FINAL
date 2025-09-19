@@ -40,13 +40,17 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="card text-center">
-        <div className="mb-4">
-          <div className="text-6xl mb-4">🔐</div>
-          <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
-          <p className="text-muted mb-6">Please sign in to access your dashboard.</p>
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div className="mb-6">
+          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to access your DIP account.</p>
         </div>
-        <Link className="btn btn-primary" href="/auth/sign-in">Sign In</Link>
+        <Link className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors" href="/auth/sign-up?tab=login">
+          Sign In
+        </Link>
       </div>
     );
   }
@@ -57,170 +61,139 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Welcome Card */}
-        <div className="lg:col-span-2">
-          <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-1">
-                  Welcome back, {displayName}
-                </h2>
-                <p className="text-slate-600">
-                  Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}
-                </p>
-              </div>
-            </div>
-            
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-white rounded-lg border border-slate-200">
-                <div className="text-2xl font-bold text-slate-900 mb-1">{stats.vehicles}</div>
-                <div className="text-slate-600 text-sm font-medium">Vehicles</div>
-              </div>
-              
-              <div className="text-center p-4 bg-white rounded-lg border border-slate-200">
-                <div className="text-2xl font-bold text-slate-900 mb-1">{stats.activeVehicles}</div>
-                <div className="text-slate-600 text-sm font-medium">Active</div>
-              </div>
-              
-              <div className="text-center p-4 bg-white rounded-lg border border-slate-200">
-                <div className="text-2xl font-bold text-slate-900 mb-1">{stats.requests}</div>
-                <div className="text-slate-600 text-sm font-medium">Requests</div>
-              </div>
+      {/* Welcome Section - AAA Style */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Welcome back, {displayName}
+            </h2>
+            <p className="text-gray-600">
+              Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+              Active Member
             </div>
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg p-6 border border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Quick Actions
-            </h3>
-            
-            <div className="space-y-3">
-              <Link href="/dashboard/vehicles" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-slate-900">Add Vehicle</div>
-                  <div className="text-slate-600 text-sm">Register new vehicle</div>
-                </div>
-                <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-              
-              <Link href="/dashboard/claims" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-slate-900">Submit Request</div>
-                  <div className="text-slate-600 text-sm">Get assistance</div>
-                </div>
-                <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-              
-              <Link href="/dashboard/profile" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-slate-900">Update Profile</div>
-                  <div className="text-slate-600 text-sm">Edit information</div>
-                </div>
-                <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+        
+        {/* Account Summary */}
+        <div className="grid grid-cols-3 gap-6">
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600 mb-1">{stats.vehicles}</div>
+            <div className="text-gray-700 text-sm font-medium">Vehicles</div>
+          </div>
+          
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600 mb-1">{stats.activeVehicles}</div>
+            <div className="text-gray-700 text-sm font-medium">Protected</div>
+          </div>
+          
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-2xl font-bold text-gray-700 mb-1">{stats.requests}</div>
+            <div className="text-gray-700 text-sm font-medium">Requests</div>
           </div>
         </div>
       </div>
 
-      {/* Admin Section */}
+      {/* Quick Actions - AAA Style */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Manage Your Vehicles
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Add vehicles to your account to ensure they're protected under your DIP membership.
+          </p>
+          <Link 
+            href="/dashboard/vehicles" 
+            className="inline-flex items-center bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Vehicle
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Request Assistance
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Need help? Submit a service request and get connected with professional assistance.
+          </p>
+          <Link 
+            href="/dashboard/claims" 
+            className="inline-flex items-center bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Get Help Now
+          </Link>
+        </div>
+      </div>
+
+      {/* Admin Access */}
       {user?.email === 'admin@dipmembers.com' && (
-        <div className="bg-orange-50 rounded-lg border border-orange-200 p-6">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Administrator Access
-              </h2>
-              <p className="text-slate-600">
-                Full system management capabilities
+              </h3>
+              <p className="text-gray-600">
+                Manage users, vehicles, and service requests across the platform.
               </p>
             </div>
+            <Link 
+              href="/admin" 
+              className="bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              Admin Console
+            </Link>
           </div>
-          
-          <p className="text-slate-700 mb-6 leading-relaxed">
-            Access the administrative console to manage users, vehicles, and service requests across the entire platform.
-          </p>
-          
-          <Link href="/admin" className="inline-flex items-center bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Access Admin Console
-          </Link>
         </div>
       )}
 
-      {/* Tips & Information */}
+      {/* Member Tips */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">Membership Benefits</h3>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Keep Vehicles Active</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                Ensure your vehicles are marked as "Active" in your account to receive full membership benefits and coverage.
+              </p>
+            </div>
           </div>
-          <p className="text-slate-700 leading-relaxed">
-            Ensure your vehicles are marked as "Active" to receive full membership benefits and comprehensive protection coverage.
-          </p>
         </div>
-        
-        <div className="bg-green-50 rounded-lg border border-green-200 p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">Service Requests</h3>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Quick Service Requests</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                For faster assistance, have your vehicle information and location ready when submitting service requests.
+              </p>
+            </div>
           </div>
-          <p className="text-slate-700 leading-relaxed">
-            Provide clear photos and accurate details when submitting service requests for faster assistance and better service outcomes.
-          </p>
         </div>
       </div>
     </div>
   );
 }
-
-
