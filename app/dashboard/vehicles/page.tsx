@@ -196,20 +196,34 @@ function MyVehiclesPageContent() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Back Button */}
       <div className="flex justify-start">
         <BackButton />
       </div>
       
-      {/* Quantum Vehicle Registration Portal */}
-      <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-violet-400 via-purple-500 to-fuchsia-600 rounded-3xl blur-lg opacity-40 group-hover:opacity-60 transition-all duration-500"></div>
-        <div className="relative bg-black/70 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-2xl shadow-purple-500/20 overflow-hidden">
-          {/* Quantum Progress Matrix */}
-          <div className="h-2 bg-gradient-to-r from-black via-gray-800 to-black relative overflow-hidden">
+      {/* Add Vehicle Form */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Add New Vehicle
+          </h2>
+          <p className="text-gray-600">
+            Add your vehicle to your DIP membership for protection and benefits
+          </p>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="mb-6">
+          <div className="bg-gray-200 rounded-full h-2 mb-2">
             <div 
-              className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-1000 ease-out relative"
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ 
                 width: `${
                   (!form.make ? 0 : 
@@ -220,383 +234,297 @@ function MyVehiclesPageContent() {
                    (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 100 : 85)
                 }%` 
               }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer"></div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+            ></div>
           </div>
+          <p className="text-sm text-gray-500 text-center">
+            Complete all fields to add your vehicle
+          </p>
+        </div>
 
-          <div className="p-8">
-            {/* Holographic Header */}
-            <div className="text-center mb-10">
-              <div className="relative inline-flex items-center justify-center mb-6">
-                <div className="absolute -inset-4 rounded-full border-2 border-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-spin" style={{ animationDuration: '6s' }}></div>
-                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 opacity-30 blur-lg animate-pulse"></div>
-                
-                <div className="relative w-20 h-20 bg-gradient-to-br from-violet-400 via-purple-500 to-fuchsia-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50">
-                  <span className="text-3xl">🚗</span>
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
-                </div>
-                
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></div>
-                <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-                <div className="absolute top-0 left-0 w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
-              </div>
-              
-              <h2 className="text-4xl font-black bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent mb-4 tracking-tight">
-                QUANTUM VEHICLE PORTAL
-              </h2>
-              <p className="text-gray-300 text-xl font-medium tracking-wide">
-                Advanced Vehicle Registration Matrix
-              </p>
-            </div>
-
-            {/* Holographic Form Matrix */}
-            <div className="max-w-5xl mx-auto space-y-8">
-              {/* Phase 1: Vehicle Intelligence */}
-              <div className="group/phase relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-2xl blur opacity-30 group-hover/phase:opacity-50 transition-all duration-500"></div>
-                <div className="relative bg-black/50 backdrop-blur-2xl border border-cyan-400/30 rounded-2xl p-8 shadow-2xl shadow-cyan-500/20">
-                  <div className="flex items-center mb-6">
-                    <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mr-4 transition-all duration-500 ${
-                      form.make && form.model && form.year 
-                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50' 
-                        : 'bg-gradient-to-br from-cyan-400 to-blue-500 shadow-2xl shadow-cyan-500/50'
-                    }`}>
-                      {form.make && form.model && form.year ? (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xl font-black text-white">1</span>
-                      )}
-                      {form.make && form.model && form.year && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl animate-pulse opacity-50"></div>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent tracking-wide">
-                        VEHICLE INTELLIGENCE
-                      </h3>
-                      <p className="text-cyan-300 font-medium">Neural vehicle identification</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Year</label>
-                      <div className="relative">
-                        <select
-                          className="w-full px-4 py-4 bg-black/40 backdrop-blur-xl border border-cyan-400/30 rounded-xl focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 text-white font-bold shadow-lg shadow-cyan-500/10"
-                          value={form.year}
-                          onChange={(e) => setForm({ ...form, year: e.target.value })}
-                        >
-                          <option value="" className="bg-black text-gray-400">Select year</option>
-                          {yearOptions.map((y) => (
-                            <option key={y} value={y} className="bg-black text-white">{y}</option>
-                          ))}
-                        </select>
-                        {form.year && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Make</label>
-                      <div className="relative">
-                        <select
-                          className="w-full px-4 py-4 bg-black/40 backdrop-blur-xl border border-cyan-400/30 rounded-xl focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 text-white font-bold shadow-lg shadow-cyan-500/10"
-                          value={form.make}
-                          onChange={(e) => {
-                            setForm({ ...form, make: e.target.value, model: '' });
-                          }}
-                        >
-                          <option value="" className="bg-black text-gray-400">Select make</option>
-                          {makeOptions.map((mk) => (
-                            <option key={mk} value={mk} className="bg-black text-white">{mk}</option>
-                          ))}
-                        </select>
-                        {form.make && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-cyan-300 mb-3 tracking-wider uppercase">Model</label>
-                      <div className="relative">
-                        <select
-                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-bold shadow-lg ${
-                            !form.make 
-                              ? 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed' 
-                              : 'bg-black/40 border-cyan-400/30 text-white focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 shadow-cyan-500/10'
-                          }`}
-                          value={form.model}
-                          onChange={(e) => {
-                            const nextModel = e.target.value;
-                            const makeEntry: any = carData.find((m: any) => m.make === form.make);
-                            const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
-                            const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
-                            setForm({ ...form, model: nextModel, year: years[0] || '' });
-                          }}
-                          disabled={!form.make}
-                        >
-                          <option value="" className="bg-black text-gray-400">Select model</option>
-                          {modelOptions.map((md) => (
-                            <option key={md} value={md} className="bg-black text-white">{md}</option>
-                          ))}
-                        </select>
-                        {form.model && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Phase 2: Quantum Registration */}
-              <div className="group/phase relative">
-                <div className={`absolute -inset-1 rounded-2xl blur transition-all duration-500 ${
-                  form.make && form.model && form.year
-                    ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-green-600 opacity-30 group-hover/phase:opacity-50'
-                    : 'bg-gradient-to-r from-gray-600 to-gray-700 opacity-20'
-                }`}></div>
-                <div className={`relative backdrop-blur-2xl border rounded-2xl p-8 shadow-2xl transition-all duration-500 ${
-                  form.make && form.model && form.year
-                    ? 'bg-black/50 border-emerald-400/30 shadow-emerald-500/20'
-                    : 'bg-black/30 border-gray-600/30 shadow-gray-500/10'
-                }`}>
-                  <div className="flex items-center mb-6">
-                    <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center mr-4 transition-all duration-500 ${
-                      form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)
-                        ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50' 
-                        : form.make && form.model && form.year
-                          ? 'bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/50'
-                          : 'bg-gradient-to-br from-gray-500 to-gray-600 shadow-xl shadow-gray-500/30'
-                    }`}>
-                      {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xl font-black text-white">2</span>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black bg-gradient-to-r from-white via-emerald-200 to-teal-200 bg-clip-text text-transparent tracking-wide">
-                        QUANTUM REGISTRATION
-                      </h3>
-                      <p className="text-emerald-300 font-medium">Secure identification matrix</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">State</label>
-                      <div className="relative">
-                        <input 
-                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-lg ${
-                            form.make && form.model && form.year
-                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
-                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
-                          }`}
-                          placeholder="CA"
-                          value={form.state}
-                          maxLength={2}
-                          disabled={!form.make || !form.model || !form.year}
-                          style={{ textTransform: 'uppercase' }}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-                            setForm({ ...form, state: value });
-                          }}
-                        />
-                        {form.state && form.state.length === 2 && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">VIN Matrix</label>
-                      <div className="relative">
-                        <input 
-                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-mono text-sm uppercase tracking-wide shadow-lg ${
-                            form.make && form.model && form.year
-                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
-                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
-                          }`}
-                          placeholder="1HGBH41JXMN109186"
-                          value={form.vin}
-                          maxLength={17}
-                          disabled={!form.make || !form.model || !form.year}
-                          style={{ textTransform: 'uppercase' }}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
-                            setForm({ ...form, vin: value });
-                          }}
-                        />
-                        <div className="absolute bottom-1 left-2 text-xs text-emerald-400 font-mono">
-                          <span className={form.vin.length === 17 ? 'text-emerald-300 font-bold' : 'text-gray-500'}>
-                            [{form.vin.length}/17] CHARS
-                          </span>
-                        </div>
-                        {form.vin.length === 17 && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="group/field relative">
-                      <label className="block text-sm font-black text-emerald-300 mb-3 tracking-wider uppercase">License ID</label>
-                      <div className="relative">
-                        <input 
-                          className={`w-full px-4 py-4 backdrop-blur-xl border rounded-xl transition-all duration-300 font-black text-center text-lg uppercase tracking-widest shadow-lg ${
-                            form.make && form.model && form.year
-                              ? 'bg-black/40 border-emerald-400/30 text-white focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 shadow-emerald-500/10'
-                              : 'bg-black/20 border-gray-600/30 text-gray-500 cursor-not-allowed shadow-gray-500/10'
-                          }`}
-                          placeholder="ABC123"
-                          value={form.licensePlate}
-                          maxLength={7}
-                          disabled={!form.make || !form.model || !form.year}
-                          style={{ textTransform: 'uppercase' }}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
-                            setForm({ ...form, licensePlate: value });
-                          }}
-                        />
-                        <div className="absolute bottom-1 left-2 text-xs text-emerald-400 font-mono">
-                          <span className={(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? 'text-emerald-300 font-bold' : 'text-gray-500'}>
-                            [{form.licensePlate.length}/6-7] CHARS
-                          </span>
-                        </div>
-                        {(form.licensePlate.length >= 6 && form.licensePlate.length <= 7) && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quantum Activation Portal */}
-              <div className="text-center pt-8">
-                <div className="relative inline-block">
-                  <button 
-                    className={`group/quantum relative overflow-hidden inline-flex items-center justify-center px-12 py-6 text-2xl font-black text-white rounded-2xl shadow-2xl transform transition-all duration-500 ${
-                      (!form.make || !form.model || !form.year || !form.state ||
-                       form.vin.length !== 17 ||
-                       form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
-                       adding)
-                        ? 'bg-gradient-to-r from-gray-600 to-gray-700 cursor-not-allowed scale-95 shadow-gray-500/20'
-                        : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:shadow-2xl hover:shadow-purple-500/30 hover:scale-110 cursor-pointer'
-                    }`}
-                    onClick={createVehicle}
-                    disabled={
-                      !form.make || !form.model || !form.year || !form.state ||
-                      form.vin.length !== 17 ||
-                      form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
-                      adding
-                    }
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 opacity-0 group-hover/quantum:opacity-100 transition-opacity duration-500"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/quantum:translate-x-full transition-transform duration-1000"></div>
-                    
-                    {adding ? (
-                      <div className="relative flex items-center">
-                        <div className="loading-spinner mr-4"></div>
-                        <span className="tracking-wider">QUANTUM ACTIVATION...</span>
-                      </div>
-                    ) : (
-                      <div className="relative flex items-center">
-                        <span className="mr-4 text-3xl">🚗</span>
-                        <span className="tracking-wider">ACTIVATE QUANTUM PROTECTION</span>
-                        <span className="ml-4 text-3xl">⚡</span>
-                      </div>
-                    )}
-                  </button>
-                  
-                  {/* Quantum Indicators */}
-                  {!adding && (form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
-                    <>
-                      <div className="absolute -top-3 -right-3 w-6 h-6 bg-emerald-400 rounded-full animate-ping"></div>
-                      <div className="absolute -bottom-3 -left-3 w-4 h-4 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-                      <div className="absolute -top-3 -left-3 w-3 h-3 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-                      <div className="absolute -bottom-3 -right-3 w-5 h-5 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
-                    </>
-                  )}
-                </div>
-                
-                {/* Quantum Success Matrix */}
-                {(form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
-                  <div className="mt-8 relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl blur-xl opacity-40 animate-pulse"></div>
-                    <div className="relative bg-black/60 backdrop-blur-2xl border border-emerald-400/40 rounded-2xl p-6 shadow-2xl shadow-emerald-500/30">
-                      <div className="flex items-center justify-center space-x-4">
-                        <div className="relative">
-                          <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/50">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                          <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-30"></div>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-2xl font-black text-white tracking-wider mb-1">
-                            QUANTUM LOCK: {form.year} {form.make} {form.model}
-                          </p>
-                          <p className="text-emerald-300 font-bold tracking-wide">PROTECTION MATRIX READY</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+        {/* Vehicle Information Form */}
+        <div className="space-y-6">
+          {/* Step 1: Vehicle Details */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center mb-4">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 transition-all duration-300 ${
+                form.make && form.model && form.year 
+                  ? 'bg-green-100 text-green-600' 
+                  : 'bg-blue-100 text-blue-600'
+              }`}>
+                {form.make && form.model && form.year ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <span className="text-sm font-bold">1</span>
                 )}
               </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Vehicle Information
+                </h3>
+                <p className="text-gray-600 text-sm">Select your vehicle's make, model, and year</p>
+              </div>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  value={form.year}
+                  onChange={(e) => setForm({ ...form, year: e.target.value })}
+                >
+                  <option value="">Select year</option>
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Make</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  value={form.make}
+                  onChange={(e) => {
+                    setForm({ ...form, make: e.target.value, model: '' });
+                  }}
+                >
+                  <option value="">Select make</option>
+                  {makeOptions.map((mk) => (
+                    <option key={mk} value={mk}>{mk}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Model</label>
+                <select
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors ${
+                    !form.make 
+                      ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
+                  value={form.model}
+                  onChange={(e) => {
+                    const nextModel = e.target.value;
+                    const makeEntry: any = carData.find((m: any) => m.make === form.make);
+                    const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
+                    const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
+                    setForm({ ...form, model: nextModel, year: years[0] || '' });
+                  }}
+                  disabled={!form.make}
+                >
+                  <option value="">Select model</option>
+                  {modelOptions.map((md) => (
+                    <option key={md} value={md}>{md}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2: Registration Details */}
+          <div className={`rounded-lg p-6 transition-all duration-300 ${
+            form.make && form.model && form.year
+              ? 'bg-gray-50 border border-gray-200'
+              : 'bg-gray-100 border border-gray-300'
+          }`}>
+            <div className="flex items-center mb-4">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 transition-all duration-300 ${
+                form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)
+                  ? 'bg-green-100 text-green-600' 
+                  : form.make && form.model && form.year
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-200 text-gray-500'
+              }`}>
+                {form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7) ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <span className="text-sm font-bold">2</span>
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Registration Details
+                </h3>
+                <p className="text-gray-600 text-sm">Enter your vehicle's registration information</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                <input 
+                  className={`w-full px-3 py-2 border rounded-lg text-center uppercase font-medium transition-colors ${
+                    form.make && form.model && form.year
+                      ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  placeholder="CA"
+                  value={form.state}
+                  maxLength={2}
+                  disabled={!form.make || !form.model || !form.year}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+                    setForm({ ...form, state: value });
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">Two-letter state code</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">VIN Number</label>
+                <input 
+                  className={`w-full px-3 py-2 border rounded-lg font-mono text-sm uppercase transition-colors ${
+                    form.make && form.model && form.year
+                      ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  placeholder="1HGBH41JXMN109186"
+                  value={form.vin}
+                  maxLength={17}
+                  disabled={!form.make || !form.model || !form.year}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+                    setForm({ ...form, vin: value });
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {form.vin.length}/17 characters
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">License Plate</label>
+                <input 
+                  className={`w-full px-3 py-2 border rounded-lg text-center uppercase font-medium transition-colors ${
+                    form.make && form.model && form.year
+                      ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  placeholder="ABC123"
+                  value={form.licensePlate}
+                  maxLength={7}
+                  disabled={!form.make || !form.model || !form.year}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+                    setForm({ ...form, licensePlate: value });
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {form.licensePlate.length}/6-7 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="text-center pt-6">
+            <button 
+              className={`inline-flex items-center px-8 py-4 text-lg font-semibold rounded-lg shadow-md transition-all duration-200 ${
+                (!form.make || !form.model || !form.year || !form.state ||
+                 form.vin.length !== 17 ||
+                 form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
+                 adding)
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transform hover:-translate-y-0.5'
+              }`}
+              onClick={createVehicle}
+              disabled={
+                !form.make || !form.model || !form.year || !form.state ||
+                form.vin.length !== 17 ||
+                form.licensePlate.length < 6 || form.licensePlate.length > 7 ||
+                adding
+              }
+            >
+              {adding ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Adding Vehicle...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Vehicle to DIP
+                </>
+              )}
+            </button>
+            
+            {/* Success Preview */}
+            {(form.make && form.model && form.year && form.state && form.vin.length === 17 && (form.licensePlate.length >= 6 && form.licensePlate.length <= 7)) && (
+              <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold text-gray-900 mb-1">
+                      Ready: {form.year} {form.make} {form.model}
+                    </p>
+                    <p className="text-green-600 font-medium">All information complete</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Quantum Vehicle Fleet */}
-      <div className="relative">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-500/50">
-              <span className="text-xl text-white">🚗</span>
+      {/* My Vehicles List */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </div>
-            <h2 className="text-3xl font-black bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent tracking-wide">
-              QUANTUM FLEET
+            <h2 className="text-2xl font-bold text-gray-900">
+              My Vehicles
             </h2>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="bg-black/50 backdrop-blur-xl border border-emerald-400/30 rounded-xl px-4 py-2 shadow-lg shadow-emerald-500/20">
+          <div className="flex items-center space-x-3">
+            <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span className="text-emerald-300 font-bold text-sm tracking-wider">{vehicles.filter(v => v.isActive).length} ACTIVE</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-green-700 font-medium text-sm">{vehicles.filter(v => v.isActive).length} Active</span>
               </div>
             </div>
-            <div className="bg-black/50 backdrop-blur-xl border border-cyan-400/30 rounded-xl px-4 py-2 shadow-lg shadow-cyan-500/20">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                <span className="text-cyan-300 font-bold text-sm tracking-wider">{vehicles.length} TOTAL</span>
+                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                <span className="text-gray-700 font-medium text-sm">{vehicles.length} Total</span>
               </div>
             </div>
           </div>
         </div>
 
         {vehicles.length === 0 ? (
-          <div className="card text-center py-8 sm:py-12">
-            <div className="text-4xl sm:text-6xl mb-4">🚗</div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">No vehicles yet</h3>
-            <p className="text-muted mb-6 text-sm sm:text-base">Add your first vehicle to get started with DIP benefits.</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No vehicles yet</h3>
+            <p className="text-gray-600 mb-6">Add your first vehicle to get started with DIP benefits.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {vehicles.map((vehicle) => (
-              <div key={vehicle.id} className="card hover:shadow-lg transition-shadow">
+              <div key={vehicle.id} className="bg-gray-50 rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -604,11 +532,15 @@ function MyVehiclesPageContent() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={getVehicleIcon(vehicle.make) as string} alt={`${vehicle.make} logo`} className="w-10 h-10 object-contain" />
                     ) : (
-                      <span className="text-3xl">🚗</span>
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </div>
                     )}
                     <div>
-                      <h3 className="font-semibold text-lg">{vehicle.year} {vehicle.make}</h3>
-                      <p className="text-muted">{vehicle.model}</p>
+                      <h3 className="font-semibold text-lg text-gray-900">{vehicle.year} {vehicle.make}</h3>
+                      <p className="text-gray-600">{vehicle.model}</p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -624,20 +556,20 @@ function MyVehiclesPageContent() {
                 <div className="space-y-2 mb-4">
                   {vehicle.vin && (
                     <div className="flex items-center text-sm">
-                      <span className="text-muted w-12">VIN:</span>
-                      <span className="font-mono">{vehicle.vin}</span>
+                      <span className="text-gray-500 w-16">VIN:</span>
+                      <span className="font-mono text-gray-900">{vehicle.vin}</span>
                     </div>
                   )}
                   {vehicle.licensePlate && (
                     <div className="flex items-center text-sm">
-                      <span className="text-muted w-12">Plate:</span>
-                      <span className="font-medium">{vehicle.licensePlate}</span>
+                      <span className="text-gray-500 w-16">Plate:</span>
+                      <span className="font-medium text-gray-900">{vehicle.licensePlate}</span>
                     </div>
                   )}
                   {vehicle.state && (
                     <div className="flex items-center text-sm">
-                      <span className="text-muted w-12">State:</span>
-                      <span>{vehicle.state}</span>
+                      <span className="text-gray-500 w-16">State:</span>
+                      <span className="text-gray-900">{vehicle.state}</span>
                     </div>
                   )}
                 </div>
@@ -646,7 +578,7 @@ function MyVehiclesPageContent() {
                 <div className="flex gap-2 mb-3">
                   {!vehicle.isActive && (
                     <button
-                      className="btn bg-green-100 text-green-700 border-green-300 hover:bg-green-200 flex-1"
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                       onClick={async () => { 
                         try {
                           setActivatingVehicleId(vehicle.id);
@@ -692,7 +624,7 @@ function MyVehiclesPageContent() {
                   )}
                   <Link 
                     href={{ pathname: '/dashboard/subscription', query: { vehicleId: vehicle.id } }} 
-                    className={`btn bg-gray-100 text-black border-gray-300 hover:bg-gray-200 ${vehicle.isActive ? 'flex-1' : 'flex-1'}`}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center"
                   >
                     Manage Membership
                   </Link>
@@ -701,16 +633,16 @@ function MyVehiclesPageContent() {
                 {/* Secondary Actions */}
                 <div className="flex gap-2 mb-2">
                   <button
-                    className="btn btn-outline flex-1"
+                    className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                     onClick={() => {
                       setSelectedVehicle(vehicle);
                       setShowPhotoModal(true);
                     }}
                   >
-                    📸 View Photos
+                    📸 Photos
                   </button>
                   <button
-                    className="btn btn-outline flex-1"
+                    className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                     onClick={() => {
                       setEditingId(vehicle.id);
                       setEditForm({
@@ -726,14 +658,14 @@ function MyVehiclesPageContent() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="btn btn-outline text-red-600 hover:bg-red-50 flex-1"
+                    className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"
                     onClick={() => {
                       setDeletingVehicleId(vehicle.id);
                       setShowDeleteModal(true);
                     }}
                     title="Delete vehicle"
                   >
-                    🗑️ Delete Vehicle
+                    🗑️ Delete
                   </button>
                 </div>
               </div>
@@ -743,74 +675,75 @@ function MyVehiclesPageContent() {
       </div>
       {/* Edit Modal */}
       {editingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="card w-full max-w-lg bg-white">
-            <h3 className="text-xl font-semibold mb-4" style={{color: '#000'}}>Edit Vehicle Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-lg p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Edit Vehicle Details</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">VIN</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">VIN</label>
                 <input 
-                  className="input uppercase" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm uppercase" 
                   value={editForm.vin} 
                   maxLength={17}
                   placeholder="17 CHARACTERS"
-                  style={{ textTransform: 'uppercase' }}
                   onChange={(e) => {
                     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
                     setEditForm({ ...editForm, vin: value });
                   }}
                 />
-                <p className="text-xs text-muted mt-1">VIN must be exactly 17 characters</p>
+                <p className="text-xs text-gray-500 mt-1">VIN must be exactly 17 characters</p>
               </div>
               <div>
-                <label className="label">License Plate</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">License Plate</label>
                 <input 
-                  className="input uppercase" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase font-medium text-center" 
                   value={editForm.licensePlate}
                   maxLength={7}
                   placeholder="6–7 CHARACTERS"
-                  style={{ textTransform: 'uppercase' }}
                   onChange={(e) => {
                     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
                     setEditForm({ ...editForm, licensePlate: value });
                   }}
                 />
-                <p className="text-xs text-muted mt-1">License plate must be 6–7 characters</p>
+                <p className="text-xs text-gray-500 mt-1">License plate must be 6–7 characters</p>
               </div>
               <div>
-                <label className="label">State</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
                 <input 
-                  className="input uppercase" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase font-medium text-center" 
                   value={editForm.state} 
-                  placeholder="STATE"
+                  placeholder="CA"
                   maxLength={2}
-                  style={{ textTransform: 'uppercase' }}
                   onChange={(e) => {
                     const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
                     setEditForm({ ...editForm, state: value });
                   }}
                 />
-                <p className="text-xs text-muted mt-1">State must be exactly 2 characters (e.g., CA, NY, TX)</p>
+                <p className="text-xs text-gray-500 mt-1">Two-letter state code</p>
               </div>
               <div>
-                <label className="label">Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
                 <input 
-                  className="input uppercase" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 capitalize" 
                   value={editForm.color} 
-                  placeholder="VEHICLE COLOR"
-                  style={{ textTransform: 'uppercase' }}
+                  placeholder="Vehicle Color"
                   onChange={(e) => {
-                    const value = e.target.value.toUpperCase().replace(/[^A-Z\s]/g, '').slice(0, 20);
+                    const value = e.target.value.replace(/[^A-Za-z\s]/g, '').slice(0, 20);
                     setEditForm({ ...editForm, color: value });
                   }}
                 />
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-2">
-              <button className="btn btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button 
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium" 
+                onClick={() => setEditingId(null)}
+              >
+                Cancel
+              </button>
               <button
-                className="btn btn-primary"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
                 disabled={savingEdit}
                 onClick={async () => {
                   try {
@@ -833,26 +766,32 @@ function MyVehiclesPageContent() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && deletingVehicleId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="card w-full max-w-md bg-white">
+          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-md p-6 shadow-xl">
             <div className="flex items-center space-x-3 mb-4">
-              <span className="text-2xl">⚠️</span>
-              <h3 className="text-xl font-semibold">Delete Vehicle</h3>
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Delete Vehicle</h3>
             </div>
             
             <p className="text-gray-600 mb-6">
               Are you sure you want to delete this vehicle? This action cannot be undone and will remove all associated data including photos and documents.
             </p>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <div className="flex items-center space-x-2 text-sm text-red-700">
-                <span>⚠️</span>
-                <span>This will permanently delete the vehicle and all its data</span>
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span className="font-medium">This will permanently delete the vehicle and all its data</span>
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-3">
               <button
-                className="btn btn-secondary"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setDeletingVehicleId(null);
@@ -861,13 +800,16 @@ function MyVehiclesPageContent() {
                 Cancel
               </button>
               <button
-                className="btn btn-danger"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50"
                 onClick={() => handleDeleteVehicle(deletingVehicleId)}
                 disabled={deletingVehicleId === null || deletingVehicle}
               >
                 {deletingVehicle ? (
                   <>
-                    <div className="loading-spinner mr-2"></div>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     Deleting...
                   </>
                 ) : (
@@ -882,24 +824,26 @@ function MyVehiclesPageContent() {
       {/* Photo Viewing Modal */}
       {showPhotoModal && selectedVehicle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="card w-full max-w-4xl bg-white max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">
+          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">
                 Photos - {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
               </h3>
               <button
-                className="btn btn-secondary btn-sm"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => {
                   setShowPhotoModal(false);
                   setSelectedVehicle(null);
                   setExpandedPhoto(null);
                 }}
               >
-                ✕
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
               {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {selectedVehicle.photos.map((photo: any, index: number) => {
@@ -920,7 +864,7 @@ function MyVehiclesPageContent() {
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
                           <button
-                            className="btn btn-primary btn-sm"
+                            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                             onClick={(e) => {
                               e.stopPropagation();
                               setExpandedPhoto(photoUrl);
@@ -929,7 +873,7 @@ function MyVehiclesPageContent() {
                             🔍 View
                           </button>
                           <button
-                            className="btn btn-danger btn-sm"
+                            className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                             onClick={async (e) => {
                               e.stopPropagation();
                               if (confirm('Are you sure you want to delete this photo?')) {
@@ -959,9 +903,13 @@ function MyVehiclesPageContent() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📸</div>
-                  <h4 className="text-lg font-semibold mb-2">No photos yet</h4>
-                  <p className="text-muted">Upload photos of your vehicle to view them here.</p>
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">No photos yet</h4>
+                  <p className="text-gray-600">Upload photos of your vehicle to view them here.</p>
                 </div>
               )}
             </div>
@@ -981,12 +929,14 @@ function MyVehiclesPageContent() {
               style={{ maxWidth: '95vw', maxHeight: '95vh' }}
             />
             <button
-              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-colors shadow-lg"
               onClick={() => setExpandedPhoto(null)}
             >
-              ✕
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
               Click outside or press ESC to close
             </div>
           </div>
