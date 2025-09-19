@@ -52,76 +52,78 @@ export default function HomePage() {
   }, [router]);
 
   return (
-    <div className="min-h-0 bg-white text-gray-900 px-4 py-4">
-      <div className="max-w-lg mx-auto space-y-6">
-        {/* Logo Section */}
-        <div className="text-center space-y-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src="/dip-logo.png" 
-            alt="DIP Logo" 
-            className="h-10 w-auto mx-auto" 
-          />
-          <h2 className="text-lg font-light text-gray-900">driver impact protection</h2>
-          <p className="text-base text-gray-700">
-            Drive with confidence knowing you're protected
-          </p>
-        </div>
-
-        {/* Features Section */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-center text-gray-900">Why Choose DIP?</h2>
-          <div className="space-y-2">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center space-x-2"
-              >
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-base"
-                  style={{ backgroundColor: feature.bgColor, color: feature.color }}
-                >
-                  {feature.icon}
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 text-sm leading-tight">{feature.title}</h3>
-                  <p className="text-[11px] text-gray-600 leading-tight">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="space-y-3 text-center">
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold text-gray-900">Ready to get started?</h2>
-            <p className="text-sm text-gray-600">
-              Join thousands of drivers who trust DIP
+    <div className="min-h-screen bg-white text-gray-900">
+      <div className="max-w-lg mx-auto px-4 py-6 sm:py-8">
+        <div className="space-y-6 sm:space-y-8">
+          {/* Logo Section */}
+          <div className="text-center space-y-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/dip-logo.png" 
+              alt="DIP Logo" 
+              className="h-12 w-auto mx-auto sm:h-16" 
+            />
+            <h2 className="text-lg sm:text-xl font-light text-gray-900">driver impact protection</h2>
+            <p className="text-sm sm:text-base text-gray-700 max-w-md mx-auto">
+              Drive with confidence knowing you're protected
             </p>
           </div>
 
-          <a
-            href="/auth/sign-up"
-            className="block w-full bg-blue-500 text-white rounded-xl py-3 px-6 font-semibold hover:bg-blue-600 transition-colors"
-          >
-            Get Started →
-          </a>
-
-          {/* Trust Indicators */}
-          <div className="flex justify-center space-x-6 pt-2">
-            {trustIndicators.map((indicator, index) => (
-              <div key={index} className="text-center">
-                <div className="text-base mb-0.5">{indicator.icon}</div>
-                <div className="text-[10px] text-gray-600">{indicator.text}</div>
-              </div>
-            ))}
+          {/* Features Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-center text-gray-900">Why Choose DIP?</h2>
+            <div className="space-y-3">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-5 flex items-start space-x-3"
+                >
+                  <div
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-base sm:text-lg flex-shrink-0"
+                    style={{ backgroundColor: feature.bgColor, color: feature.color }}
+                  >
+                    {feature.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-gray-900 text-sm sm:text-base leading-tight mb-1">{feature.title}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Copyright */}
-          <p className="text-[10px] text-gray-500 pt-4">
-            © 2025 dip. All rights reserved.
-          </p>
+          {/* CTA Section */}
+          <div className="space-y-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Ready to get started?</h2>
+              <p className="text-sm sm:text-base text-gray-600">
+                Join thousands of drivers who trust DIP
+              </p>
+            </div>
+
+            <a
+              href="/auth/sign-up"
+              className="block w-full bg-blue-500 text-white rounded-xl py-3 sm:py-4 px-6 font-semibold hover:bg-blue-600 transition-colors text-sm sm:text-base"
+            >
+              Get Started →
+            </a>
+
+            {/* Trust Indicators */}
+            <div className="flex justify-center space-x-6 sm:space-x-8 pt-2">
+              {trustIndicators.map((indicator, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-base sm:text-lg mb-1">{indicator.icon}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{indicator.text}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Copyright */}
+            <p className="text-xs sm:text-sm text-gray-500 pt-4">
+              © 2025 dip. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </div>

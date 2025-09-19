@@ -56,25 +56,25 @@ export default function DashboardPage() {
     : profile?.displayName || user.email?.split('@')[0] || 'Member';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Welcome Section */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
           <div className="mb-4">
-            <h2 className="text-2xl font-bold">Welcome back, {displayName}!</h2>
-            <p className="text-muted">Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}</p>
+            <h2 className="text-xl sm:text-2xl font-bold">Welcome back, {displayName}!</h2>
+            <p className="text-muted text-sm sm:text-base">Member since {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || 'recently'}</p>
           </div>
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{color: 'var(--brand-dark)'}}>{stats.vehicles}</div>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6">
+            <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold" style={{color: 'var(--brand-dark)'}}>{stats.vehicles}</div>
               <div className="text-xs text-muted">Vehicles</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-500">{stats.activeVehicles}</div>
+            <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold text-green-500">{stats.activeVehicles}</div>
               <div className="text-xs text-muted">Active</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{color: 'var(--brand)'}}>{stats.requests}</div>
+            <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+              <div className="text-xl sm:text-2xl font-bold" style={{color: 'var(--brand)'}}>{stats.requests}</div>
               <div className="text-xs text-muted">Requests</div>
             </div>
           </div>
@@ -85,30 +85,30 @@ export default function DashboardPage() {
           <div className="space-y-3">
             <Link href="/dashboard/vehicles" className="selectable-row">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">🚗</span>
-                <div>
-                  <div className="font-medium">Add Vehicle</div>
-                  <div className="text-sm text-muted">Register a new vehicle</div>
+                <span className="text-xl sm:text-2xl">🚗</span>
+                <div className="flex-1">
+                  <div className="font-medium text-sm sm:text-base">Add Vehicle</div>
+                  <div className="text-xs sm:text-sm text-muted">Register a new vehicle</div>
                 </div>
               </div>
               <span className="chev">›</span>
             </Link>
             <Link href="/dashboard/claims" className="selectable-row">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">📋</span>
-                <div>
-                  <div className="font-medium">Submit Request</div>
-                  <div className="text-sm text-muted">Request assistance</div>
+                <span className="text-xl sm:text-2xl">📋</span>
+                <div className="flex-1">
+                  <div className="font-medium text-sm sm:text-base">Submit Request</div>
+                  <div className="text-xs sm:text-sm text-muted">Request assistance</div>
                 </div>
               </div>
               <span className="chev">›</span>
             </Link>
             <Link href="/dashboard/profile" className="selectable-row">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">⚙️</span>
-                <div>
-                  <div className="font-medium">Update Profile</div>
-                  <div className="text-sm text-muted">Edit your information</div>
+                <span className="text-xl sm:text-2xl">⚙️</span>
+                <div className="flex-1">
+                  <div className="font-medium text-sm sm:text-base">Update Profile</div>
+                  <div className="text-xs sm:text-sm text-muted">Edit your information</div>
                 </div>
               </div>
               <span className="chev">›</span>

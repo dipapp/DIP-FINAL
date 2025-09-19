@@ -24,11 +24,11 @@ html, body {
 }
 
 .container-app {
-  @apply max-w-6xl mx-auto px-4;
+  @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
 .card {
-  @apply rounded-2xl p-6 shadow-lg border transition-all duration-300;
+  @apply rounded-2xl p-4 sm:p-6 shadow-lg border transition-all duration-300;
   background: var(--card);
   border-color: var(--border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

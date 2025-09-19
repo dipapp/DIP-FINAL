@@ -203,109 +203,155 @@ function MyVehiclesPageContent() {
       </div>
       
       {/* Add Vehicle Form */}
-      <div className="card-accent">
-        <div className="flex items-center space-x-3 mb-6">
-          <span className="text-2xl">➕</span>
-          <h2 className="text-xl font-semibold">Add New Vehicle</h2>
-        </div>
-        <div className="grid md:grid-cols-4 gap-4">
-          <div>
-            <label className="label">Year</label>
-            <select
-              className="input"
-              value={form.year}
-              onChange={(e) => setForm({ ...form, year: e.target.value })}
-            >
-              <option value="">Select year…</option>
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
+      <div className="relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 opacity-60"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-blue-200/20 to-transparent rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-indigo-200/20 to-transparent rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+              <span className="text-2xl">🚗</span>
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+              Add New Vehicle
+            </h2>
+            <p className="text-gray-600 text-lg">Enter your vehicle details to get started with DIP benefits</p>
           </div>
-          <div>
-            <label className="label">Make</label>
-            <select
-              className="input"
-              value={form.make}
-              onChange={(e) => {
-                setForm({ ...form, make: e.target.value, model: '' });
-              }}
-            >
-              <option value="">Select make…</option>
-              {makeOptions.map((mk) => (
-                <option key={mk} value={mk}>{mk}</option>
-              ))}
-            </select>
+
+          {/* Form Sections */}
+          <div className="space-y-8">
+            {/* Vehicle Information Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">📋</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Vehicle Information</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">Year</label>
+                  <select
+                    className="input bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-sm sm:text-base"
+                    value={form.year}
+                    onChange={(e) => setForm({ ...form, year: e.target.value })}
+                  >
+                    <option value="">Select year…</option>
+                    {yearOptions.map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">Make</label>
+                  <select
+                    className="input bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-sm sm:text-base"
+                    value={form.make}
+                    onChange={(e) => {
+                      setForm({ ...form, make: e.target.value, model: '' });
+                    }}
+                  >
+                    <option value="">Select make…</option>
+                    {makeOptions.map((mk) => (
+                      <option key={mk} value={mk}>{mk}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">Model</label>
+                  <select
+                    className="input bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm sm:text-base"
+                    value={form.model}
+                    onChange={(e) => {
+                      const nextModel = e.target.value;
+                      // Preselect the most recent year for UX
+                      const makeEntry: any = carData.find((m: any) => m.make === form.make);
+                      const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
+                      const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
+                      setForm({ ...form, model: nextModel, year: years[0] || '' });
+                    }}
+                    disabled={!form.make}
+                  >
+                    <option value="">Select model…</option>
+                    {modelOptions.map((md) => (
+                      <option key={md} value={md}>{md}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Registration Details Section */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">📄</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Registration Details</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">State</label>
+                  <input 
+                    className="input bg-white border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 uppercase text-sm sm:text-base" 
+                    placeholder="CA"
+                    value={form.state}
+                    maxLength={2}
+                    style={{ textTransform: 'uppercase' }}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+                      setForm({ ...form, state: value });
+                    }}
+                  />
+                  <p className="text-xs text-gray-500">2-letter state code</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">VIN</label>
+                  <input 
+                    className="input bg-white border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 uppercase font-mono text-sm sm:text-base" 
+                    placeholder="1HGBH41JXMN109186"
+                    value={form.vin}
+                    maxLength={17}
+                    style={{ textTransform: 'uppercase' }}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+                      setForm({ ...form, vin: value });
+                    }}
+                  />
+                  <p className="text-xs text-gray-500">17-character vehicle identification number</p>
+                </div>
+                
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <label className="label text-gray-700 font-medium text-sm sm:text-base">License Plate</label>
+                  <input 
+                    className="input bg-white border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 uppercase text-sm sm:text-base" 
+                    placeholder="ABC123"
+                    value={form.licensePlate}
+                    maxLength={7}
+                    style={{ textTransform: 'uppercase' }}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+                      setForm({ ...form, licensePlate: value });
+                    }}
+                  />
+                  <p className="text-xs text-gray-500">6-7 character license plate</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="label">Model</label>
-            <select
-              className="input"
-              value={form.model}
-              onChange={(e) => {
-                const nextModel = e.target.value;
-                // Preselect the most recent year for UX
-                const makeEntry: any = carData.find((m: any) => m.make === form.make);
-                const modelEntry: any = makeEntry?.models.find((mm: any) => mm.name === nextModel);
-                const years: string[] = modelEntry ? [...modelEntry.years].sort((a: string, b: string) => Number(b) - Number(a)) : [];
-                setForm({ ...form, model: nextModel, year: years[0] || '' });
-              }}
-              disabled={!form.make}
-            >
-              <option value="">Select model…</option>
-              {modelOptions.map((md) => (
-                <option key={md} value={md}>{md}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">State</label>
-            <input 
-              className="input uppercase" 
-              placeholder="STATE"
-              value={form.state}
-              maxLength={2}
-              style={{ textTransform: 'uppercase' }}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-                setForm({ ...form, state: value });
-              }}
-            />
-            <p className="text-xs text-muted mt-1">State must be exactly 2 characters (e.g., CA, NY, TX)</p>
-          </div>
-          <div>
-            <label className="label">VIN</label>
-            <input 
-              className="input uppercase" 
-              placeholder="17 CHARACTERS"
-              value={form.vin}
-              maxLength={17}
-              style={{ textTransform: 'uppercase' }}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
-                setForm({ ...form, vin: value });
-              }}
-            />
-            <p className="text-xs text-muted mt-1">VIN must be exactly 17 characters</p>
-          </div>
-          <div>
-            <label className="label">License Plate</label>
-            <input 
-              className="input uppercase" 
-              placeholder="6–7 CHARACTERS"
-              value={form.licensePlate}
-              maxLength={7}
-              style={{ textTransform: 'uppercase' }}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
-                setForm({ ...form, licensePlate: value });
-              }}
-            />
-            <p className="text-xs text-muted mt-1">License plate must be 6–7 characters</p>
-          </div>
-          <div className="flex items-end">
+
+          {/* Add Vehicle Button */}
+          <div className="mt-8 text-center">
             <button 
-              className="btn btn-primary w-full" 
+              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg" 
               onClick={createVehicle}
               disabled={
                 !form.make || !form.model || !form.year || !form.state ||
@@ -316,16 +362,29 @@ function MyVehiclesPageContent() {
             >
               {adding ? (
                 <>
-                  <div className="loading-spinner mr-2"></div>
-                  Adding...
+                  <div className="loading-spinner mr-3"></div>
+                  <span>Adding Vehicle...</span>
                 </>
               ) : (
                 <>
-                  <span className="mr-2">🚗</span>
-                  Add Vehicle
+                  <span className="mr-3 text-xl">🚗</span>
+                  <span>Add Vehicle</span>
                 </>
               )}
+              
+              {/* Button shine effect */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></div>
             </button>
+            
+            {/* Form validation hints */}
+            <div className="mt-4 text-sm text-gray-500">
+              {!form.make && <p>• Select your vehicle make to continue</p>}
+              {!form.model && form.make && <p>• Choose your vehicle model</p>}
+              {!form.year && form.model && <p>• Select the year of your vehicle</p>}
+              {!form.state && form.year && <p>• Enter your state code (e.g., CA, NY, TX)</p>}
+              {form.state && form.vin.length !== 17 && <p>• Enter your 17-character VIN</p>}
+              {form.vin.length === 17 && (form.licensePlate.length < 6 || form.licensePlate.length > 7) && <p>• Enter your license plate number</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -343,13 +402,13 @@ function MyVehiclesPageContent() {
         </div>
 
         {vehicles.length === 0 ? (
-          <div className="card text-center py-12">
-            <div className="text-6xl mb-4">🚗</div>
-            <h3 className="text-xl font-semibold mb-2">No vehicles yet</h3>
-            <p className="text-muted mb-6">Add your first vehicle to get started with DIP benefits.</p>
+          <div className="card text-center py-8 sm:py-12">
+            <div className="text-4xl sm:text-6xl mb-4">🚗</div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No vehicles yet</h3>
+            <p className="text-muted mb-6 text-sm sm:text-base">Add your first vehicle to get started with DIP benefits.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {vehicles.map((vehicle) => (
               <div key={vehicle.id} className="card hover:shadow-lg transition-shadow">
                 {/* Header */}
