@@ -82,6 +82,11 @@ export default function HomePage() {
     return () => unsub();
   }, [router]);
 
+  // Ensure page starts at top
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Auto-rotate slides every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -167,12 +172,14 @@ export default function HomePage() {
                 >
                   {currentSlideData.cta}
                 </a>
-                <a
-                  href="#services"
+                <button
+                  onClick={() => {
+                    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                   className="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-gray-900 hover:scale-105 transition-all duration-300 text-center"
                 >
                   {currentSlideData.ctaSecondary}
-                </a>
+                </button>
               </div>
             </div>
             <div className="text-center animate-slide-in-right" key={`icon-${currentSlide}`}>
