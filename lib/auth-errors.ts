@@ -1,21 +1,23 @@
 /**
  * Maps Firebase authentication error codes to professional, user-friendly messages
+ * @param error - The Firebase error object
+ * @param isSignUp - Whether this is for sign-up (true) or sign-in (false)
  */
-export function getAuthErrorMessage(error: any): string {
+export function getAuthErrorMessage(error: any, isSignUp: boolean = false): string {
   const errorCode = error?.code || error?.message || '';
   
   // Firebase Auth error code mappings
   const errorMessages: Record<string, string> = {
-    // Invalid credentials
-    'auth/invalid-credential': 'Incorrect email or password. Please check your credentials and try again.',
-    'auth/wrong-password': 'Incorrect email or password. Please check your credentials and try again.',
-    'auth/user-not-found': 'Incorrect email or password. Please check your credentials and try again.',
+    // Invalid credentials (only for sign-in)
+    'auth/invalid-credential': isSignUp ? 'Unable to create account. Please try again.' : 'Incorrect email or password. Please check your credentials and try again.',
+    'auth/wrong-password': isSignUp ? 'Unable to create account. Please try again.' : 'Incorrect email or password. Please check your credentials and try again.',
+    'auth/user-not-found': isSignUp ? 'Unable to create account. Please try again.' : 'Incorrect email or password. Please check your credentials and try again.',
     'auth/invalid-email': 'Please enter a valid email address.',
     
     // Account issues
-    'auth/user-disabled': 'This account has been disabled. Please contact support for assistance.',
-    'auth/too-many-requests': 'Too many failed attempts. Please wait a moment and try again.',
-    'auth/account-exists-with-different-credential': 'An account already exists with this email address. Please try signing in instead.',
+    'auth/user-disabled': isSignUp ? 'Unable to create account. Please contact support.' : 'This account has been disabled. Please contact support for assistance.',
+    'auth/too-many-requests': isSignUp ? 'Too many attempts. Please wait a moment and try again.' : 'Too many failed attempts. Please wait a moment and try again.',
+    'auth/account-exists-with-different-credential': isSignUp ? 'An account already exists with this email address. Please try signing in instead.' : 'An account already exists with this email address. Please try signing in instead.',
     
     // Network/Server issues
     'auth/network-request-failed': 'Network error. Please check your connection and try again.',
@@ -23,7 +25,7 @@ export function getAuthErrorMessage(error: any): string {
     'auth/weak-password': 'Password is too weak. Please choose a stronger password.',
     
     // Email verification
-    'auth/email-already-in-use': 'An account with this email already exists. Please try signing in instead.',
+    'auth/email-already-in-use': isSignUp ? 'An account with this email already exists. Please try signing in instead.' : 'An account with this email already exists. Please try signing in instead.',
     'auth/requires-recent-login': 'For security reasons, please sign in again to complete this action.',
     
     // Generic fallbacks
@@ -39,7 +41,7 @@ export function getAuthErrorMessage(error: any): string {
   
   // Check if it's a Firebase error with the auth/ prefix
   if (errorCode.includes('auth/')) {
-    return 'Authentication failed. Please check your credentials and try again.';
+    return isSignUp ? 'Unable to create account. Please try again.' : 'Authentication failed. Please check your credentials and try again.';
   }
   
   // Check for common error patterns in the message
@@ -47,7 +49,7 @@ export function getAuthErrorMessage(error: any): string {
   if (message.includes('invalid-credential') || 
       message.includes('wrong-password') || 
       message.includes('user-not-found')) {
-    return 'Incorrect email or password. Please check your credentials and try again.';
+    return isSignUp ? 'Unable to create account. Please try again.' : 'Incorrect email or password. Please check your credentials and try again.';
   }
   
   if (message.includes('email-already-in-use')) {

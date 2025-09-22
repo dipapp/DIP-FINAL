@@ -46,7 +46,7 @@ function AuthPageContent() {
       await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(getAuthErrorMessage(err));
+      setError(getAuthErrorMessage(err, false)); // false = sign-in
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ function AuthPageContent() {
       });
       router.push('/dashboard');
     } catch (err: any) {
-      setError(getAuthErrorMessage(err));
+      setError(getAuthErrorMessage(err, true)); // true = sign-up
     } finally {
       setLoading(false);
     }
