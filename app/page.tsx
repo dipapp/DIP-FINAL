@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 
 const services = [
   {
-    title: 'Roadside Assistance',
-    description: '24/7 emergency roadside service when you need it most',
+    title: 'Accident Support Services',
+    description: 'Professional assistance when accidents occur to help you get back on the road',
     icon: (
       <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -15,8 +15,8 @@ const services = [
     )
   },
   {
-    title: 'Vehicle Protection',
-    description: 'Comprehensive coverage for unexpected vehicle incidents',
+    title: 'Vehicle Membership',
+    description: 'Add your vehicles to your membership for comprehensive support services',
     icon: (
       <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -40,7 +40,7 @@ const heroSlides = [
     id: 1,
     title: "Drive with Confidence.",
     subtitle: "We've Got You Covered.",
-    description: "Join over 50,000 California drivers who trust DIP for comprehensive vehicle protection and 24/7 roadside assistance.",
+    description: "Join over 50,000 California drivers who trust DIP for comprehensive vehicle support services and accident assistance.",
     cta: "Join DIP Today",
     ctaSecondary: "Learn More",
     visual: "shield",
@@ -51,7 +51,7 @@ const heroSlides = [
     id: 2,
     title: "Accident Roadside Protection",
     subtitle: "Covered When It Matters Most.",
-    description: "When accidents happen, our certified technicians provide immediate roadside assistance to get you safely off the road and back on track.",
+    description: "When accidents happen, our certified technicians provide immediate support services to get you safely off the road and back on track.",
     cta: "Get Protected Now",
     ctaSecondary: "See Benefits",
     visual: "roadside",
@@ -61,10 +61,10 @@ const heroSlides = [
   {
     id: 3,
     title: "Save Thousands on Repairs",
-    subtitle: "Your Deductible, Covered.",
-    description: "Accidents happen. When they do, DIP covers your deductible so you can focus on getting back on the road, not the bills.",
+    subtitle: "Your Deductible, Supported.",
+    description: "Accidents happen. When they do, DIP provides deductible assistance so you can focus on getting back on the road, not the bills.",
     cta: "Start Saving",
-    ctaSecondary: "View Coverage",
+    ctaSecondary: "View Benefits",
     visual: "money",
     bgGradient: "from-blue-600 via-blue-700 to-blue-800",
     accentColor: "blue"
@@ -263,8 +263,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1 text-sm">Affordable Coverage</h3>
-                    <p className="text-gray-600 text-sm">Just $20/month for comprehensive protection</p>
+                    <h3 className="font-semibold text-gray-900 mb-1 text-sm">Affordable Membership</h3>
+                    <p className="text-gray-600 text-sm">Just $20/month for comprehensive support services</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">

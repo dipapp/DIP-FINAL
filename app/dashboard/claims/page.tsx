@@ -4,7 +4,7 @@ import { createClaimDraft, subscribeMyClaims, subscribeMyProfile, subscribeMyVeh
 import BackButton from '@/components/BackButton';
 
 export default function MyRequestsPage() {
-  const [claims, setClaims] = useState<any[]>([]);
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
@@ -13,13 +13,13 @@ export default function MyRequestsPage() {
 
   // Form state
   const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [claimType, setClaimType] = useState('');
+  const [requestType, setRequestType] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
 
   useEffect(() => {
-    const unsubClaims = subscribeMyClaims(setClaims);
+    const unsubClaims = subscribeMyClaims(setServiceRequests);
     const unsubVehicles = subscribeMyVehicles(setVehicles);
     const unsubProfile = subscribeMyProfile(setProfile);
     
@@ -37,7 +37,7 @@ export default function MyRequestsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedVehicle || !claimType || !description.trim() || !location.trim()) {
+    if (!selectedVehicle || !requestType || !description.trim() || !location.trim()) {
       alert('Please fill in all required fields.');
       return;
     }
@@ -64,7 +64,7 @@ export default function MyRequestsPage() {
         setUploadingPhotos(false);
       }
 
-      // Submit the claim with all data
+      // Submit the service request with all data
       await submitClaim(claimId, {
         amount: 0,
         description: description.trim(),
@@ -74,7 +74,7 @@ export default function MyRequestsPage() {
 
       // Reset form
       setSelectedVehicle('');
-      setClaimType('');
+      setRequestType('');
       setDescription('');
       setLocation('');
       setPhotos([]);
@@ -82,7 +82,7 @@ export default function MyRequestsPage() {
       
       alert('Service request submitted successfully!');
     } catch (error) {
-      console.error('Error submitting claim:', error);
+      console.error('Error submitting service request:', error);
       alert('Failed to submit request. Please try again.');
     } finally {
       setLoading(false);
@@ -170,8 +170,8 @@ export default function MyRequestsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type of Assistance</label>
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  value={claimType}
-                  onChange={(e) => setClaimType(e.target.value)}
+                  value={requestType}
+                  onChange={(e) => setRequestType(e.target.value)}
                   required
                 >
                   <option value="">Select service type...</option>
@@ -281,35 +281,35 @@ export default function MyRequestsPage() {
           <h2 className="text-2xl font-bold text-gray-900">Your Service Requests</h2>
         </div>
         
-        {claims.length > 0 ? (
+        {serviceRequests.length > 0 ? (
           <div className="space-y-4">
-            {claims.map((claim) => (
-              <div key={claim.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+            {serviceRequests.map((request) => (
+              <div key={request.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-gray-900 capitalize">{claim.type?.replace('-', ' ') || 'Service Request'}</h3>
-                      {getStatusBadge(claim.status)}
+                      <h3 className="font-semibold text-gray-900 capitalize">{request.type?.replace('-', ' ') || 'Service Request'}</h3>
+                      {getStatusBadge(request.status)}
                     </div>
-                    <p className="text-gray-600 mb-2">{claim.description}</p>
+                    <p className="text-gray-600 mb-2">{request.description}</p>
                     <div className="text-sm text-gray-500 space-y-1">
                       <div className="flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Location: {claim.location || 'Not specified'}
+                        Location: {request.location || 'Not specified'}
                       </div>
                       <div className="flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Submitted: {claim.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}
+                        Submitted: {request.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}
                       </div>
                     </div>
                   </div>
                   <a
-                    href={`/dashboard/claims/${claim.id}`}
+                    href={`/dashboard/claims/${request.id}`}
                     className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                   >
                     View Details

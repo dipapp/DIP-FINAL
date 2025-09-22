@@ -106,7 +106,7 @@ export default function DashboardPage() {
             Manage Your Vehicles
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            Add vehicles to your account to ensure they're protected under your DIP membership.
+            Add vehicles to your account to ensure they're covered under your DIP membership services.
           </p>
           <Link 
             href="/dashboard/vehicles" 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             Request Assistance
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            Need help? Submit a service request and get connected with professional assistance.
+            Need help? Submit a service request and get connected with professional support services.
           </p>
           <Link 
             href="/dashboard/claims" 
@@ -172,7 +172,7 @@ export default function DashboardPage() {
             <div>
               <h4 className="font-semibold text-gray-900 mb-2">Keep Vehicles Active</h4>
               <p className="text-gray-700 text-sm leading-relaxed">
-                Ensure your vehicles are marked as "Active" in your account to receive full membership benefits and coverage.
+                Ensure your vehicles are marked as "Active" in your account to receive full membership benefits and support services.
               </p>
             </div>
           </div>

@@ -105,7 +105,7 @@ function AuthPageContent() {
               {selectedTab === 0 ? 'Sign In to Your Account' : 'Join DIP Today'}
             </h1>
             <p className="text-gray-600 text-sm">
-              {selectedTab === 0 ? 'Access your membership benefits' : 'Start your membership in minutes'}
+              {selectedTab === 0 ? 'Access your membership services' : 'Start your membership in minutes'}
             </p>
           </div>
 
@@ -294,7 +294,7 @@ function AuthPageContent() {
                 
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-xs text-gray-600 leading-relaxed">
-                    <strong>Privacy Notice:</strong> We collect personal and vehicle information to provide membership services, verify identity, and process service requests. Your data is securely protected and only used as described in our Privacy Policy.
+                    <strong>Privacy Notice:</strong> We collect personal and vehicle information to provide membership services, verify identity, and process service requests. Your data is securely protected and only used as described in our Privacy Policy. DIP is a membership program, not an insurance company.
                   </p>
                 </div>
               </div>

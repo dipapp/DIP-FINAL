@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <span className="text-xl font-bold">DIP</span>
                   </div>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    Professional vehicle protection for California drivers.
+                    Professional vehicle support services for California drivers.
                   </p>
                 </div>
                 
@@ -45,8 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div>
                   <h4 className="font-semibold mb-4">Services</h4>
                   <div className="space-y-2 text-sm text-gray-400">
-                    <div>Roadside Assistance</div>
-                    <div>Vehicle Protection</div>
+                    <div>Accident Support Services</div>
+                    <div>Vehicle Membership</div>
                     <div>Emergency Support</div>
                     <div>Member Benefits</div>
                   </div>

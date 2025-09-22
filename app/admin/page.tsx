@@ -183,7 +183,7 @@ function AdminHomeContent() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">Towing Requests</h3>
-                    <p className="text-sm text-gray-600">Manage roadside assistance</p>
+                    <p className="text-sm text-gray-600">Manage accident support services</p>
                     {stats.pendingTowRequests > 0 && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
                         {stats.pendingTowRequests} pending

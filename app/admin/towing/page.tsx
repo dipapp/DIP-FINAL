@@ -88,7 +88,7 @@ export default function AdminTowingPage() {
       <div className="card">
         <div className="card-header">
           <h1 className="text-2xl font-bold text-gray-900">Towing Management</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage roadside assistance requests</p>
+          <p className="text-gray-600 mt-1">Monitor and manage accident support service requests</p>
         </div>
         
         <div className="card-body">

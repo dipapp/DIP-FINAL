@@ -259,7 +259,7 @@ function MyVehiclesPageContent() {
             Add New Vehicle
           </h2>
           <p className="text-gray-600 text-sm">
-            Add your vehicle to your DIP membership for protection and benefits
+            Add your vehicle to your DIP membership for support services and benefits
           </p>
         </div>
 

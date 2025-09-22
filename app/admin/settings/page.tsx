@@ -8,7 +8,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: 'general', label: 'General', icon: '⚙️' },
     { id: 'users', label: 'Users', icon: '👥' },
-    { id: 'claims', label: 'Claims', icon: '📋' },
+    { id: 'claims', label: 'Service Requests', icon: '📋' },
     { id: 'billing', label: 'Billing', icon: '💳' },
     { id: 'security', label: 'Security', icon: '🔒' },
   ];
@@ -101,23 +101,23 @@ export default function AdminSettingsPage() {
 
             {activeTab === 'claims' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Claims Management</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Service Request Management</h3>
                 
                 <div className="form-group">
                   <div>
-                    <label className="label">Maximum Claims per Month</label>
+                    <label className="label">Maximum Service Requests per Month</label>
                     <input type="number" className="input" defaultValue="2" min="1" max="10" />
                   </div>
                   
                   <div>
-                    <label className="label">Claim Review Period (hours)</label>
+                    <label className="label">Service Request Review Period (hours)</label>
                     <input type="number" className="input" defaultValue="48" min="1" max="168" />
                   </div>
                   
                   <div className="flex items-center space-x-3">
                     <input type="checkbox" id="requirePhoto" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
                     <label htmlFor="requirePhoto" className="text-gray-700 font-medium">
-                      Require Photos for Claims
+                      Require Photos for Service Requests
                     </label>
                   </div>
                 </div>
