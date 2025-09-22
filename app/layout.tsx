@@ -26,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           
           {/* AAA-Style Footer */}
-          <footer className="bg-gray-900 text-white py-12">
+          <footer className="bg-gray-900 text-white py-6">
             <div className="max-w-6xl mx-auto px-4">
-              <div className="grid md:grid-cols-4 gap-8 mb-8">
+              <div className="grid md:grid-cols-4 gap-6 mb-6">
                 {/* Brand */}
                 <div>
-                  <div className="flex items-center space-x-2 mb-4">
+                  <div className="flex items-center space-x-2 mb-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/dip-logo.png" alt="DIP Logo" className="h-8 w-auto" />
                     <span className="text-xl font-bold">DIP</span>
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Services */}
                 <div>
-                  <h4 className="font-semibold mb-4">Services</h4>
+                  <h4 className="font-semibold mb-3">Services</h4>
                   <div className="space-y-2 text-sm text-gray-400">
                     <div>Accident Support Services</div>
                     <div>Vehicle Membership</div>
@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Support */}
                 <div>
-                  <h4 className="font-semibold mb-4">Support</h4>
+                  <h4 className="font-semibold mb-3">Support</h4>
                   <div className="space-y-2 text-sm text-gray-400">
                     <div>24/7 Emergency</div>
                     <div>Member Support</div>
@@ -65,7 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Legal */}
                 <div>
-                  <h4 className="font-semibold mb-4">Legal</h4>
+                  <h4 className="font-semibold mb-3">Legal</h4>
                   <div className="space-y-2 text-sm text-gray-400">
                     <div>Terms of Service</div>
                     <div>Privacy Policy</div>
