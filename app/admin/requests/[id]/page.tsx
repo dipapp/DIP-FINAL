@@ -6,6 +6,31 @@ import { subscribeClaims, updateClaimStatus } from '@/lib/firebase/adminActions'
 import { db } from '@/lib/firebase/client';
 import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 
+interface Provider {
+  id: string;
+  businessName: string;
+  legalEntityName: string;
+  ein: string;
+  barNumber?: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  specialties: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  createdAt: Date;
+  updatedAt: Date;
+  licenseNumber?: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
+  yearsInBusiness: number;
+  serviceAreas: string[];
+  certifications: string[];
+}
+
 export default function AdminRequestDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -15,7 +40,7 @@ export default function AdminRequestDetailPage() {
   const [saving, setSaving] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [vehicleVin, setVehicleVin] = useState<string | null>(null);
-  const [providers, setProviders] = useState<any[]>([]);
+  const [providers, setProviders] = useState<Provider[]>([]);
   const [assigningProvider, setAssigningProvider] = useState(false);
 
   const allStatuses = ['Pending', 'In Review', 'Approved', 'Denied'] as const;
@@ -62,7 +87,9 @@ export default function AdminRequestDetailPage() {
       const providersData = providersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      }));
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Provider[];
       // Only show approved providers
       const approvedProviders = providersData.filter(p => p.status === 'approved');
       setProviders(approvedProviders);
