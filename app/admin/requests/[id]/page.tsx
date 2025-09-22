@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { subscribeClaims, updateClaimStatus } from '@/lib/firebase/adminActions';
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 
 export default function AdminRequestDetailPage() {
   const params = useParams();
@@ -15,6 +15,8 @@ export default function AdminRequestDetailPage() {
   const [saving, setSaving] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [vehicleVin, setVehicleVin] = useState<string | null>(null);
+  const [providers, setProviders] = useState<any[]>([]);
+  const [assigningProvider, setAssigningProvider] = useState(false);
 
   const allStatuses = ['Pending', 'In Review', 'Approved', 'Denied'] as const;
 
@@ -30,6 +32,45 @@ export default function AdminRequestDetailPage() {
     }
   };
 
+  const handleProviderAssignment = async (providerId: string) => {
+    if (!request) return;
+    try {
+      setAssigningProvider(true);
+      await updateDoc(doc(db, 'claims', request.id), {
+        assignedProviderId: providerId,
+        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
+        assignedAt: new Date(),
+        updatedAt: new Date(),
+      });
+      // Update local state
+      setRequest({ 
+        ...request, 
+        assignedProviderId: providerId,
+        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
+        assignedAt: new Date(),
+      });
+    } catch (error) {
+      console.error('Error assigning provider:', error);
+    } finally {
+      setAssigningProvider(false);
+    }
+  };
+
+  const loadProviders = async () => {
+    try {
+      const providersSnapshot = await getDocs(collection(db, 'providers'));
+      const providersData = providersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // Only show approved providers
+      const approvedProviders = providersData.filter(p => p.status === 'approved');
+      setProviders(approvedProviders);
+    } catch (error) {
+      console.error('Error loading providers:', error);
+    }
+  };
+
   useEffect(() => {
     if (!requestId) return;
     // Reuse subscribeClaims and pick the one we need
@@ -40,6 +81,10 @@ export default function AdminRequestDetailPage() {
     });
     return () => { try { (unsub as any)(); } catch {} };
   }, [requestId]);
+
+  useEffect(() => {
+    loadProviders();
+  }, []);
 
   // Handle ESC key to close expanded photo
   useEffect(() => {
@@ -149,6 +194,50 @@ export default function AdminRequestDetailPage() {
           <div className="mt-4">
             <div className="text-muted mb-1">Description</div>
             <p>{request.description}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Provider Assignment Section */}
+      <div className="card">
+        <h2 className="font-semibold mb-3">Provider Assignment</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Assign to Provider
+            </label>
+            <select
+              className="input max-w-xs"
+              value={request?.assignedProviderId || ''}
+              onChange={(e) => handleProviderAssignment(e.target.value)}
+              disabled={assigningProvider}
+            >
+              <option value="">Select Provider</option>
+              {providers.map((provider) => (
+                <option key={provider.id} value={provider.id}>
+                  {provider.businessName} - {provider.contactPerson}
+                </option>
+              ))}
+            </select>
+            {assigningProvider && (
+              <span className="text-xs text-muted ml-2">Assigning...</span>
+            )}
+          </div>
+          <div>
+            <div className="text-sm text-muted">Currently Assigned</div>
+            <div className="font-medium">
+              {request?.assignedProviderName || 'No provider assigned'}
+            </div>
+            {request?.assignedAt && (
+              <div className="text-xs text-muted">
+                Assigned: {request.assignedAt.toDate?.()?.toLocaleString?.() || '—'}
+              </div>
+            )}
+          </div>
+        </div>
+        {providers.length === 0 && (
+          <div className="mt-2 text-sm text-yellow-600">
+            No approved providers available. <Link href="/admin/providers" className="text-blue-600 hover:text-blue-700">Manage providers</Link>
           </div>
         )}
       </div>

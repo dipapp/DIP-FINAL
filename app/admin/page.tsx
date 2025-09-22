@@ -57,6 +57,7 @@ function AdminHomeContent() {
     { id: 'users', label: 'Users', icon: '👥', count: users.length },
     { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
+    { id: 'providers', label: 'Providers', icon: '🏢', count: 0 },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -368,6 +369,99 @@ function AdminHomeContent() {
                   <p className="text-sm text-muted">Showing 10 of {requests.length} requests</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Providers Tab */}
+        {activeTab === 'providers' && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-blue-600">🏢</span>
+                <h3 className="font-semibold text-blue-900">Provider Management</h3>
+              </div>
+              <p className="text-blue-800 text-sm mb-3">
+                Manage approved service providers and their information. Providers can sign up through our dedicated portal.
+              </p>
+              <div className="flex space-x-3">
+                <a 
+                  href="/admin/providers" 
+                  className="btn btn-primary text-sm px-4 py-2"
+                >
+                  Manage Providers
+                </a>
+                <a 
+                  href="/provider/signup" 
+                  className="btn btn-secondary text-sm px-4 py-2"
+                  target="_blank"
+                >
+                  Provider Signup Portal
+                </a>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span className="text-green-600 text-lg">✅</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Approved Providers</div>
+                    <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="text-sm text-gray-500">Active providers</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span className="text-yellow-600 text-lg">⏳</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Pending Review</div>
+                    <div className="text-2xl font-bold text-yellow-600">0</div>
+                    <div className="text-sm text-gray-500">Awaiting approval</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 text-lg">📋</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Total Applications</div>
+                    <div className="text-2xl font-bold text-blue-600">0</div>
+                    <div className="text-sm text-gray-500">All time</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Provider Information</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Provider Signup Process:</span>
+                  <span className="font-medium">4-step application</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Required Information:</span>
+                  <span className="font-medium">Business, Legal, Contact, Service</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Verification Required:</span>
+                  <span className="font-medium">EIN, License, Insurance</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Approval Process:</span>
+                  <span className="font-medium">3-5 business days</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
