@@ -247,7 +247,7 @@ function MyVehiclesPageContent() {
       </div>
       
       {/* Add Vehicle Form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-3">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="text-center mb-4">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,10 +284,10 @@ function MyVehiclesPageContent() {
         </div>
 
         {/* Vehicle Information Form */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* Step 1: License Plate & State (Primary Input) */}
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <div className="flex items-center mb-2">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex items-center mb-3">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 transition-all duration-300 ${
                 form.licensePlate && form.state 
                   ? 'bg-green-100 text-green-600' 
@@ -309,11 +309,11 @@ function MyVehiclesPageContent() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">License Plate</label>
                 <input 
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-center uppercase font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center uppercase font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="ABC123"
                   value={form.licensePlate}
                   maxLength={7}
@@ -330,7 +330,7 @@ function MyVehiclesPageContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                 <input 
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-center uppercase font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center uppercase font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="CA"
                   value={form.state}
                   maxLength={2}
@@ -376,12 +376,12 @@ function MyVehiclesPageContent() {
           </div>
 
           {/* Step 2: Vehicle Details (Auto-populated) */}
-          <div className={`rounded-lg p-3 transition-all duration-300 ${
+          <div className={`rounded-lg p-4 transition-all duration-300 ${
             form.licensePlate && form.state
               ? 'bg-gray-50 border border-gray-200'
               : 'bg-gray-100 border border-gray-300'
           }`}>
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-3">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 transition-all duration-300 ${
                 form.vin.length === 17 && form.make && form.model && form.year
                   ? 'bg-green-100 text-green-600' 
@@ -405,11 +405,11 @@ function MyVehiclesPageContent() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">VIN Number</label>
                 <input 
-                  className={`w-full px-2 py-1.5 border rounded-lg font-mono text-sm uppercase transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg font-mono text-sm uppercase transition-colors ${
                     form.licensePlate && form.state
                       ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
@@ -431,7 +431,7 @@ function MyVehiclesPageContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                 <input 
-                  className={`w-full px-2 py-1.5 border rounded-lg transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors ${
                     form.licensePlate && form.state
                       ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
@@ -450,7 +450,7 @@ function MyVehiclesPageContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
                 <input 
-                  className={`w-full px-2 py-1.5 border rounded-lg transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors ${
                     form.licensePlate && form.state
                       ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
@@ -468,7 +468,7 @@ function MyVehiclesPageContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
                 <input 
-                  className={`w-full px-2 py-1.5 border rounded-lg transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors ${
                     form.licensePlate && form.state
                       ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
@@ -486,7 +486,7 @@ function MyVehiclesPageContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
                 <input 
-                  className={`w-full px-2 py-1.5 border rounded-lg transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-lg transition-colors ${
                     form.licensePlate && form.state
                       ? 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       : 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
@@ -504,9 +504,9 @@ function MyVehiclesPageContent() {
           </div>
 
           {/* Submit Button */}
-          <div className="text-center pt-2">
+          <div className="text-center pt-4">
             <button 
-              className={`inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg shadow-md transition-all duration-200 ${
+              className={`inline-flex items-center px-6 py-3 text-base font-semibold rounded-lg shadow-md transition-all duration-200 ${
                 (!form.licensePlate || !form.state || form.vin.length !== 17 ||
                  !form.make || !form.model || !form.year || adding)
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -538,7 +538,7 @@ function MyVehiclesPageContent() {
             
             {/* Success Preview */}
             {(form.licensePlate && form.state && form.vin.length === 17 && form.make && form.model && form.year) && (
-              <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-2">
+              <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
