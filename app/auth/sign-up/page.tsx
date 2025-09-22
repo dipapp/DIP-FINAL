@@ -118,7 +118,10 @@ function AuthPageContent() {
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
-              onClick={() => setSelectedTab(0)}
+              onClick={() => {
+                setSelectedTab(0);
+                setError(null); // Clear error when switching tabs
+              }}
             >
               Sign In
             </button>
@@ -128,7 +131,10 @@ function AuthPageContent() {
                   ? 'border-blue-600 text-blue-600' 
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
-              onClick={() => setSelectedTab(1)}
+              onClick={() => {
+                setSelectedTab(1);
+                setError(null); // Clear error when switching tabs
+              }}
             >
               Join Now
             </button>
