@@ -39,7 +39,7 @@ const heroSlides = [
   {
     id: 1,
     title: "Drive with Confidence.",
-    subtitle: "We've Got You Covered.",
+    subtitle: "We've Got Your Back.",
     description: "Join over 50,000 California drivers who trust DIP for comprehensive vehicle support services and accident assistance.",
     cta: "Join DIP Today",
     ctaSecondary: "Learn More",
@@ -49,10 +49,10 @@ const heroSlides = [
   },
   {
     id: 2,
-    title: "Accident Roadside Protection",
-    subtitle: "Covered When It Matters Most.",
+    title: "Accident Roadside Support",
+    subtitle: "Assisted When It Matters Most.",
     description: "When accidents happen, our certified technicians provide immediate support services to get you safely off the road and back on track.",
-    cta: "Get Protected Now",
+    cta: "Get Support Now",
     ctaSecondary: "See Benefits",
     visual: "roadside",
     bgGradient: "from-blue-600 via-blue-700 to-blue-800",
