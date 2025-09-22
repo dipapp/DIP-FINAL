@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { auth, db } from '@/lib/firebase/client';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getAuthErrorMessage } from '@/lib/auth-errors';
 
 function AuthPageContent() {
   const router = useRouter();
@@ -45,7 +46,7 @@ function AuthPageContent() {
       await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to sign in');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ function AuthPageContent() {
       });
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to create account');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
