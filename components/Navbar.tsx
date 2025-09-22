@@ -49,7 +49,7 @@ export default function Navbar() {
               className={`font-medium transition-colors hover:text-blue-600 ${
                 pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
               }`}
-              href="/provider/signup"
+              href="/provider"
             >
               Provider Portal
             </Link>
@@ -138,7 +138,7 @@ export default function Navbar() {
                 className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
                   pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
                 }`}
-                href="/provider/signup"
+                href="/provider"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Provider Portal
