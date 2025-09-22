@@ -61,8 +61,8 @@ const heroSlides = [
   {
     id: 3,
     title: "Save Thousands on Repairs",
-    subtitle: "Your Personal Expenses, Supported.",
-    description: "Accidents happen. When they do, DIP provides assistance with your personal expenses so you can focus on getting back on the road, not the bills.",
+    subtitle: "Membership Benefits, Active.",
+    description: "Accidents happen. When they do, DIP membership benefits kick in so you can focus on getting back on the road, not the paperwork.",
     cta: "Start Saving",
     ctaSecondary: "View Benefits",
     visual: "money",
