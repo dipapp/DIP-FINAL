@@ -168,9 +168,9 @@ function MyVehiclesPageContent() {
           model: data.model || '',
           color: data.color || ''
         });
-        alert(`Vehicle details found and populated!`);
+        alert(`✅ Vehicle details found and populated!\n\n${data.year} ${data.make} ${data.model}\nVIN: ${data.vin}`);
       } else {
-        alert(`Could not find vehicle details for plate ${form.licensePlate} in ${form.state}. ${data.details || ''}`);
+        alert(`❌ Could not find vehicle details for plate ${form.licensePlate} in ${form.state}.\n\n${data.details || 'Please check the plate number and state, or try entering the details manually.'}`);
       }
     } catch (error) {
       console.error('Error looking up vehicle:', error);

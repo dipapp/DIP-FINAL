@@ -21,11 +21,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Call PlateToVIN API
-    const response = await fetch('https://platetovin.com/api/v1/plate-to-vin', {
+    console.log('Calling PlateToVIN API with:', { licensePlate, state });
+    
+    const response = await fetch('https://platetovin.com/api/convert', {
       method: 'POST',
       headers: {
         'Authorization': apiKey,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         plate: licensePlate,
@@ -33,27 +36,46 @@ export async function POST(request: NextRequest) {
       }),
     });
 
+    console.log('PlateToVIN API response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('PlateToVIN API error:', errorData);
       return NextResponse.json(
         { 
           error: 'Failed to lookup VIN from license plate',
-          details: errorData.message || 'Unknown error'
+          details: errorData.message || errorData.error || 'Unknown error',
+          status: response.status
         },
         { status: response.status }
       );
     }
 
     const data = await response.json();
+    console.log('PlateToVIN API response data:', data);
+    
+    // Check if the API response indicates success
+    if (!data.success) {
+      return NextResponse.json(
+        { 
+          error: 'Plate lookup failed',
+          details: data.message || data.error || 'No vehicle found for this plate and state'
+        },
+        { status: 404 }
+      );
+    }
+    
+    // Extract vehicle details from the VIN object
+    const vinData = data.vin || {};
     
     return NextResponse.json({
       success: true,
-      vin: data.vin,
-      year: data.year || null,
-      make: data.make || null,
-      model: data.model || null,
-      color: data.color || null,
-      vehicle: data.vehicle || null,
+      vin: vinData.vin || vinData.number || null,
+      year: vinData.year || null,
+      make: vinData.make || null,
+      model: vinData.model || null,
+      color: vinData.color || null,
+      vehicle: vinData || null,
     });
 
   } catch (error) {
