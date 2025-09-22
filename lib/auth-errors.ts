@@ -17,7 +17,7 @@ export function getAuthErrorMessage(error: any, isSignUp: boolean = false): stri
     // Account issues
     'auth/user-disabled': isSignUp ? 'Unable to create account. Please contact support.' : 'This account has been disabled. Please contact support for assistance.',
     'auth/too-many-requests': isSignUp ? 'Too many attempts. Please wait a moment and try again.' : 'Too many failed attempts. Please wait a moment and try again.',
-    'auth/account-exists-with-different-credential': isSignUp ? 'An account already exists with this email address. Please try signing in instead.' : 'An account already exists with this email address. Please try signing in instead.',
+    'auth/account-exists-with-different-credential': 'An account already exists with this email address. Please try signing in instead.',
     
     // Network/Server issues
     'auth/network-request-failed': 'Network error. Please check your connection and try again.',
@@ -25,7 +25,7 @@ export function getAuthErrorMessage(error: any, isSignUp: boolean = false): stri
     'auth/weak-password': 'Password is too weak. Please choose a stronger password.',
     
     // Email verification
-    'auth/email-already-in-use': isSignUp ? 'An account with this email already exists. Please try signing in instead.' : 'An account with this email already exists. Please try signing in instead.',
+    'auth/email-already-in-use': 'An account with this email already exists. Please try signing in instead.',
     'auth/requires-recent-login': 'For security reasons, please sign in again to complete this action.',
     
     // Generic fallbacks
