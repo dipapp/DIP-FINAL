@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
@@ -34,8 +34,43 @@ const services = [
   }
 ];
 
+// Hero slide data
+const heroSlides = [
+  {
+    id: 1,
+    title: "Drive with Confidence.",
+    subtitle: "We've Got You Covered.",
+    description: "Join over 50,000 California drivers who trust DIP for comprehensive vehicle protection and 24/7 roadside assistance.",
+    cta: "Join DIP Today",
+    ctaSecondary: "Learn More",
+    visual: "shield",
+    bgGradient: "from-blue-600 to-blue-700"
+  },
+  {
+    id: 2,
+    title: "24/7 Roadside Protection",
+    subtitle: "Never Stranded Again.",
+    description: "Flat tire? Dead battery? Locked out? Our certified technicians are just a call away, 24 hours a day, 365 days a year.",
+    cta: "Get Protected Now",
+    ctaSecondary: "See Benefits",
+    visual: "roadside",
+    bgGradient: "from-green-600 to-green-700"
+  },
+  {
+    id: 3,
+    title: "Save Thousands on Repairs",
+    subtitle: "Your Deductible, Covered.",
+    description: "Accidents happen. When they do, DIP covers your deductible so you can focus on getting back on the road, not the bills.",
+    cta: "Start Saving",
+    ctaSecondary: "View Coverage",
+    visual: "money",
+    bgGradient: "from-purple-600 to-purple-700"
+  }
+];
+
 export default function HomePage() {
   const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -44,45 +79,101 @@ export default function HomePage() {
     return () => unsub();
   }, [router]);
 
+  // Auto-rotate slides every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentSlideData = heroSlides[currentSlide];
+
+  const getVisualIcon = (visual: string) => {
+    switch (visual) {
+      case 'shield':
+        return (
+          <div className="relative">
+            <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+              <span className="text-yellow-900 font-bold text-sm">✓</span>
+            </div>
+          </div>
+        );
+      case 'roadside':
+        return (
+          <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        );
+      case 'money':
+        return (
+          <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - AAA Style */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      {/* Sliding Hero Section */}
+      <section className={`bg-gradient-to-r ${currentSlideData.bgGradient} text-white relative overflow-hidden`}>
         <div className="max-w-6xl mx-auto px-4 py-16 lg:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="transition-all duration-500 ease-in-out">
               <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                Drive with Confidence.
+                {currentSlideData.title}
                 <br />
-                <span className="text-blue-200">We've Got You Covered.</span>
+                <span className="opacity-80">{currentSlideData.subtitle}</span>
               </h1>
-              <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-                Join over 50,000 California drivers who trust DIP for comprehensive vehicle protection and 24/7 roadside assistance.
+              <p className="text-xl opacity-90 mb-8 leading-relaxed">
+                {currentSlideData.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
                   href="/auth/sign-up"
-                  className="bg-white text-blue-600 font-semibold px-8 py-4 rounded-lg hover:bg-blue-50 transition-colors text-center"
+                  className="bg-white text-gray-900 font-semibold px-8 py-4 rounded-lg hover:bg-gray-50 transition-colors text-center"
                 >
-                  Join DIP Today
+                  {currentSlideData.cta}
                 </a>
                 <a
                   href="#services"
-                  className="border-2 border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-colors text-center"
+                  className="border-2 border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-gray-900 transition-colors text-center"
                 >
-                  Learn More
+                  {currentSlideData.ctaSecondary}
                 </a>
               </div>
             </div>
             <div className="text-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/dip-logo.png" 
-                alt="DIP Logo" 
-                className="h-32 w-auto mx-auto" 
-              />
+              {getVisualIcon(currentSlideData.visual)}
             </div>
           </div>
+        </div>
+        
+        {/* Slide Indicators */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentSlide 
+                  ? 'bg-white scale-125' 
+                  : 'bg-white/50 hover:bg-white/75'
+              }`}
+            />
+          ))}
         </div>
       </section>
 
