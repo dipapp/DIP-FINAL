@@ -55,8 +55,8 @@ const heroSlides = [
     cta: "Get Protected Now",
     ctaSecondary: "See Benefits",
     visual: "roadside",
-    bgGradient: "from-indigo-600 via-indigo-700 to-purple-800",
-    accentColor: "indigo"
+    bgGradient: "from-blue-600 via-blue-700 to-blue-800",
+    accentColor: "blue"
   },
   {
     id: 3,
@@ -66,8 +66,8 @@ const heroSlides = [
     cta: "Start Saving",
     ctaSecondary: "View Coverage",
     visual: "money",
-    bgGradient: "from-slate-600 via-slate-700 to-gray-800",
-    accentColor: "slate"
+    bgGradient: "from-blue-600 via-blue-700 to-blue-800",
+    accentColor: "blue"
   }
 ];
 
