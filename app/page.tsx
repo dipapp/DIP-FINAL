@@ -61,8 +61,8 @@ const heroSlides = [
   {
     id: 3,
     title: "Save Thousands on Repairs",
-    subtitle: "Your Out-of-Pocket Costs, Supported.",
-    description: "Accidents happen. When they do, DIP provides assistance with your out-of-pocket expenses so you can focus on getting back on the road, not the bills.",
+    subtitle: "Your Personal Expenses, Supported.",
+    description: "Accidents happen. When they do, DIP provides assistance with your personal expenses so you can focus on getting back on the road, not the bills.",
     cta: "Start Saving",
     ctaSecondary: "View Benefits",
     visual: "money",
