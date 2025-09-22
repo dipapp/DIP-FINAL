@@ -49,9 +49,9 @@ const heroSlides = [
   },
   {
     id: 2,
-    title: "24/7 Roadside Protection",
-    subtitle: "Never Stranded Again.",
-    description: "Flat tire? Dead battery? Locked out? Our certified technicians are just a call away, 24 hours a day, 365 days a year.",
+    title: "Accident Roadside Protection",
+    subtitle: "Covered When It Matters Most.",
+    description: "When accidents happen, our certified technicians provide immediate roadside assistance to get you safely off the road and back on track.",
     cta: "Get Protected Now",
     ctaSecondary: "See Benefits",
     visual: "roadside",
