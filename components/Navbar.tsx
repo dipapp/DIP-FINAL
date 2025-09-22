@@ -45,6 +45,15 @@ export default function Navbar() {
               Home
             </Link>
             
+            <Link 
+              className={`font-medium transition-colors hover:text-blue-600 ${
+                pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
+              }`}
+              href="/provider/signup"
+            >
+              Provider Portal
+            </Link>
+            
             {user && (
               <Link 
                 className={`font-medium transition-colors hover:text-blue-600 ${
@@ -123,6 +132,16 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
+              </Link>
+              
+              <Link 
+                className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
+                  pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
+                }`}
+                href="/provider/signup"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Provider Portal
               </Link>
               
               {user && (
