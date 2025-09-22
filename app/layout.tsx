@@ -26,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           
           {/* AAA-Style Footer */}
-          <footer className="bg-gray-900 text-white py-6">
+          <footer className="bg-gray-900 text-white py-3">
             <div className="max-w-6xl mx-auto px-4">
-              <div className="grid md:grid-cols-4 gap-6 mb-6">
+              <div className="grid md:grid-cols-4 gap-4 mb-4">
                 {/* Brand */}
                 <div>
-                  <div className="flex items-center space-x-2 mb-3">
+                  <div className="flex items-center space-x-2 mb-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/dip-logo.png" alt="DIP Logo" className="h-8 w-auto" />
                     <span className="text-xl font-bold">DIP</span>
@@ -43,8 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Services */}
                 <div>
-                  <h4 className="font-semibold mb-3">Services</h4>
-                  <div className="space-y-2 text-sm text-gray-400">
+                  <h4 className="font-semibold mb-2">Services</h4>
+                  <div className="space-y-1 text-sm text-gray-400">
                     <div>Accident Support Services</div>
                     <div>Vehicle Membership</div>
                     <div>Emergency Support</div>
@@ -54,8 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Support */}
                 <div>
-                  <h4 className="font-semibold mb-3">Support</h4>
-                  <div className="space-y-2 text-sm text-gray-400">
+                  <h4 className="font-semibold mb-2">Support</h4>
+                  <div className="space-y-1 text-sm text-gray-400">
                     <div>24/7 Emergency</div>
                     <div>Member Support</div>
                     <div>Help Center</div>
@@ -65,8 +65,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Legal */}
                 <div>
-                  <h4 className="font-semibold mb-3">Legal</h4>
-                  <div className="space-y-2 text-sm text-gray-400">
+                  <h4 className="font-semibold mb-2">Legal</h4>
+                  <div className="space-y-1 text-sm text-gray-400">
                     <div>Terms of Service</div>
                     <div>Privacy Policy</div>
                     <div>Membership Agreement</div>
