@@ -181,44 +181,6 @@ export default function ProviderSignupPage() {
             </div>
           )}
 
-          {/* Validation Helper */}
-          {!validateStep(currentStep) && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg mb-6">
-              <p className="font-medium">Please complete all required fields to continue:</p>
-              <ul className="mt-2 text-sm list-disc list-inside">
-                {currentStep === 1 && (
-                  <>
-                    {!formData.businessName && <li>Business Name</li>}
-                    {!formData.legalEntityName && <li>Legal Entity Name</li>}
-                    {(!formData.ein || formData.ein.length !== 9) && <li>EIN Number (9 digits)</li>}
-                    {!formData.businessLicense && <li>Business License Number</li>}
-                    {!formData.yearsInBusiness && <li>Years in Business</li>}
-                    {!formData.insuranceProvider && <li>Insurance Provider</li>}
-                    {!formData.insurancePolicyNumber && <li>Policy Number</li>}
-                    {!formData.insuranceExpiry && <li>Insurance Expiration</li>}
-                  </>
-                )}
-                {currentStep === 2 && (
-                  <>
-                    {!formData.contactPerson && <li>Contact Person</li>}
-                    {!formData.email && <li>Email</li>}
-                    {!formData.phone && <li>Phone</li>}
-                    {!formData.address && <li>Address</li>}
-                    {!formData.city && <li>City</li>}
-                    {!formData.state && <li>State</li>}
-                    {!formData.zipCode && <li>Zip Code</li>}
-                  </>
-                )}
-                {currentStep === 3 && (
-                  <>
-                    {!formData.agreedToTerms && <li>Agree to Terms of Service</li>}
-                    {!formData.agreedToBackgroundCheck && <li>Consent to Background Check</li>}
-                    {!formData.agreedToCompliance && <li>Agree to Compliance Standards</li>}
-                  </>
-                )}
-              </ul>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Step 1: Business Information */}
