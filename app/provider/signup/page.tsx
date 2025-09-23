@@ -121,6 +121,13 @@ export default function ProviderSignupPage() {
     setError(null);
     setLoading(true);
 
+    // Validate EIN number
+    if (formData.ein.length !== 9) {
+      setError('EIN number must be exactly 9 digits.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const providerData = {
         ...formData,
@@ -237,11 +244,36 @@ export default function ProviderSignupPage() {
                       type="text"
                       name="ein"
                       value={formData.ein}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="XX-XXXXXXX"
+                      onChange={(e) => {
+                        // Only allow digits and limit to 9 characters
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 9);
+                        setFormData(prev => ({ ...prev, ein: value }));
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        formData.ein.length === 9 
+                          ? 'border-green-300 bg-green-50' 
+                          : formData.ein.length > 0 
+                            ? 'border-yellow-300 bg-yellow-50' 
+                            : 'border-gray-300'
+                      }`}
+                      placeholder="123456789"
+                      maxLength={9}
                       required
                     />
+                    <p className={`text-xs mt-1 ${
+                      formData.ein.length === 9 
+                        ? 'text-green-600' 
+                        : formData.ein.length > 0 
+                          ? 'text-yellow-600' 
+                          : 'text-gray-500'
+                    }`}>
+                      {formData.ein.length === 9 
+                        ? '✓ Valid EIN number' 
+                        : formData.ein.length > 0 
+                          ? `${formData.ein.length}/9 digits` 
+                          : 'Enter 9 digits only (no dashes or spaces)'
+                      }
+                    </p>
                   </div>
                   
                   <div>
