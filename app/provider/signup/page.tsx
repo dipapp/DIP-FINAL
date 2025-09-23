@@ -31,7 +31,9 @@ export default function ProviderSignupPage() {
     state: '',
     zipCode: '',
     
-    // Step 3: Terms and Conditions
+    // Step 3: Legal Documents & Terms
+    w9Form: '',
+    otherDocuments: '',
     agreedToTerms: false,
     agreedToBackgroundCheck: false,
     agreedToCompliance: false,
