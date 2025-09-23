@@ -33,7 +33,6 @@ export default function ProviderSignupPage() {
     
     // Step 3: Legal Documents & Terms
     w9Form: '',
-    otherDocuments: '',
     agreedToTerms: false,
     agreedToBackgroundCheck: false,
     agreedToCompliance: false,
@@ -503,19 +502,6 @@ export default function ProviderSignupPage() {
                     </select>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Other Legal Documents
-                    </label>
-                    <textarea
-                      name="otherDocuments"
-                      value={formData.otherDocuments}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="List any other relevant legal documents or certifications..."
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-4 border-t pt-6">
