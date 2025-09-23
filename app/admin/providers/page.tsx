@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/client';
+import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 
 interface Provider {
@@ -58,6 +59,14 @@ export default function AdminProvidersPage() {
 
   const updateProviderStatus = async (providerId: string, newStatus: Provider['status']) => {
     try {
+      const provider = providers.find(p => p.id === providerId);
+      if (!provider) return;
+
+      // If approving, create a provider account
+      if (newStatus === 'approved') {
+        await createProviderAccount(provider);
+      }
+
       await updateDoc(doc(db, 'providers', providerId), {
         status: newStatus,
         updatedAt: new Date(),
@@ -72,6 +81,68 @@ export default function AdminProvidersPage() {
       );
     } catch (error) {
       console.error('Error updating provider status:', error);
+      alert('Error updating provider status. Please try again.');
+    }
+  };
+
+  const createProviderAccount = async (provider: Provider) => {
+    try {
+      // Generate a temporary password (provider will need to reset)
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      // Create Firebase Auth account
+      const userCredential = await createUserWithEmailAndPassword(auth, provider.email, tempPassword);
+      const user = userCredential.user;
+      
+      // Update profile with provider name
+      await updateProfile(user, {
+        displayName: `${provider.contactPerson} (${provider.businessName})`
+      });
+
+      // Create provider user document
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        email: provider.email,
+        firstName: provider.contactPerson.split(' ')[0] || provider.contactPerson,
+        lastName: provider.contactPerson.split(' ').slice(1).join(' ') || '',
+        phoneNumber: provider.phone,
+        isProvider: true,
+        providerId: provider.id,
+        businessName: provider.businessName,
+        isActive: true,
+        createdAt: new Date(),
+        needsPasswordReset: true,
+        tempPassword: tempPassword, // Store temporarily for admin to share
+      });
+
+      // Create provider profile document
+      await setDoc(doc(db, 'provider_profiles', user.uid), {
+        providerId: provider.id,
+        businessName: provider.businessName,
+        legalEntityName: provider.legalEntityName,
+        ein: provider.ein,
+        contactPerson: provider.contactPerson,
+        phone: provider.phone,
+        address: provider.address,
+        city: provider.city,
+        state: provider.state,
+        zipCode: provider.zipCode,
+        specialties: provider.specialties || [],
+        serviceAreas: provider.serviceAreas || [],
+        certifications: provider.certifications || [],
+        insuranceProvider: provider.insuranceProvider,
+        insurancePolicyNumber: provider.insurancePolicyNumber,
+        yearsInBusiness: provider.yearsInBusiness,
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      alert(`Provider account created successfully!\n\nLogin credentials:\nEmail: ${provider.email}\nTemporary Password: ${tempPassword}\n\nPlease share these credentials with the provider.`);
+      
+    } catch (error) {
+      console.error('Error creating provider account:', error);
+      throw error;
     }
   };
 

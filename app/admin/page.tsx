@@ -81,6 +81,7 @@ function AdminHomeContent() {
     { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
     { id: 'providers', label: 'Providers', icon: '🏢', count: providers.length },
+    { id: 'assignments', label: 'Assignments', icon: '📝', count: 0 },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -484,6 +485,41 @@ function AdminHomeContent() {
                   <span className="text-gray-600">Approval Process:</span>
                   <span className="font-medium">3-5 business days</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Assignments Tab */}
+        {activeTab === 'assignments' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Assignment Management</h3>
+              <Link href="/admin/assignments" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                Manage Assignments
+              </Link>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-blue-600">📝</span>
+                <h3 className="font-semibold text-blue-900">Assignment System</h3>
+              </div>
+              <p className="text-blue-800 text-sm mb-3">
+                Assign service requests to approved providers and track their progress.
+              </p>
+              <div className="flex space-x-3">
+                <Link 
+                  href="/admin/assignments" 
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                >
+                  Manage Assignments
+                </Link>
+                <Link 
+                  href="/admin/providers" 
+                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
+                >
+                  View Providers
+                </Link>
               </div>
             </div>
           </div>
