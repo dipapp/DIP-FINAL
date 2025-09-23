@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { useAuth } from '@/lib/firebase/client'; // You'll need to create this hook
 import Link from 'next/link';
 
 interface Assignment {
@@ -37,10 +36,10 @@ export default function ProviderDashboard() {
 
   const fetchAssignments = async () => {
     try {
-      // Get assignments for this provider
+      // For now, get all assignments - in production, this should be filtered by provider ID
+      // TODO: Implement proper authentication to get current provider ID
       const assignmentsQuery = query(
         collection(db, 'assignments'),
-        where('providerId', '==', 'current-provider-id'), // This should be the actual provider ID
         orderBy('assignedAt', 'desc')
       );
       
