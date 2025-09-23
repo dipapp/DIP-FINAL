@@ -80,8 +80,8 @@ function AdminHomeContent() {
     { id: 'users', label: 'Users', icon: '👥', count: users.length },
     { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
-    { id: 'providers', label: 'Providers', icon: '🏢', count: providers.length },
-    { id: 'applicants', label: 'Applicants', icon: '📝', count: 0 },
+    { id: 'providers', label: 'Provider Applications', icon: '🏢', count: providers.length },
+    { id: 'applicants', label: 'Service Assignments', icon: '📝', count: 0 },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -403,17 +403,17 @@ function AdminHomeContent() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-blue-600">🏢</span>
-                <h3 className="font-semibold text-blue-900">Provider Management</h3>
+                <h3 className="font-semibold text-blue-900">Provider Applications</h3>
               </div>
               <p className="text-blue-800 text-sm mb-3">
-                Manage approved service providers and their information. Providers can sign up through our dedicated portal.
+                Review and approve service provider applications. New providers can sign up through our dedicated portal.
               </p>
               <div className="flex space-x-3">
                 <a 
                   href="/admin/providers" 
                   className="btn btn-primary text-sm px-4 py-2"
                 >
-                  Manage Providers
+                  Review Applications
                 </a>
                 <a 
                   href="/provider/signup" 
@@ -467,10 +467,10 @@ function AdminHomeContent() {
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Provider Information</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Provider Application Process</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Provider Signup Process:</span>
+                  <span className="text-gray-600">Application Process:</span>
                   <span className="font-medium">4-step application</span>
                 </div>
                 <div className="flex justify-between">
@@ -482,7 +482,7 @@ function AdminHomeContent() {
                   <span className="font-medium">EIN, License, Insurance</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Approval Process:</span>
+                  <span className="text-gray-600">Review Process:</span>
                   <span className="font-medium">3-5 business days</span>
                 </div>
               </div>
@@ -492,34 +492,104 @@ function AdminHomeContent() {
 
         {/* Applicants Tab */}
         {activeTab === 'applicants' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Applicant Management</h3>
-              <Link href="/admin/applicants" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                Manage Applicants
-              </Link>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-blue-600">📝</span>
-                <h3 className="font-semibold text-blue-900">Applicant System</h3>
+                <span className="text-green-600">📝</span>
+                <h3 className="font-semibold text-green-900">Service Request Assignments</h3>
               </div>
-              <p className="text-blue-800 text-sm mb-3">
-                Assign service requests to approved providers and track their progress.
+              <p className="text-green-800 text-sm mb-3">
+                Assign customer service requests to approved providers and track their progress through completion.
               </p>
               <div className="flex space-x-3">
                 <Link 
                   href="/admin/applicants" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                  className="btn btn-primary text-sm px-4 py-2"
                 >
-                  Manage Applicants
+                  Assign Requests
                 </Link>
                 <Link 
                   href="/admin/providers" 
-                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm"
+                  className="btn btn-secondary text-sm px-4 py-2"
                 >
-                  View Providers
+                  View Approved Providers
                 </Link>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 text-lg">📋</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Pending Requests</div>
+                    <div className="text-2xl font-bold text-blue-600">{stats.pendingRequests}</div>
+                    <div className="text-sm text-gray-500">Need assignment</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span className="text-yellow-600 text-lg">⏳</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">In Progress</div>
+                    <div className="text-2xl font-bold text-yellow-600">0</div>
+                    <div className="text-sm text-gray-500">Being worked on</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span className="text-green-600 text-lg">✅</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Completed</div>
+                    <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="text-sm text-gray-500">Finished today</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <span className="text-purple-600 text-lg">🏢</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Available Providers</div>
+                    <div className="text-2xl font-bold text-purple-600">{stats.approvedProviders}</div>
+                    <div className="text-sm text-gray-500">Ready to assign</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Assignment Process</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Step 1:</span>
+                  <span className="font-medium">Review pending service requests</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Step 2:</span>
+                  <span className="font-medium">Select appropriate provider</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Step 3:</span>
+                  <span className="font-medium">Assign and track progress</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Step 4:</span>
+                  <span className="font-medium">Monitor completion</span>
+                </div>
               </div>
             </div>
           </div>
