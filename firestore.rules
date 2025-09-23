@@ -1,0 +1,183 @@
+rules_version = '2';
+
+// DIP (Deductible Impact Protection) Firebase Security Rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for validation and security
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == "admin@dipmembers.com";
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidVehicleData() {
+      return request.resource.data.keys().hasAll(['make', 'model', 'year', 'isActive', 'lastUpdated', 'ownerId'])
+        && request.resource.data.make is string && request.resource.data.make.size() > 0
+        && request.resource.data.model is string && request.resource.data.model.size() > 0
+        && request.resource.data.year is string && request.resource.data.year.size() == 4
+        && request.resource.data.isActive is bool
+        && request.resource.data.lastUpdated is timestamp
+        && request.resource.data.ownerId is string;
+    }
+    
+    // === USER PROFILE MANAGEMENT (with phone number support) ===
+    match /users/{userId} {
+      // Users can read their own profile (includes phone numbers)
+      allow read: if isOwner(userId);
+      
+      // Users can create their profile during signup (phone number optional)
+      allow create: if isOwner(userId);
+      
+      // Users can update their profile but cannot change critical system fields
+      allow update: if isOwner(userId)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.isAdmin == resource.data.isAdmin
+        && request.resource.data.isActive == resource.data.isActive
+        && request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Admin can read all profiles for management dashboard
+      allow read: if isAdmin();
+      
+      // Admin can update any user profile
+      allow update: if isAdmin();
+      
+      // Admin can create user accounts manually
+      allow create: if isAdmin();
+    }
+    
+    // === VEHICLE MANAGEMENT ===
+    // Supports persistent vehicle subscription status (isActive field)
+    // Users can update subscription status and it will persist across sessions
+    match /vehicles/{vehicleId} {
+      // Users can read vehicles they own
+      allow read: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId;
+      
+      // Users can create vehicles and set themselves as owner with required fields
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.ownerId
+        && isValidVehicleData();
+      
+      // Users can update their own vehicles (including subscription status)
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.ownerId
+        && request.auth.uid == request.resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId; // Prevent ownership transfer
+      
+      // Admin can read all vehicles for dashboard
+      allow read: if isAdmin();
+      
+      // Admin can update any vehicle
+      allow update: if isAdmin();
+      
+      // Allow owners to delete their own vehicles; admin can delete any
+      // Allow delete if the authenticated user owns the vehicle by uid OR by email (legacy docs)
+      allow delete: if (
+        isAuthenticated() && (
+          request.auth.uid == resource.data.ownerId ||
+          request.auth.token.email == resource.data.ownerEmail
+        )
+      ) || isAdmin();
+    }
+    
+    // === CLAIMS MANAGEMENT (with phone number support) ===
+    match /claims/{claimId} {
+      // Users can read/write their own claims (includes phone numbers for admin contact)
+      allow read, write: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId;
+      
+      // Users can create claims and set themselves as owner (phone number required)
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.userId;
+      
+      // Users can update their own claims
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId;
+      
+      // Users can delete their own claims (for cancellation) - only pending/in-review
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId
+        && (resource.data.status == "pending" || resource.data.status == "inReview");
+      
+      // Admin can read/write/delete all claims for management (includes phone access)
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // === ADMIN COLLECTIONS ===
+    match /admin/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // === ADMIN EVENTS (e.g., Tow Calls) ===
+    // Members can create tow_call events; admins can read/manage
+    match /admin_events/{eventId} {
+      // Allow any authenticated user to create a tow_call event document
+      allow create: if isAuthenticated() &&
+        request.resource.data.event == "tow_call" &&
+        request.resource.data.timestamp is timestamp;
+      
+      // Admins can read/list and manage these events
+      allow read, update, delete: if isAdmin();
+    }
+    
+    // === CONSENT LOGS ===
+    match /consent_logs/{logId} {
+      allow create: if isAuthenticated();
+      // Allow users to read their own logs
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.user_id;
+      // Admin can read all logs
+      allow read: if isAdmin();
+      // No updates/deletes by clients
+      allow update, delete: if false;
+    }
+    
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /settings/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /support/{ticketId} {
+      allow read, write: if isAuthenticated() 
+        && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.userId;
+      allow read, write: if isAdmin();
+    }
+    
+    // === PROVIDER MANAGEMENT ===
+    match /providers/{providerId} {
+      // Allow anyone to create provider applications (no auth required for signup)
+      allow create: if true;
+      
+      // Only admins can read provider applications
+      allow read: if isAdmin();
+      
+      // Only admins can update provider status
+      allow update: if isAdmin();
+      
+      // Only admins can delete provider applications
+      allow delete: if isAdmin();
+    }
+    
+    // Block all other database access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

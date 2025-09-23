@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { subscribeUsers, subscribeVehicles, subscribeClaims, subscribeTowEvents } from '@/lib/firebase/adminActions';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -12,6 +14,7 @@ function AdminHomeContent() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [towEvents, setTowEvents] = useState<any[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>(searchParams?.get('tab') || 'overview');
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +24,23 @@ function AdminHomeContent() {
     const unsubRequests = subscribeClaims((data) => setRequests(data));
     const unsubTowEvents = subscribeTowEvents((data) => setTowEvents(data));
     
+    // Fetch providers data
+    const fetchProviders = async () => {
+      try {
+        const providersSnapshot = await getDocs(collection(db, 'providers'));
+        const providersData = providersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate(),
+          updatedAt: doc.data().updatedAt?.toDate(),
+        }));
+        setProviders(providersData);
+      } catch (error) {
+        console.error('Error fetching providers:', error);
+      }
+    };
+    
+    fetchProviders();
     setLoading(false);
     
     return () => {
@@ -50,6 +70,9 @@ function AdminHomeContent() {
     approvedRequests: requests.filter(c => c.status === 'Approved').length,
     totalTowRequests: towEvents.length,
     pendingTowRequests: towEvents.filter(t => !t.status || t.status === 'pending').length,
+    totalProviders: providers.length,
+    approvedProviders: providers.filter(p => p.status === 'approved').length,
+    pendingProviders: providers.filter(p => p.status === 'pending').length,
   };
 
   const tabs = [
@@ -57,7 +80,7 @@ function AdminHomeContent() {
     { id: 'users', label: 'Users', icon: '👥', count: users.length },
     { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
-    { id: 'providers', label: 'Providers', icon: '🏢', count: 0 },
+    { id: 'providers', label: 'Providers', icon: '🏢', count: providers.length },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -409,7 +432,7 @@ function AdminHomeContent() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Approved Providers</div>
-                    <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="text-2xl font-bold text-green-600">{stats.approvedProviders}</div>
                     <div className="text-sm text-gray-500">Active providers</div>
                   </div>
                 </div>
@@ -422,7 +445,7 @@ function AdminHomeContent() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Pending Review</div>
-                    <div className="text-2xl font-bold text-yellow-600">0</div>
+                    <div className="text-2xl font-bold text-yellow-600">{stats.pendingProviders}</div>
                     <div className="text-sm text-gray-500">Awaiting approval</div>
                   </div>
                 </div>
@@ -435,7 +458,7 @@ function AdminHomeContent() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Total Applications</div>
-                    <div className="text-2xl font-bold text-blue-600">0</div>
+                    <div className="text-2xl font-bold text-blue-600">{stats.totalProviders}</div>
                     <div className="text-sm text-gray-500">All time</div>
                   </div>
                 </div>
