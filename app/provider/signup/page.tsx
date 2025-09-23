@@ -10,91 +10,33 @@ export default function ProviderSignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Business Information
+    // Step 1: Business Information
     businessName: '',
     legalEntityName: '',
     ein: '',
     barNumber: '',
-    licenseNumber: '',
+    businessLicense: '',
     yearsInBusiness: '',
+    insuranceProvider: '',
+    insurancePolicyNumber: '',
+    insuranceExpiry: '',
     
-    // Contact Information
+    // Step 2: Contact Information
     contactPerson: '',
     email: '',
     phone: '',
     alternatePhone: '',
-    
-    // Address Information
     address: '',
     city: '',
     state: '',
     zipCode: '',
     
-    // Insurance Information
-    insuranceProvider: '',
-    insurancePolicyNumber: '',
-    insuranceExpiry: '',
-    
-    // Service Information
-    specialties: [] as string[],
-    serviceAreas: [] as string[],
-    certifications: [] as string[],
-    
-    // Legal Documents
-    businessLicense: '',
-    insuranceCertificate: '',
-    w9Form: '',
-    otherDocuments: '',
-    
-    // Terms and Conditions
+    // Step 3: Terms and Conditions
     agreedToTerms: false,
     agreedToBackgroundCheck: false,
     agreedToCompliance: false,
   });
 
-  const specialties = [
-    'Accident Support Services',
-    'Roadside Assistance',
-    'Towing Services',
-    'Vehicle Recovery',
-    'Emergency Response',
-    'Legal Services',
-    'Insurance Claims',
-    'Vehicle Inspection',
-    'Repair Services',
-    'Consultation Services'
-  ];
-
-  const serviceAreas = [
-    'Los Angeles County',
-    'Orange County',
-    'San Diego County',
-    'Riverside County',
-    'San Bernardino County',
-    'Ventura County',
-    'Santa Barbara County',
-    'Kern County',
-    'Fresno County',
-    'Sacramento County',
-    'Bay Area',
-    'Central Valley',
-    'Northern California',
-    'Southern California',
-    'Statewide'
-  ];
-
-  const certifications = [
-    'ASE Certified',
-    'AAA Approved',
-    'DOT Certified',
-    'OSHA Certified',
-    'Insurance Licensed',
-    'Legal Bar Licensed',
-    'Towing Certified',
-    'Emergency Response',
-    'Vehicle Recovery',
-    'Claims Processing'
-  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -107,14 +49,6 @@ export default function ProviderSignupPage() {
     }
   };
 
-  const handleArrayChange = (name: string, value: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: checked 
-        ? [...prev[name as keyof typeof prev] as string[], value]
-        : (prev[name as keyof typeof prev] as string[]).filter(item => item !== value)
-    }));
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -149,7 +83,7 @@ export default function ProviderSignupPage() {
   };
 
   const nextStep = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
@@ -173,7 +107,7 @@ export default function ProviderSignupPage() {
           {/* Progress Steps */}
           <div className="flex justify-center mb-8">
             <div className="flex items-center space-x-4">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     currentStep >= step 
@@ -182,7 +116,7 @@ export default function ProviderSignupPage() {
                   }`}>
                     {step}
                   </div>
-                  {step < 4 && (
+                  {step < 3 && (
                     <div className={`w-16 h-1 mx-2 ${
                       currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
                     }`} />
@@ -291,14 +225,15 @@ export default function ProviderSignupPage() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      License Number
+                      Business License Number *
                     </label>
                     <input
                       type="text"
-                      name="licenseNumber"
-                      value={formData.licenseNumber}
+                      name="businessLicense"
+                      value={formData.businessLicense}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
                     />
                   </div>
                 </div>
@@ -316,6 +251,55 @@ export default function ProviderSignupPage() {
                     min="0"
                     required
                   />
+                </div>
+
+                {/* Insurance Information */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Insurance Information</h3>
+                  
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Insurance Provider *
+                      </label>
+                      <input
+                        type="text"
+                        name="insuranceProvider"
+                        value={formData.insuranceProvider}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Policy Number *
+                      </label>
+                      <input
+                        type="text"
+                        name="insurancePolicyNumber"
+                        value={formData.insurancePolicyNumber}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Insurance Expiration *
+                      </label>
+                      <input
+                        type="date"
+                        name="insuranceExpiry"
+                        value={formData.insuranceExpiry}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -446,142 +430,12 @@ export default function ProviderSignupPage() {
               </div>
             )}
 
-            {/* Step 3: Service Information */}
+            {/* Step 3: Legal & Terms */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Service Information</h2>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Service Specialties *
-                  </label>
-                  <div className="grid md:grid-cols-2 gap-2">
-                    {specialties.map((specialty) => (
-                      <label key={specialty} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.specialties.includes(specialty)}
-                          onChange={(e) => handleArrayChange('specialties', specialty, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm">{specialty}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Service Areas *
-                  </label>
-                  <div className="grid md:grid-cols-3 gap-2">
-                    {serviceAreas.map((area) => (
-                      <label key={area} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.serviceAreas.includes(area)}
-                          onChange={(e) => handleArrayChange('serviceAreas', area, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm">{area}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Certifications & Licenses
-                  </label>
-                  <div className="grid md:grid-cols-2 gap-2">
-                    {certifications.map((cert) => (
-                      <label key={cert} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.certifications.includes(cert)}
-                          onChange={(e) => handleArrayChange('certifications', cert, e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm">{cert}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Insurance Provider
-                    </label>
-                    <input
-                      type="text"
-                      name="insuranceProvider"
-                      value={formData.insuranceProvider}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Policy Number
-                    </label>
-                    <input
-                      type="text"
-                      name="insurancePolicyNumber"
-                      value={formData.insurancePolicyNumber}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Insurance Expiry
-                    </label>
-                    <input
-                      type="date"
-                      name="insuranceExpiry"
-                      value={formData.insuranceExpiry}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Legal & Terms */}
-            {currentStep === 4 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Legal Documents & Terms</h2>
                 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Business License Number
-                    </label>
-                    <input
-                      type="text"
-                      name="businessLicense"
-                      value={formData.businessLicense}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Insurance Certificate Number
-                    </label>
-                    <input
-                      type="text"
-                      name="insuranceCertificate"
-                      value={formData.insuranceCertificate}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -678,7 +532,7 @@ export default function ProviderSignupPage() {
                 Previous
               </button>
               
-              {currentStep < 4 ? (
+              {currentStep < 3 ? (
                 <button
                   type="button"
                   onClick={nextStep}
