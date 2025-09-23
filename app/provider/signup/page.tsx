@@ -57,6 +57,13 @@ export default function ProviderSignupPage() {
     setError(null);
     setLoading(true);
 
+    // Validate all steps before submission
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+      setError('Please fill out all required fields before submitting.');
+      setLoading(false);
+      return;
+    }
+
     // Validate EIN number
     if (formData.ein.length !== 9) {
       setError('EIN number must be exactly 9 digits.');
@@ -84,8 +91,47 @@ export default function ProviderSignupPage() {
     }
   };
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!(
+          formData.businessName &&
+          formData.legalEntityName &&
+          formData.ein &&
+          formData.ein.length === 9 &&
+          formData.businessLicense &&
+          formData.yearsInBusiness &&
+          formData.insuranceProvider &&
+          formData.insurancePolicyNumber &&
+          formData.insuranceExpiry
+        );
+      case 2:
+        return !!(
+          formData.contactPerson &&
+          formData.email &&
+          formData.phone &&
+          formData.address &&
+          formData.city &&
+          formData.state &&
+          formData.zipCode
+        );
+      case 3:
+        return !!(
+          formData.agreedToTerms &&
+          formData.agreedToBackgroundCheck &&
+          formData.agreedToCompliance
+        );
+      default:
+        return false;
+    }
+  };
+
   const nextStep = () => {
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    if (currentStep < 3 && validateStep(currentStep)) {
+      setCurrentStep(currentStep + 1);
+    } else if (!validateStep(currentStep)) {
+      setError('Please fill out all required fields before proceeding.');
+    }
   };
 
   const prevStep = () => {
@@ -132,6 +178,45 @@ export default function ProviderSignupPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
               <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Validation Helper */}
+          {!validateStep(currentStep) && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg mb-6">
+              <p className="font-medium">Please complete all required fields to continue:</p>
+              <ul className="mt-2 text-sm list-disc list-inside">
+                {currentStep === 1 && (
+                  <>
+                    {!formData.businessName && <li>Business Name</li>}
+                    {!formData.legalEntityName && <li>Legal Entity Name</li>}
+                    {(!formData.ein || formData.ein.length !== 9) && <li>EIN Number (9 digits)</li>}
+                    {!formData.businessLicense && <li>Business License Number</li>}
+                    {!formData.yearsInBusiness && <li>Years in Business</li>}
+                    {!formData.insuranceProvider && <li>Insurance Provider</li>}
+                    {!formData.insurancePolicyNumber && <li>Policy Number</li>}
+                    {!formData.insuranceExpiry && <li>Insurance Expiration</li>}
+                  </>
+                )}
+                {currentStep === 2 && (
+                  <>
+                    {!formData.contactPerson && <li>Contact Person</li>}
+                    {!formData.email && <li>Email</li>}
+                    {!formData.phone && <li>Phone</li>}
+                    {!formData.address && <li>Address</li>}
+                    {!formData.city && <li>City</li>}
+                    {!formData.state && <li>State</li>}
+                    {!formData.zipCode && <li>Zip Code</li>}
+                  </>
+                )}
+                {currentStep === 3 && (
+                  <>
+                    {!formData.agreedToTerms && <li>Agree to Terms of Service</li>}
+                    {!formData.agreedToBackgroundCheck && <li>Consent to Background Check</li>}
+                    {!formData.agreedToCompliance && <li>Agree to Compliance Standards</li>}
+                  </>
+                )}
+              </ul>
             </div>
           )}
 
@@ -538,15 +623,24 @@ export default function ProviderSignupPage() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={!validateStep(currentStep)}
+                  className={`px-6 py-2 rounded-lg transition-colors ${
+                    validateStep(currentStep)
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   Next
                 </button>
               ) : (
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  disabled={loading || !validateStep(3)}
+                  className={`px-6 py-2 rounded-lg transition-colors ${
+                    loading || !validateStep(3)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                 >
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </button>
