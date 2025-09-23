@@ -187,15 +187,15 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
-    // === ASSIGNMENTS ===
-    match /assignments/{assignmentId} {
-      // Providers can read assignments assigned to them
+    // === APPLICANTS ===
+    match /applicants/{applicantId} {
+      // Providers can read applicants assigned to them
       allow read: if isAuthenticated() && request.auth.uid == resource.data.providerId;
       
-      // Providers can update assignment status
+      // Providers can update applicant status
       allow update: if isAuthenticated() && request.auth.uid == resource.data.providerId;
       
-      // Admins can read/write all assignments
+      // Admins can read/write all applicants
       allow read, write: if isAdmin();
     }
     

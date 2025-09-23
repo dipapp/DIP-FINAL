@@ -4,7 +4,7 @@ import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import Link from 'next/link';
 
-interface Assignment {
+interface Applicant {
   id: string;
   requestId: string;
   customerName: string;
@@ -21,7 +21,7 @@ interface Assignment {
 }
 
 export default function ProviderDashboard() {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
@@ -31,55 +31,55 @@ export default function ProviderDashboard() {
   });
 
   useEffect(() => {
-    fetchAssignments();
+    fetchApplicants();
   }, []);
 
-  const fetchAssignments = async () => {
+  const fetchApplicants = async () => {
     try {
-      // For now, get all assignments - in production, this should be filtered by provider ID
+      // For now, get all applicants - in production, this should be filtered by provider ID
       // TODO: Implement proper authentication to get current provider ID
-      const assignmentsQuery = query(
-        collection(db, 'assignments'),
+      const applicantsQuery = query(
+        collection(db, 'applicants'),
         orderBy('assignedAt', 'desc')
       );
       
-      const assignmentsSnapshot = await getDocs(assignmentsQuery);
-      const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
+      const applicantsSnapshot = await getDocs(applicantsQuery);
+      const applicantsData = applicantsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         assignedAt: doc.data().assignedAt?.toDate(),
         dueDate: doc.data().dueDate?.toDate(),
-      })) as Assignment[];
+      })) as Applicant[];
       
-      setAssignments(assignmentsData);
+      setApplicants(applicantsData);
       
       // Calculate stats
       setStats({
-        total: assignmentsData.length,
-        pending: assignmentsData.filter(a => a.status === 'assigned').length,
-        inProgress: assignmentsData.filter(a => a.status === 'in_progress').length,
-        completed: assignmentsData.filter(a => a.status === 'completed').length,
+        total: applicantsData.length,
+        pending: applicantsData.filter(a => a.status === 'assigned').length,
+        inProgress: applicantsData.filter(a => a.status === 'in_progress').length,
+        completed: applicantsData.filter(a => a.status === 'completed').length,
       });
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      console.error('Error fetching applicants:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateAssignmentStatus = async (assignmentId: string, newStatus: Assignment['status']) => {
+  const updateApplicantStatus = async (applicantId: string, newStatus: Applicant['status']) => {
     try {
-      // Update assignment status
+      // Update applicant status
       // This would require a server-side function or admin SDK
-      console.log(`Updating assignment ${assignmentId} to ${newStatus}`);
+      console.log(`Updating applicant ${applicantId} to ${newStatus}`);
       // For now, just refresh the data
-      fetchAssignments();
+      fetchApplicants();
     } catch (error) {
-      console.error('Error updating assignment:', error);
+      console.error('Error updating applicant:', error);
     }
   };
 
-  const getPriorityColor = (priority: Assignment['priority']) => {
+  const getPriorityColor = (priority: Applicant['priority']) => {
     const colors = {
       low: 'bg-green-100 text-green-800',
       medium: 'bg-yellow-100 text-yellow-800',
@@ -89,7 +89,7 @@ export default function ProviderDashboard() {
     return colors[priority];
   };
 
-  const getStatusColor = (status: Assignment['status']) => {
+  const getStatusColor = (status: Applicant['status']) => {
     const colors = {
       assigned: 'bg-blue-100 text-blue-800',
       accepted: 'bg-purple-100 text-purple-800',
@@ -149,7 +149,7 @@ export default function ProviderDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Assignments</p>
+                <p className="text-sm font-medium text-gray-600">Total Applicants</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
             </div>
@@ -198,17 +198,17 @@ export default function ProviderDashboard() {
           </div>
         </div>
 
-        {/* Assignments Table */}
+        {/* Applicants Table */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Your Assignments</h3>
+            <h3 className="text-lg font-medium text-gray-900">Your Applicants</h3>
           </div>
           
-          {assignments.length === 0 ? (
+          {applicants.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">📋</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments yet</h3>
-              <p className="text-gray-600">You'll receive assignments here when they're assigned to you.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No applicants yet</h3>
+              <p className="text-gray-600">You'll receive applicants here when they're assigned to you.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -236,60 +236,60 @@ export default function ProviderDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {assignments.map((assignment) => (
-                    <tr key={assignment.id} className="hover:bg-gray-50">
+                  {applicants.map((applicant) => (
+                    <tr key={applicant.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{assignment.customerName}</div>
-                          <div className="text-sm text-gray-500">{assignment.customerPhone}</div>
+                          <div className="text-sm font-medium text-gray-900">{applicant.customerName}</div>
+                          <div className="text-sm text-gray-500">{applicant.customerPhone}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
-                        <div className="text-sm text-gray-500">{assignment.location}</div>
+                        <div className="text-sm text-gray-900">{applicant.issueDescription}</div>
+                        <div className="text-sm text-gray-500">{applicant.location}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
-                          {assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1)}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(applicant.priority)}`}>
+                          {applicant.priority.charAt(0).toUpperCase() + applicant.priority.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
-                          {assignment.status.replace('_', ' ').charAt(0).toUpperCase() + assignment.status.replace('_', ' ').slice(1)}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(applicant.status)}`}>
+                          {applicant.status.replace('_', ' ').charAt(0).toUpperCase() + applicant.status.replace('_', ' ').slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assignment.assignedAt.toLocaleDateString()}
+                        {applicant.assignedAt.toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          {assignment.status === 'assigned' && (
+                          {applicant.status === 'assigned' && (
                             <>
                               <button
-                                onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}
+                                onClick={() => updateApplicantStatus(applicant.id, 'accepted')}
                                 className="text-blue-600 hover:text-blue-900"
                               >
                                 Accept
                               </button>
                               <button
-                                onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
+                                onClick={() => updateApplicantStatus(applicant.id, 'cancelled')}
                                 className="text-red-600 hover:text-red-900"
                               >
                                 Decline
                               </button>
                             </>
                           )}
-                          {assignment.status === 'accepted' && (
+                          {applicant.status === 'accepted' && (
                             <button
-                              onClick={() => updateAssignmentStatus(assignment.id, 'in_progress')}
+                              onClick={() => updateApplicantStatus(applicant.id, 'in_progress')}
                               className="text-green-600 hover:text-green-900"
                             >
                               Start
                             </button>
                           )}
-                          {assignment.status === 'in_progress' && (
+                          {applicant.status === 'in_progress' && (
                             <button
-                              onClick={() => updateAssignmentStatus(assignment.id, 'completed')}
+                              onClick={() => updateApplicantStatus(applicant.id, 'completed')}
                               className="text-green-600 hover:text-green-900"
                             >
                               Complete
