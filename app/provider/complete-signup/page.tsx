@@ -63,7 +63,7 @@ export default function CompleteProviderSignupPage() {
       }
 
       const providerDoc = providersSnapshot.docs[0];
-      const providerData = providerDoc.data() as Provider;
+      const providerData = providerDoc.data();
 
       if (providerData.status !== 'approved') {
         setError('Your application is not yet approved. Please contact support.');
@@ -71,7 +71,7 @@ export default function CompleteProviderSignupPage() {
         return;
       }
 
-      setProvider({ id: providerDoc.id, ...providerData });
+      setProvider({ id: providerDoc.id, ...providerData } as Provider);
       setSuccess('Credentials verified! Please create your password below.');
     } catch (err) {
       setError('Error verifying credentials. Please try again.');
