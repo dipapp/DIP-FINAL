@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,8 +27,29 @@ function CreateProviderAccountForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Check authentication status
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        setIsAdmin(user.email === 'admin@dipmembers.com');
+        if (user.email !== 'admin@dipmembers.com') {
+          setError('Access denied. Admin privileges required.');
+        }
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+        setError('Please sign in to access this page.');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Auto-populate provider ID from URL parameter
   useEffect(() => {
@@ -40,6 +61,11 @@ function CreateProviderAccountForm() {
 
   const fetchProvider = async () => {
     if (!providerId) return;
+    
+    if (!isAuthenticated || !isAdmin) {
+      setError('Please sign in as admin to access provider data.');
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -53,7 +79,7 @@ function CreateProviderAccountForm() {
         setError('Provider not found');
       }
     } catch (err) {
-      setError('Error fetching provider');
+      setError('Error fetching provider. Make sure you are signed in as admin@dipmembers.com');
     } finally {
       setLoading(false);
     }
@@ -154,6 +180,33 @@ function CreateProviderAccountForm() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if not admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <BackButton />
+          <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-6">
+            <h3 className="text-red-800 font-medium">Access Denied</h3>
+            <p className="text-red-700 mt-1">Admin privileges required. Please sign in as admin@dipmembers.com</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
