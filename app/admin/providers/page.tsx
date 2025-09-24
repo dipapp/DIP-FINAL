@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
+import { generateProviderId } from '@/lib/provider-utils';
 
 interface Provider {
   id: string;
@@ -62,23 +63,35 @@ export default function AdminProvidersPage() {
       const provider = providers.find(p => p.id === providerId);
       if (!provider) return;
 
-      // Update provider status
-      await updateDoc(doc(db, 'providers', providerId), {
+      // Generate a 6-digit provider ID if approving and no providerId exists
+      let finalProviderId = provider.providerId;
+      if (newStatus === 'approved' && !provider.providerId) {
+        finalProviderId = generateProviderId();
+      }
+
+      // Update provider status and providerId if needed
+      const updateData: any = {
         status: newStatus,
         updatedAt: new Date(),
-      });
+      };
+      
+      if (newStatus === 'approved' && !provider.providerId) {
+        updateData.providerId = finalProviderId;
+      }
+
+      await updateDoc(doc(db, 'providers', providerId), updateData);
       
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
-            ? { ...provider, status: newStatus, updatedAt: new Date() }
+            ? { ...provider, status: newStatus, providerId: finalProviderId, updatedAt: new Date() }
             : provider
         )
       );
 
         // Show success message with Provider ID and username
         if (newStatus === 'approved') {
-          alert(`Provider "${provider.businessName}" has been approved successfully!\n\nProvider Credentials:\nProvider ID: ${provider.providerId}\nUsername: ${provider.email}\n\nGive these credentials to the provider so they can complete their account setup at /provider/complete-signup`);
+          alert(`Provider "${provider.businessName}" has been approved successfully!\n\nProvider Credentials:\nProvider ID: ${finalProviderId}\nUsername: ${provider.email}\n\nGive these credentials to the provider so they can complete their account setup at /provider/complete-signup`);
         } else if (newStatus === 'rejected') {
           alert(`Provider "${provider.businessName}" has been rejected.`);
         }
@@ -208,7 +221,7 @@ export default function AdminProvidersPage() {
                       <div className="font-semibold">{provider.businessName}</div>
                       <div className="text-sm text-muted">{provider.legalEntityName}</div>
                       <div className="text-sm text-muted">EIN: {provider.ein}</div>
-                      <div className="text-xs text-gray-500 mt-1">ID: {provider.id}</div>
+                      <div className="text-xs text-gray-500 mt-1">Provider ID: {provider.providerId || 'Not assigned'}</div>
                     </div>
                   </td>
                   <td className="py-4 px-4">

@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPasswo
 import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { formatProviderId } from '@/lib/provider-utils';
 
 interface Provider {
   id: string;
@@ -99,7 +100,7 @@ function CreateProviderAccountForm() {
       
       if (!usersSnapshot.empty) {
         const existingUser = usersSnapshot.docs[0].data();
-        setSuccess(`Account already exists!\n\nProvider ID: ${existingUser.providerId || existingUser.uid}\nEmail: ${existingUser.email}\nProvider can login at /provider/login\n\nIf they don't know their password, you can reset it in Firebase Console.`);
+        setSuccess(`Account already exists!\n\nProvider ID: ${formatProviderId(existingUser.providerId) || 'Not assigned'}\nEmail: ${existingUser.email}\nProvider can login at /provider/login\n\nIf they don't know their password, you can reset it in Firebase Console.`);
         return true;
       }
       return false;
@@ -169,7 +170,7 @@ function CreateProviderAccountForm() {
         updatedAt: new Date(),
       });
 
-      setSuccess(`Account created successfully!\n\nLogin credentials:\nEmail: ${provider.email}\nTemporary Password: ${tempPassword}\n\nProvider can now login at /provider/login`);
+      setSuccess(`Account created successfully!\n\nLogin credentials:\nProvider ID: ${formatProviderId(provider.providerId) || 'Not assigned'}\nEmail: ${provider.email}\nTemporary Password: ${tempPassword}\n\nProvider can now login at /provider/login`);
       
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
