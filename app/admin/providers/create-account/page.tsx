@@ -266,6 +266,7 @@ function CreateProviderAccountForm() {
             <div className="border rounded-lg p-4 mb-4">
               <h3 className="font-semibold text-gray-900 mb-2">Provider Details</h3>
               <div className="space-y-2 text-sm">
+                <div><strong>Provider ID:</strong> {formatProviderId(provider.providerId) || 'Not assigned'}</div>
                 <div><strong>Business:</strong> {provider.businessName}</div>
                 <div><strong>Contact:</strong> {provider.contactPerson}</div>
                 <div><strong>Email:</strong> {provider.email}</div>
