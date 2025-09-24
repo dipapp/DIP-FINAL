@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Provider {
   id: string;
@@ -28,6 +28,15 @@ export default function CreateProviderAccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Auto-populate provider ID from URL parameter
+  useEffect(() => {
+    const urlProviderId = searchParams.get('providerId');
+    if (urlProviderId) {
+      setProviderId(urlProviderId);
+    }
+  }, [searchParams]);
 
   const fetchProvider = async () => {
     if (!providerId) return;

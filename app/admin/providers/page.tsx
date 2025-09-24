@@ -207,6 +207,7 @@ export default function AdminProvidersPage() {
                       <div className="font-semibold">{provider.businessName}</div>
                       <div className="text-sm text-muted">{provider.legalEntityName}</div>
                       <div className="text-sm text-muted">EIN: {provider.ein}</div>
+                      <div className="text-xs text-gray-500 mt-1">ID: {provider.id}</div>
                     </div>
                   </td>
                   <td className="py-4 px-4">
@@ -265,6 +266,14 @@ export default function AdminProvidersPage() {
                         >
                           Reactivate
                         </button>
+                      )}
+                      {provider.status === 'approved' && (
+                        <a
+                          href={`/admin/providers/create-account?providerId=${provider.id}`}
+                          className="btn btn-primary text-xs px-3 py-1"
+                        >
+                          Create Account
+                        </a>
                       )}
                       <button
                         onClick={() => deleteProvider(provider.id)}
