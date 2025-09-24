@@ -2,7 +2,7 @@
 import React, { FormEvent, useEffect, useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/client';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 
@@ -33,6 +33,21 @@ function AuthPageContent() {
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
+    try {
+      // Check if email exists in users collection
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('email', '==', emailToCheck)
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+      return !usersSnapshot.empty;
+    } catch (err) {
+      console.error('Error checking email existence:', err);
+      return false;
+    }
+  };
 
   async function handleSignIn(e: FormEvent) {
     e.preventDefault();
@@ -73,6 +88,14 @@ function AuthPageContent() {
     setError(null);
     setLoading(true);
     try {
+      // Check if email already exists
+      const emailExists = await checkEmailExists(email);
+      if (emailExists) {
+        setError('An account with this email already exists. Please try signing in instead.');
+        setLoading(false);
+        return;
+      }
+
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
       await setDoc(doc(db, 'users', cred.user.uid), {

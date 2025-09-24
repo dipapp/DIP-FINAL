@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -59,6 +59,29 @@ function CreateProviderAccountForm() {
     }
   };
 
+  const checkExistingAccount = async () => {
+    if (!provider) return false;
+    
+    try {
+      // Check if user exists in Firestore users collection
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('email', '==', provider.email)
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+      
+      if (!usersSnapshot.empty) {
+        const existingUser = usersSnapshot.docs[0].data();
+        setSuccess(`Account already exists!\n\nUser ID: ${existingUser.uid}\nEmail: ${existingUser.email}\nProvider can login at /provider/login\n\nIf they don't know their password, you can reset it in Firebase Console.`);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error checking existing account:', err);
+      return false;
+    }
+  };
+
   const createAccount = async () => {
     if (!provider) return;
     
@@ -67,6 +90,13 @@ function CreateProviderAccountForm() {
     setSuccess(null);
     
     try {
+      // First check if account already exists
+      const accountExists = await checkExistingAccount();
+      if (accountExists) {
+        setLoading(false);
+        return;
+      }
+      
       // Generate a temporary password
       const tempPassword = Math.random().toString(36).slice(-8);
       
@@ -115,7 +145,11 @@ function CreateProviderAccountForm() {
       setSuccess(`Account created successfully!\n\nLogin credentials:\nEmail: ${provider.email}\nTemporary Password: ${tempPassword}\n\nProvider can now login at /provider/login`);
       
     } catch (err: any) {
-      setError(err.message || 'Error creating account');
+      if (err.code === 'auth/email-already-in-use') {
+        setError('An account with this email already exists. The provider may already have a login account. Check the Users section in admin panel.');
+      } else {
+        setError(err.message || 'Error creating account');
+      }
     } finally {
       setLoading(false);
     }
@@ -154,6 +188,16 @@ function CreateProviderAccountForm() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md">
               {error}
+              {error.includes('already exists') && (
+                <div className="mt-2">
+                  <a 
+                    href="/admin/users" 
+                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  >
+                    Check existing users →
+                  </a>
+                </div>
+              )}
             </div>
           )}
 
@@ -174,13 +218,22 @@ function CreateProviderAccountForm() {
                 <div><strong>Status:</strong> <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">{provider.status}</span></div>
               </div>
               
-              <button
-                onClick={createAccount}
-                disabled={loading}
-                className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating Account...' : 'Create Login Account'}
-              </button>
+              <div className="flex space-x-3 mt-4">
+                <button
+                  onClick={checkExistingAccount}
+                  disabled={!provider || loading}
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Check Existing Account
+                </button>
+                <button
+                  onClick={createAccount}
+                  disabled={!provider || loading}
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50"
+                >
+                  {loading ? 'Creating Account...' : 'Create Login Account'}
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
 
@@ -9,6 +9,21 @@ export default function ProviderSignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
+
+  const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
+    try {
+      // Check if email exists in users collection
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('email', '==', emailToCheck)
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+      return !usersSnapshot.empty;
+    } catch (err) {
+      console.error('Error checking email existence:', err);
+      return false;
+    }
+  };
   const [formData, setFormData] = useState({
     // Step 1: Business Information
     businessName: '',
@@ -71,6 +86,14 @@ export default function ProviderSignupPage() {
     }
 
     try {
+      // Check if email already exists
+      const emailExists = await checkEmailExists(formData.email);
+      if (emailExists) {
+        setError('An account with this email already exists. Please try signing in instead or use a different email.');
+        setLoading(false);
+        return;
+      }
+
       const providerData = {
         ...formData,
         status: 'pending',
