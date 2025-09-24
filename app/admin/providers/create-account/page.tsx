@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Provider {
   id: string;
+  providerId: string;
   businessName: string;
   contactPerson: string;
   email: string;
@@ -98,7 +99,7 @@ function CreateProviderAccountForm() {
       
       if (!usersSnapshot.empty) {
         const existingUser = usersSnapshot.docs[0].data();
-        setSuccess(`Account already exists!\n\nUser ID: ${existingUser.uid}\nEmail: ${existingUser.email}\nProvider can login at /provider/login\n\nIf they don't know their password, you can reset it in Firebase Console.`);
+        setSuccess(`Account already exists!\n\nProvider ID: ${existingUser.providerId || existingUser.uid}\nEmail: ${existingUser.email}\nProvider can login at /provider/login\n\nIf they don't know their password, you can reset it in Firebase Console.`);
         return true;
       }
       return false;
