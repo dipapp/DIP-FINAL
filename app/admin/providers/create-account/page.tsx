@@ -38,8 +38,8 @@ export default function CreateProviderAccountPage() {
     try {
       const providerDoc = await getDoc(doc(db, 'providers', providerId));
       if (providerDoc.exists()) {
-        const data = providerDoc.data() as Provider;
-        setProvider({ id: providerDoc.id, ...data });
+        const data = providerDoc.data();
+        setProvider({ id: providerDoc.id, ...data } as Provider);
       } else {
         setError('Provider not found');
       }
