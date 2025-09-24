@@ -133,26 +133,38 @@ export default function ProviderLoginPage() {
           ) : (
             <div className="space-y-6">
               <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Join Our Network?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Join Our Provider Network</h3>
                 <p className="text-sm text-gray-600 mb-6">
                   Choose how you'd like to get started as a DIP provider
                 </p>
               </div>
               
               <div className="space-y-4">
-                <Link
-                  href="/provider/register"
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  I'm Already Approved - Create Account
-                </Link>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Already Approved?</h4>
+                  <p className="text-sm text-blue-700 mb-3">
+                    If you've already been approved as a provider, create your login account here.
+                  </p>
+                  <Link
+                    href="/provider/register"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    I'm Already Approved - Create Account
+                  </Link>
+                </div>
                 
-                <Link
-                  href="/provider/signup"
-                  className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Apply to Become a Provider
-                </Link>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">New to DIP?</h4>
+                  <p className="text-sm text-gray-700 mb-3">
+                    Apply to become a DIP provider and join our network.
+                  </p>
+                  <Link
+                    href="/provider/signup"
+                    className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Apply to Become a Provider
+                  </Link>
+                </div>
               </div>
               
               <div className="text-center">
