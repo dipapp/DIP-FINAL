@@ -75,12 +75,12 @@ export default function AdminProvidersPage() {
         )
       );
 
-      // Show success message
-      if (newStatus === 'approved') {
-        alert(`Provider "${provider.businessName}" has been approved successfully!\n\nNext steps:\n1. Contact the provider to set up their account\n2. They can use the provider login portal\n3. You can assign service requests to them`);
-      } else if (newStatus === 'rejected') {
-        alert(`Provider "${provider.businessName}" has been rejected.`);
-      }
+        // Show success message with Provider ID and username
+        if (newStatus === 'approved') {
+          alert(`Provider "${provider.businessName}" has been approved successfully!\n\nProvider Credentials:\nProvider ID: ${provider.providerId}\nUsername: ${provider.email}\n\nGive these credentials to the provider so they can complete their account setup at /provider/complete-signup`);
+        } else if (newStatus === 'rejected') {
+          alert(`Provider "${provider.businessName}" has been rejected.`);
+        }
     } catch (error) {
       console.error('Error updating provider status:', error);
       alert('Error updating provider status. Please try again.');

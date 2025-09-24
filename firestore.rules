@@ -165,8 +165,8 @@ service cloud.firestore {
       // Allow anyone to create provider applications (no auth required for signup)
       allow create: if true;
       
-      // Only admins can read provider applications
-      allow read: if isAdmin();
+      // Allow public read for credential verification during signup completion
+      allow read: if true;
       
       // Only admins can update provider status
       allow update: if isAdmin();

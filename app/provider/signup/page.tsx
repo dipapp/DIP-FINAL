@@ -10,15 +10,49 @@ export default function ProviderSignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
+  const generateProviderId = async (): Promise<string> => {
+    let providerId: string;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      // Generate 6-digit number
+      providerId = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Check if this ID already exists
+      try {
+        const providersQuery = query(
+          collection(db, 'providers'),
+          where('providerId', '==', providerId)
+        );
+        const snapshot = await getDocs(providersQuery);
+        isUnique = snapshot.empty;
+      } catch (err) {
+        console.error('Error checking provider ID uniqueness:', err);
+        // If error, assume it's unique to avoid infinite loop
+        isUnique = true;
+      }
+    }
+    
+    return providerId!;
+  };
+
   const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
     try {
-      // Check if email exists in users collection
+      // Check if email exists in users collection (for existing login accounts)
       const usersQuery = query(
         collection(db, 'users'),
         where('email', '==', emailToCheck)
       );
       const usersSnapshot = await getDocs(usersQuery);
-      return !usersSnapshot.empty;
+      
+      // Also check if email exists in providers collection (for pending applications)
+      const providersQuery = query(
+        collection(db, 'providers'),
+        where('email', '==', emailToCheck)
+      );
+      const providersSnapshot = await getDocs(providersQuery);
+      
+      return !usersSnapshot.empty || !providersSnapshot.empty;
     } catch (err) {
       console.error('Error checking email existence:', err);
       return false;
@@ -89,13 +123,17 @@ export default function ProviderSignupPage() {
       // Check if email already exists
       const emailExists = await checkEmailExists(formData.email);
       if (emailExists) {
-        setError('An account with this email already exists. Please try signing in instead or use a different email.');
+        setError('An application with this email already exists. Please use a different email or contact support if you need to update your application.');
         setLoading(false);
         return;
       }
 
+      // Generate unique 6-digit Provider ID
+      const providerId = await generateProviderId();
+
       const providerData = {
         ...formData,
+        providerId: providerId,
         status: 'pending',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
