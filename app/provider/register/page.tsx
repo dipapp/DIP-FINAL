@@ -126,19 +126,19 @@ export default function ProviderRegisterPage() {
       
       // Update profile
       await updateProfile(user, {
-        displayName: `${provider.contactPerson} (${provider.businessName})`
+        displayName: `${(provider as any).contactPerson} (${(provider as any).businessName})`
       });
 
       // Create user document
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: email,
-        firstName: provider.contactPerson.split(' ')[0] || provider.contactPerson,
-        lastName: provider.contactPerson.split(' ').slice(1).join(' ') || '',
-        phoneNumber: provider.phone,
+        firstName: (provider as any).contactPerson.split(' ')[0] || (provider as any).contactPerson,
+        lastName: (provider as any).contactPerson.split(' ').slice(1).join(' ') || '',
+        phoneNumber: (provider as any).phone,
         isProvider: true,
-        providerId: provider.providerId || provider.id,
-        businessName: provider.businessName,
+        providerId: (provider as any).providerId || (provider as any).id,
+        businessName: (provider as any).businessName,
         isActive: true,
         createdAt: new Date(),
         needsPasswordReset: false,
@@ -146,16 +146,16 @@ export default function ProviderRegisterPage() {
 
       // Create provider profile
       await setDoc(doc(db, 'provider_profiles', user.uid), {
-        providerId: provider.providerId || provider.id,
-        businessName: provider.businessName,
-        legalEntityName: provider.legalEntityName,
-        ein: provider.ein,
-        contactPerson: provider.contactPerson,
-        phone: provider.phone,
-        address: provider.address,
-        city: provider.city,
-        state: provider.state,
-        zipCode: provider.zipCode,
+        providerId: (provider as any).providerId || (provider as any).id,
+        businessName: (provider as any).businessName,
+        legalEntityName: (provider as any).legalEntityName,
+        ein: (provider as any).ein,
+        contactPerson: (provider as any).contactPerson,
+        phone: (provider as any).phone,
+        address: (provider as any).address,
+        city: (provider as any).city,
+        state: (provider as any).state,
+        zipCode: (provider as any).zipCode,
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
