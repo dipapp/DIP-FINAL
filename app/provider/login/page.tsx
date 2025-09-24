@@ -10,6 +10,7 @@ export default function ProviderLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'signin' | 'join'>('signin');
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -43,13 +44,40 @@ export default function ProviderLoginPage() {
           Provider Portal
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to your provider account
+          Access your provider account or join our network
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSignIn}>
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              type="button"
+              onClick={() => setActiveTab('signin')}
+              className={`flex-1 py-2 px-1 text-center text-sm font-medium border-b-2 ${
+                activeTab === 'signin'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('join')}
+              className={`flex-1 py-2 px-1 text-center text-sm font-medium border-b-2 ${
+                activeTab === 'join'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Join Network
+            </button>
+          </div>
+
+          {activeTab === 'signin' ? (
+            <form className="space-y-6" onSubmit={handleSignIn}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                 {error}
@@ -102,6 +130,45 @@ export default function ProviderLoginPage() {
               </button>
             </div>
           </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Join Our Network?</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Choose how you'd like to get started as a DIP provider
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <Link
+                  href="/provider/register"
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  I'm Already Approved - Create Account
+                </Link>
+                
+                <Link
+                  href="/provider/signup"
+                  className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Apply to Become a Provider
+                </Link>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-xs text-gray-500">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('signin')}
+                    className="text-blue-600 hover:text-blue-500"
+                  >
+                    Sign in instead
+                  </button>
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <div className="relative">
