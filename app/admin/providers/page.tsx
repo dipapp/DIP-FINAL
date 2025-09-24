@@ -128,6 +128,12 @@ export default function AdminProvidersPage() {
           <div className="text-right">
             <div className="text-2xl font-bold">{providers.length}</div>
             <div className="text-sm text-muted">Total Providers</div>
+            <a 
+              href="/admin/providers/create-account" 
+              className="mt-2 inline-block bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+            >
+              Create Account
+            </a>
           </div>
         </div>
 
