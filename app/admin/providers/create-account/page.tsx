@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase/client';
@@ -21,7 +21,7 @@ interface Provider {
   status: string;
 }
 
-export default function CreateProviderAccountPage() {
+function CreateProviderAccountForm() {
   const [providerId, setProviderId] = useState('');
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(false);
@@ -186,5 +186,18 @@ export default function CreateProviderAccountPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateProviderAccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
+      </div>
+    </div>}>
+      <CreateProviderAccountForm />
+    </Suspense>
   );
 }
