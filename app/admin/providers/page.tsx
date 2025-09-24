@@ -6,6 +6,7 @@ import BackButton from '@/components/BackButton';
 
 interface Provider {
   id: string;
+  providerId: string;
   businessName: string;
   legalEntityName: string;
   ein: string;
