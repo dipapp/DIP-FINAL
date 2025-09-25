@@ -62,8 +62,9 @@ export default function ProviderDashboard() {
       
       if (providerProfileDoc.exists()) {
         const providerData = providerProfileDoc.data();
+        console.log('Provider profile data:', providerData);
         setProviderInfo({
-          businessName: providerData.businessName || 'Unknown Business',
+          businessName: providerData.businessName || providerData.legalEntityName || 'Unknown Business',
           providerId: providerData.providerId || 'Unknown ID',
           contactPerson: providerData.contactPerson || 'Unknown Contact',
         });
@@ -72,11 +73,38 @@ export default function ProviderDashboard() {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setProviderInfo({
-            businessName: userData.businessName || 'Unknown Business',
-            providerId: userData.providerId || 'Unknown ID',
-            contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
-          });
+          console.log('User data:', userData);
+          
+          // If we have a providerId, try to get more info from providers collection
+          if (userData.providerId) {
+            const providersQuery = query(
+              collection(db, 'providers'),
+              where('providerId', '==', userData.providerId)
+            );
+            const providersSnapshot = await getDocs(providersQuery);
+            
+            if (!providersSnapshot.empty) {
+              const providerData = providersSnapshot.docs[0].data();
+              console.log('Provider data from providers collection:', providerData);
+              setProviderInfo({
+                businessName: providerData.businessName || userData.businessName || 'Unknown Business',
+                providerId: providerData.providerId || userData.providerId || 'Unknown ID',
+                contactPerson: providerData.contactPerson || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
+              });
+            } else {
+              setProviderInfo({
+                businessName: userData.businessName || 'Unknown Business',
+                providerId: userData.providerId || 'Unknown ID',
+                contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
+              });
+            }
+          } else {
+            setProviderInfo({
+              businessName: userData.businessName || 'Unknown Business',
+              providerId: userData.providerId || 'Unknown ID',
+              contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
+            });
+          }
         }
       }
     } catch (error) {
