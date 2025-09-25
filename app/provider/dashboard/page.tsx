@@ -42,7 +42,11 @@ export default function ProviderDashboard() {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            console.log('User data:', userData);
+            console.log('Provider ID from user data:', userData.providerId);
             setCurrentProviderId(userData.providerId);
+          } else {
+            console.log('User document does not exist');
           }
         } catch (error) {
           console.error('Error getting provider ID:', error);
@@ -63,11 +67,29 @@ export default function ProviderDashboard() {
 
   const fetchApplicants = async () => {
     if (!currentProviderId) {
+      console.log('No current provider ID found');
       setLoading(false);
       return;
     }
 
+    console.log('Fetching applicants for provider ID:', currentProviderId);
+
     try {
+      // First, let's check all applicants to see what's in the database
+      const allApplicantsQuery = query(collection(db, 'applicants'));
+      const allApplicantsSnapshot = await getDocs(allApplicantsQuery);
+      console.log('Total applicants in database:', allApplicantsSnapshot.size);
+      
+      allApplicantsSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        console.log('Applicant:', {
+          id: doc.id,
+          providerId: data.providerId,
+          customerName: data.customerName,
+          status: data.status
+        });
+      });
+
       // Filter applicants by current provider ID
       const applicantsQuery = query(
         collection(db, 'applicants'),
@@ -76,6 +98,8 @@ export default function ProviderDashboard() {
       );
       
       const applicantsSnapshot = await getDocs(applicantsQuery);
+      console.log('Filtered applicants for provider:', applicantsSnapshot.size);
+      
       const applicantsData = applicantsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -83,6 +107,7 @@ export default function ProviderDashboard() {
         dueDate: doc.data().dueDate?.toDate(),
       })) as Applicant[];
       
+      console.log('Applicants data:', applicantsData);
       setApplicants(applicantsData);
       
       // Calculate stats

@@ -72,7 +72,8 @@ export default function AdminRequestDetailPage() {
       });
 
       // Create an applicant record for the provider portal
-      await addDoc(collection(db, 'applicants'), {
+      console.log('Creating applicant record for provider:', providerId);
+      const applicantData = {
         requestId: request.id,
         providerId: providerId,
         providerName: provider?.businessName,
@@ -87,7 +88,11 @@ export default function AdminRequestDetailPage() {
         assignedAt: new Date(),
         notes: '',
         adminNotes: '',
-      });
+      };
+      console.log('Applicant data:', applicantData);
+      
+      const applicantRef = await addDoc(collection(db, 'applicants'), applicantData);
+      console.log('Created applicant with ID:', applicantRef.id);
       
       // Update local state
       setRequest({ 
