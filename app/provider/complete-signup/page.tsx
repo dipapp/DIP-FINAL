@@ -48,13 +48,36 @@ export default function CompleteProviderSignupPage() {
     setError(null);
 
     try {
-      // Find provider by Provider ID and email
-      const providersQuery = query(
+      // Normalize email to lowercase for comparison
+      const normalizedEmail = formData.email.toLowerCase().trim();
+      const trimmedProviderId = formData.providerId.trim();
+      
+      console.log('Searching for provider with:', { 
+        providerId: trimmedProviderId, 
+        email: normalizedEmail,
+        originalEmail: formData.email.trim()
+      });
+      
+      // First try: Find provider by Provider ID and email (case insensitive)
+      let providersQuery = query(
         collection(db, 'providers'),
-        where('providerId', '==', formData.providerId),
-        where('email', '==', formData.email)
+        where('providerId', '==', trimmedProviderId),
+        where('email', '==', normalizedEmail)
       );
-      const providersSnapshot = await getDocs(providersQuery);
+      let providersSnapshot = await getDocs(providersQuery);
+
+      console.log('First query results:', providersSnapshot.size);
+
+      // If no results, try with original email case (fallback)
+      if (providersSnapshot.empty) {
+        providersQuery = query(
+          collection(db, 'providers'),
+          where('providerId', '==', trimmedProviderId),
+          where('email', '==', formData.email.trim())
+        );
+        providersSnapshot = await getDocs(providersQuery);
+        console.log('Second query results:', providersSnapshot.size);
+      }
 
       if (providersSnapshot.empty) {
         setError('Invalid Provider ID or email. Please check your credentials.');
@@ -65,6 +88,14 @@ export default function CompleteProviderSignupPage() {
       const providerDoc = providersSnapshot.docs[0];
       const providerData = providerDoc.data();
 
+      console.log('Found provider data:', {
+        id: providerDoc.id,
+        providerId: providerData.providerId,
+        email: providerData.email,
+        status: providerData.status,
+        businessName: providerData.businessName
+      });
+
       if (providerData.status !== 'approved') {
         setError('Your application is not yet approved. Please contact support.');
         setLoading(false);
@@ -73,8 +104,9 @@ export default function CompleteProviderSignupPage() {
 
       setProvider({ id: providerDoc.id, ...providerData } as Provider);
       setSuccess('Credentials verified! Please create your password below.');
-    } catch (err) {
-      setError('Error verifying credentials. Please try again.');
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      setError(`Error verifying credentials: ${err.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }

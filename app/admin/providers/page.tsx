@@ -63,10 +63,13 @@ export default function AdminProvidersPage() {
       const provider = providers.find(p => p.id === providerId);
       if (!provider) return;
 
-      // Generate a 6-digit provider ID if approving and no providerId exists
+      // Generate a 6-digit provider ID if approving
       let finalProviderId = provider.providerId;
-      if (newStatus === 'approved' && !provider.providerId) {
-        finalProviderId = generateProviderId();
+      if (newStatus === 'approved') {
+        // Always generate a new provider ID when approving (or use existing if already set)
+        if (!provider.providerId) {
+          finalProviderId = generateProviderId();
+        }
       }
 
       // Update provider status and providerId if needed
@@ -75,7 +78,7 @@ export default function AdminProvidersPage() {
         updatedAt: new Date(),
       };
       
-      if (newStatus === 'approved' && !provider.providerId) {
+      if (newStatus === 'approved') {
         updateData.providerId = finalProviderId;
       }
 
