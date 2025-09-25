@@ -26,6 +26,11 @@ interface Assignment {
 export default function ProviderDashboard() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [providerInfo, setProviderInfo] = useState<{
+    businessName: string;
+    providerId: string;
+    contactPerson: string;
+  } | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -35,7 +40,31 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     fetchAssignments();
+    fetchProviderInfo();
   }, []);
+
+  const fetchProviderInfo = async () => {
+    try {
+      // For now, get the first provider as a demo - in production, this should be based on authentication
+      // TODO: Implement proper authentication to get current provider
+      const providersQuery = query(
+        collection(db, 'providers'),
+        where('status', '==', 'approved')
+      );
+      
+      const providersSnapshot = await getDocs(providersQuery);
+      if (!providersSnapshot.empty) {
+        const providerData = providersSnapshot.docs[0].data();
+        setProviderInfo({
+          businessName: providerData.businessName || 'Unknown Business',
+          providerId: providerData.providerId || 'Unknown ID',
+          contactPerson: providerData.contactPerson || 'Unknown Contact',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching provider info:', error);
+    }
+  };
 
   const fetchAssignments = async () => {
     try {
@@ -133,6 +162,13 @@ export default function ProviderDashboard() {
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-900">Provider Dashboard</h1>
                 <p className="text-sm text-gray-600">Manage your service assignments</p>
+                {providerInfo && (
+                  <div className="mt-2 text-sm text-blue-600">
+                    <span className="font-medium">{providerInfo.businessName}</span>
+                    <span className="mx-2">•</span>
+                    <span className="text-gray-500">ID: {providerInfo.providerId}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-4">
