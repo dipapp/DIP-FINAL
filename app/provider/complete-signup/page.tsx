@@ -1,6 +1,6 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
@@ -103,6 +103,26 @@ export default function CompleteProviderSignupPage() {
     setError(null);
 
     try {
+      // Check if account already exists by trying to sign in first
+      try {
+        await signInWithEmailAndPassword(auth, provider.email, 'dummy-password');
+        // If we get here, account exists but password is wrong
+        setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
+        setLoading(false);
+        return;
+      } catch (signInErr: any) {
+        if (signInErr.code === 'auth/user-not-found') {
+          // Account doesn't exist, proceed with creation
+        } else if (signInErr.code === 'auth/wrong-password') {
+          // Account exists but wrong password
+          setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
+          setLoading(false);
+          return;
+        } else {
+          // Other error, proceed with creation attempt
+        }
+      }
+
       // Create Firebase Auth account
       const userCredential = await createUserWithEmailAndPassword(
         auth, 
@@ -152,7 +172,7 @@ export default function CompleteProviderSignupPage() {
 
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
-        setError('An account with this email already exists. Please contact support.');
+        setError('An account with this email already exists. You can sign in at /provider/login or contact support if you need help.');
       } else {
         setError(err.message || 'Error creating account');
       }
