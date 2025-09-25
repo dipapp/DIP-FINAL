@@ -73,9 +73,15 @@ export default function AdminRequestDetailPage() {
 
       // Create an applicant record for the provider portal
       console.log('Creating applicant record for provider:', providerId);
+      console.log('Provider data:', provider);
+      
+      // Use the providerId field from the provider document, not the document ID
+      const actualProviderId = provider?.providerId || providerId;
+      console.log('Using provider ID:', actualProviderId);
+      
       const applicantData = {
         requestId: request.id,
-        providerId: providerId,
+        providerId: actualProviderId, // Use the providerId field, not document ID
         providerName: provider?.businessName,
         customerName: request.userName,
         customerPhone: request.userPhone,
