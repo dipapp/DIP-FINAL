@@ -60,14 +60,36 @@ function AdminHomeContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Debug: Log all request statuses to see what's actually in the database
+  console.log('Admin Dashboard - All requests:', requests.length);
+  console.log('Admin Dashboard - Request statuses:', requests.map(r => ({ id: r.id, status: r.status, userFirstName: r.userFirstName, userLastName: r.userLastName })));
+  
+  // Group by status to see what status values exist
+  const statusGroups = requests.reduce((acc, request) => {
+    const status = request.status || 'undefined';
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(request);
+    return acc;
+  }, {} as Record<string, any[]>);
+  
+  console.log('Admin Dashboard - Requests grouped by status:', statusGroups);
+
+  const pendingRequestsCount = requests.filter(c => c.status === 'Pending').length;
+  const approvedRequestsCount = requests.filter(c => c.status === 'Approved').length;
+  
+  console.log('Admin Dashboard - Pending requests count:', pendingRequestsCount);
+  console.log('Admin Dashboard - Approved requests count:', approvedRequestsCount);
+
   const stats = {
     totalUsers: users.length,
     activeUsers: users.filter(u => u.isActive).length,
     totalVehicles: vehicles.length,
     activeVehicles: vehicles.filter(v => v.isActive).length,
     totalRequests: requests.length,
-    pendingRequests: requests.filter(c => c.status === 'Pending').length,
-    approvedRequests: requests.filter(c => c.status === 'Approved').length,
+    pendingRequests: pendingRequestsCount,
+    approvedRequests: approvedRequestsCount,
     totalTowRequests: towEvents.length,
     pendingTowRequests: towEvents.filter(t => !t.status || t.status === 'pending').length,
     totalProviders: providers.length,
