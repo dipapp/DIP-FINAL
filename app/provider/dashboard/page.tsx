@@ -48,6 +48,7 @@ export default function ProviderDashboard() {
       );
       
       const assignmentsSnapshot = await getDocs(assignmentsQuery);
+      console.log('Fetched assignments count:', assignmentsSnapshot.docs.length);
       const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -55,6 +56,7 @@ export default function ProviderDashboard() {
         dueDate: doc.data().dueDate?.toDate(),
       })) as Assignment[];
       
+      console.log('Assignments data:', assignmentsData);
       setAssignments(assignmentsData);
       
       // Calculate stats

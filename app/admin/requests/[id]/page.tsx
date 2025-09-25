@@ -73,7 +73,7 @@ export default function AdminRequestDetailPage() {
       });
 
       // Create an assignment in the assignments collection
-      await addDoc(collection(db, 'assignments'), {
+      const assignmentData = {
         requestId: request.id,
         providerId: providerId,
         providerName: provider.businessName,
@@ -88,7 +88,11 @@ export default function AdminRequestDetailPage() {
         assignedAt: new Date(),
         notes: '',
         adminNotes: '',
-      });
+      };
+      
+      console.log('Creating assignment with data:', assignmentData);
+      const assignmentRef = await addDoc(collection(db, 'assignments'), assignmentData);
+      console.log('Assignment created with ID:', assignmentRef.id);
 
       // Update local state
       setRequest({ 
