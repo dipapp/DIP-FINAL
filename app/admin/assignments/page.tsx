@@ -50,6 +50,7 @@ interface Request {
   priority: string;
   status: string;
   createdAt: Date;
+  assignedTo?: string; // Optional field for tracking provider assignment
 }
 
 export default function AdminAssignmentsPage() {
