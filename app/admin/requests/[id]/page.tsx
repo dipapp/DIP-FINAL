@@ -4,32 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { subscribeClaims, updateClaimStatus } from '@/lib/firebase/adminActions';
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, collection, getDocs, updateDoc, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-interface Provider {
-  id: string;
-  businessName: string;
-  legalEntityName: string;
-  ein: string;
-  barNumber?: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  specialties: string[];
-  status: 'pending' | 'approved' | 'rejected' | 'suspended';
-  createdAt: Date;
-  updatedAt: Date;
-  licenseNumber?: string;
-  insuranceProvider?: string;
-  insurancePolicyNumber?: string;
-  yearsInBusiness: number;
-  serviceAreas: string[];
-  certifications: string[];
-}
 
 export default function AdminRequestDetailPage() {
   const params = useParams();
@@ -40,8 +16,6 @@ export default function AdminRequestDetailPage() {
   const [saving, setSaving] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
   const [vehicleVin, setVehicleVin] = useState<string | null>(null);
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [assigningProvider, setAssigningProvider] = useState(false);
 
   const allStatuses = ['Pending', 'In Review', 'Approved', 'Denied'] as const;
 
@@ -57,73 +31,7 @@ export default function AdminRequestDetailPage() {
     }
   };
 
-  const handleProviderAssignment = async (providerId: string) => {
-    if (!request) return;
-    try {
-      setAssigningProvider(true);
-      const provider = providers.find(p => p.id === providerId);
-      if (!provider) return;
 
-      // Update the claim
-      await updateDoc(doc(db, 'claims', request.id), {
-        assignedProviderId: providerId,
-        assignedProviderName: provider.businessName,
-        assignedAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      // Create an assignment in the assignments collection
-      const assignmentData = {
-        requestId: request.id,
-        providerId: providerId,
-        providerName: provider.businessName,
-        customerName: request.userName,
-        customerPhone: request.userPhone,
-        customerEmail: request.userEmail,
-        vehicleInfo: request.vehicleInfo,
-        issueDescription: request.issueDescription,
-        location: request.location,
-        priority: request.priority || 'medium',
-        status: 'assigned',
-        assignedAt: new Date(),
-        notes: '',
-        adminNotes: '',
-      };
-      
-      console.log('Creating assignment with data:', assignmentData);
-      const assignmentRef = await addDoc(collection(db, 'assignments'), assignmentData);
-      console.log('Assignment created with ID:', assignmentRef.id);
-
-      // Update local state
-      setRequest({ 
-        ...request, 
-        assignedProviderId: providerId,
-        assignedProviderName: provider.businessName,
-        assignedAt: new Date(),
-      });
-    } catch (error) {
-      console.error('Error assigning provider:', error);
-    } finally {
-      setAssigningProvider(false);
-    }
-  };
-
-  const loadProviders = async () => {
-    try {
-      const providersSnapshot = await getDocs(collection(db, 'providers'));
-      const providersData = providersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Provider[];
-      // Only show approved providers
-      const approvedProviders = providersData.filter(p => p.status === 'approved');
-      setProviders(approvedProviders);
-    } catch (error) {
-      console.error('Error loading providers:', error);
-    }
-  };
 
   useEffect(() => {
     if (!requestId) return;
@@ -136,9 +44,6 @@ export default function AdminRequestDetailPage() {
     return () => { try { (unsub as any)(); } catch {} };
   }, [requestId]);
 
-  useEffect(() => {
-    loadProviders();
-  }, []);
 
   // Handle ESC key to close expanded photo
   useEffect(() => {
@@ -252,49 +157,6 @@ export default function AdminRequestDetailPage() {
         )}
       </div>
 
-      {/* Provider Assignment Section */}
-      <div className="card">
-        <h2 className="font-semibold mb-3">Provider Assignment</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assign to Provider
-            </label>
-            <select
-              className="input max-w-xs"
-              value={request?.assignedProviderId || ''}
-              onChange={(e) => handleProviderAssignment(e.target.value)}
-              disabled={assigningProvider}
-            >
-              <option value="">Select Provider</option>
-              {providers.map((provider) => (
-                <option key={provider.id} value={provider.id}>
-                  {provider.businessName} - {provider.contactPerson}
-                </option>
-              ))}
-            </select>
-            {assigningProvider && (
-              <span className="text-xs text-muted ml-2">Assigning...</span>
-            )}
-          </div>
-          <div>
-            <div className="text-sm text-muted">Currently Assigned</div>
-            <div className="font-medium">
-              {request?.assignedProviderName || 'No provider assigned'}
-            </div>
-            {request?.assignedAt && (
-              <div className="text-xs text-muted">
-                Assigned: {request.assignedAt.toDate?.()?.toLocaleString?.() || '—'}
-              </div>
-            )}
-          </div>
-        </div>
-        {providers.length === 0 && (
-          <div className="mt-2 text-sm text-yellow-600">
-            No approved providers available. <Link href="/admin/providers" className="text-blue-600 hover:text-blue-700">Manage providers</Link>
-          </div>
-        )}
-      </div>
 
       {/* Photos Section */}
       {request.photoURLs && request.photoURLs.length > 0 && (
