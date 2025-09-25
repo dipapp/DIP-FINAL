@@ -74,6 +74,15 @@ export async function POST(request: NextRequest) {
       console.log('Second query results:', providersSnapshot.size);
     }
 
+    // If still no results, try with uppercase email
+    if (providersSnapshot.empty) {
+      providersSnapshot = await providersRef
+        .where('providerId', '==', trimmedProviderId)
+        .where('email', '==', email.trim().toUpperCase())
+        .get();
+      console.log('Third query results (uppercase):', providersSnapshot.size);
+    }
+
     // Debug: Let's also try to find any provider with this email (case insensitive)
     if (providersSnapshot.empty) {
       const emailOnlySnapshot = await providersRef
