@@ -668,8 +668,7 @@ function MyVehiclesPageContent() {
                           }
 
                           // Create Stripe checkout session
-                          // Stripe API removed - commenting out for now
-                          // const response = await fetch('/api/stripe/checkout', {
+                          const response = await fetch('/api/stripe/checkout', {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',

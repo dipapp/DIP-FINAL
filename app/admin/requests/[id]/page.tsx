@@ -4,11 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { subscribeClaims, updateClaimStatus } from '@/lib/firebase/adminActions';
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, collection, getDocs, updateDoc, addDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 
 interface Provider {
   id: string;
-  providerId?: string; // Add the providerId field
   businessName: string;
   legalEntityName: string;
   ein: string;
@@ -62,50 +61,17 @@ export default function AdminRequestDetailPage() {
     if (!request) return;
     try {
       setAssigningProvider(true);
-      const provider = providers.find(p => p.id === providerId);
-      
-      // Update the claim with provider assignment
       await updateDoc(doc(db, 'claims', request.id), {
         assignedProviderId: providerId,
-        assignedProviderName: provider?.businessName,
+        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
         assignedAt: new Date(),
         updatedAt: new Date(),
       });
-
-      // Create an applicant record for the provider portal
-      console.log('Creating applicant record for provider:', providerId);
-      console.log('Provider data:', provider);
-      
-      // Use the providerId field from the provider document, not the document ID
-      const actualProviderId = provider?.providerId || providerId;
-      console.log('Using provider ID:', actualProviderId);
-      
-      const applicantData = {
-        requestId: request.id,
-        providerId: actualProviderId, // Use the providerId field, not document ID
-        providerName: provider?.businessName,
-        customerName: request.userName,
-        customerPhone: request.userPhone,
-        customerEmail: request.userEmail,
-        vehicleInfo: request.vehicleInfo,
-        issueDescription: request.issueDescription,
-        location: request.location,
-        priority: request.priority || 'medium',
-        status: 'assigned',
-        assignedAt: new Date(),
-        notes: '',
-        adminNotes: '',
-      };
-      console.log('Applicant data:', applicantData);
-      
-      const applicantRef = await addDoc(collection(db, 'applicants'), applicantData);
-      console.log('Created applicant with ID:', applicantRef.id);
-      
       // Update local state
       setRequest({ 
         ...request, 
         assignedProviderId: providerId,
-        assignedProviderName: provider?.businessName,
+        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
         assignedAt: new Date(),
       });
     } catch (error) {

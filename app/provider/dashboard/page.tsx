@@ -1,9 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { auth } from '@/lib/firebase/client';
-import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
 
 interface Applicant {
@@ -25,7 +23,6 @@ interface Applicant {
 export default function ProviderDashboard() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -34,72 +31,19 @@ export default function ProviderDashboard() {
   });
 
   useEffect(() => {
-    // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Get provider ID from user document
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            console.log('User data:', userData);
-            console.log('Provider ID from user data:', userData.providerId);
-            setCurrentProviderId(userData.providerId);
-          } else {
-            console.log('User document does not exist');
-          }
-        } catch (error) {
-          console.error('Error getting provider ID:', error);
-        }
-      } else {
-        setCurrentProviderId(null);
-      }
-    });
-
-    return () => unsubscribe();
+    fetchApplicants();
   }, []);
 
-  useEffect(() => {
-    if (currentProviderId) {
-      fetchApplicants();
-    }
-  }, [currentProviderId]);
-
   const fetchApplicants = async () => {
-    if (!currentProviderId) {
-      console.log('No current provider ID found');
-      setLoading(false);
-      return;
-    }
-
-    console.log('Fetching applicants for provider ID:', currentProviderId);
-
     try {
-      // First, let's check all applicants to see what's in the database
-      const allApplicantsQuery = query(collection(db, 'applicants'));
-      const allApplicantsSnapshot = await getDocs(allApplicantsQuery);
-      console.log('Total applicants in database:', allApplicantsSnapshot.size);
-      
-      allApplicantsSnapshot.docs.forEach(doc => {
-        const data = doc.data();
-        console.log('Applicant:', {
-          id: doc.id,
-          providerId: data.providerId,
-          customerName: data.customerName,
-          status: data.status
-        });
-      });
-
-      // Filter applicants by current provider ID
+      // For now, get all applicants - in production, this should be filtered by provider ID
+      // TODO: Implement proper authentication to get current provider ID
       const applicantsQuery = query(
         collection(db, 'applicants'),
-        where('providerId', '==', currentProviderId),
         orderBy('assignedAt', 'desc')
       );
       
       const applicantsSnapshot = await getDocs(applicantsQuery);
-      console.log('Filtered applicants for provider:', applicantsSnapshot.size);
-      
       const applicantsData = applicantsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -107,7 +51,6 @@ export default function ProviderDashboard() {
         dueDate: doc.data().dueDate?.toDate(),
       })) as Applicant[];
       
-      console.log('Applicants data:', applicantsData);
       setApplicants(applicantsData);
       
       // Calculate stats
