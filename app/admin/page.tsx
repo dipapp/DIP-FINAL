@@ -81,6 +81,13 @@ function AdminHomeContent() {
   
   console.log('Admin Dashboard - Pending requests count:', pendingRequestsCount);
   console.log('Admin Dashboard - Approved requests count:', approvedRequestsCount);
+  
+  // Debug assignment-related stats
+  const inProgressCount = requests.filter(r => r.status === 'In Progress' || r.status === 'in_progress' || r.status === 'Assigned').length;
+  const completedCount = requests.filter(r => r.status === 'Completed' || r.status === 'completed' || r.status === 'Approved').length;
+  console.log('Admin Dashboard - In Progress requests count:', inProgressCount);
+  console.log('Admin Dashboard - Completed requests count:', completedCount);
+  console.log('Admin Dashboard - All request statuses:', requests.map(r => ({ id: r.id, status: r.status, userFirstName: r.userFirstName })));
 
   const stats = {
     totalUsers: users.length,
@@ -95,6 +102,9 @@ function AdminHomeContent() {
     totalProviders: providers.length,
     approvedProviders: providers.filter(p => p.status === 'approved').length,
     pendingProviders: providers.filter(p => p.status === 'pending').length,
+    // Assignment-related stats
+    inProgressRequests: requests.filter(r => r.status === 'In Progress' || r.status === 'in_progress' || r.status === 'Assigned').length,
+    completedRequests: requests.filter(r => r.status === 'Completed' || r.status === 'completed' || r.status === 'Approved').length,
   };
 
   const tabs = [
@@ -560,7 +570,7 @@ function AdminHomeContent() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">In Progress</div>
-                    <div className="text-2xl font-bold text-yellow-600">0</div>
+                    <div className="text-2xl font-bold text-yellow-600">{stats.inProgressRequests}</div>
                     <div className="text-sm text-gray-500">Being worked on</div>
                   </div>
                 </div>
@@ -573,7 +583,7 @@ function AdminHomeContent() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Completed</div>
-                    <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="text-2xl font-bold text-green-600">{stats.completedRequests}</div>
                     <div className="text-sm text-gray-500">Finished today</div>
                   </div>
                 </div>
