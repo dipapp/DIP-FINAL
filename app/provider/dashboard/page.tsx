@@ -96,7 +96,7 @@ export default function ProviderDashboard() {
     return colors[priority];
   };
 
-  const getStatusColor = (status: Applicant['status']) => {
+  const getStatusColor = (status: Assignment['status']) => {
     const colors = {
       assigned: 'bg-blue-100 text-blue-800',
       accepted: 'bg-purple-100 text-purple-800',
