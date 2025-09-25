@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 
@@ -263,6 +263,28 @@ export default function AdminAssignmentsPage() {
     }
   };
 
+  const moveAssignmentBackToPending = async (assignment: Assignment) => {
+    try {
+      console.log('Moving assignment back to pending requests:', assignment);
+      
+      // Update the original claim back to "Pending" status
+      await updateDoc(doc(db, 'claims', assignment.requestId), {
+        status: 'Pending',
+        assignedTo: null,
+        assignedAt: null,
+        updatedAt: new Date(),
+      });
+      
+      // Delete the assignment from assignments collection
+      await deleteDoc(doc(db, 'assignments', assignment.id));
+      
+      console.log('Successfully moved assignment back to pending requests');
+      fetchData();
+    } catch (error) {
+      console.error('Error moving assignment back to pending:', error);
+    }
+  };
+
   const getPriorityColor = (priority: Assignment['priority']) => {
     const colors = {
       low: 'bg-green-100 text-green-800',
@@ -467,19 +489,19 @@ export default function AdminAssignmentsPage() {
                                 Cancel
                               </button>
                               <button
-                                onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
-                                className="text-blue-600 hover:text-blue-900"
+                                onClick={() => moveAssignmentBackToPending(assignment)}
+                                className="text-orange-600 hover:text-orange-900"
                               >
-                                Set to Pending
+                                Move to Pending Requests
                               </button>
                             </>
                           )}
                           {assignment.status === 'cancelled' && (
                             <button
-                              onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
-                              className="text-blue-600 hover:text-blue-900"
+                              onClick={() => moveAssignmentBackToPending(assignment)}
+                              className="text-orange-600 hover:text-orange-900"
                             >
-                              Set to Pending
+                              Move to Pending Requests
                             </button>
                           )}
                           {assignment.status === 'pending' && (
