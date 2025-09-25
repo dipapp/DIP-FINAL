@@ -8,6 +8,7 @@ import { doc, getDoc, collection, getDocs, updateDoc, addDoc } from 'firebase/fi
 
 interface Provider {
   id: string;
+  providerId?: string; // Add the providerId field
   businessName: string;
   legalEntityName: string;
   ein: string;
