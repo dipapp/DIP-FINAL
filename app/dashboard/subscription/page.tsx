@@ -108,7 +108,8 @@ function ManageSubscriptionPageContent() {
                       }
 
                       // Create Stripe customer portal session for payment method updates
-                      const response = await fetch('/api/stripe/portal', {
+                      // Stripe API removed - commenting out for now
+                      // const response = await fetch('/api/stripe/portal', {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
