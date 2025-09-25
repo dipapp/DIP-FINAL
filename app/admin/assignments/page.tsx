@@ -77,10 +77,10 @@ export default function AdminAssignmentsPage() {
         dueDate: doc.data().dueDate?.toDate(),
       })) as Assignment[];
 
-      // Fetch approved providers
+      // Fetch approved providers from providers collection
       const providersQuery = query(
-        collection(db, 'provider_profiles'),
-        where('status', '==', 'active')
+        collection(db, 'providers'),
+        where('status', '==', 'approved')
       );
       const providersSnapshot = await getDocs(providersQuery);
       const providersData = providersSnapshot.docs.map(doc => ({
@@ -100,6 +100,10 @@ export default function AdminAssignmentsPage() {
         createdAt: doc.data().createdAt?.toDate(),
       })) as Request[];
 
+      console.log('Fetched assignments:', assignmentsData.length);
+      console.log('Fetched providers:', providersData.length);
+      console.log('Fetched requests:', requestsData.length);
+      
       setAssignments(assignmentsData);
       setProviders(providersData);
       setRequests(requestsData);
@@ -117,7 +121,7 @@ export default function AdminAssignmentsPage() {
       const provider = providers.find(p => p.id === selectedProvider);
       if (!provider) return;
 
-      await addDoc(collection(db, 'assignments'), {
+      const assignmentData = {
         requestId: selectedRequest.id,
         providerId: selectedProvider,
         providerName: provider.businessName,
@@ -132,7 +136,11 @@ export default function AdminAssignmentsPage() {
         assignedAt: new Date(),
         notes: assignmentNotes,
         adminNotes: '',
-      });
+      };
+      
+      console.log('Creating assignment with data:', assignmentData);
+      const assignmentRef = await addDoc(collection(db, 'assignments'), assignmentData);
+      console.log('Assignment created with ID:', assignmentRef.id);
 
       // Update request status
       await updateDoc(doc(db, 'claims', selectedRequest.id), {
