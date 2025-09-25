@@ -59,12 +59,28 @@ export default function AdminAssignmentsPage() {
   const [assignmentNotes, setAssignmentNotes] = useState('');
 
   useEffect(() => {
+    console.log('Component mounted, starting data fetch...');
+    console.log('Firebase db available:', !!db);
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    console.log('Starting fetchData...');
     try {
+      console.log('Firebase db object:', db);
+      
+      // Test basic Firebase connection first
+      console.log('Testing basic Firebase connection...');
+      try {
+        const testCollection = collection(db, 'test');
+        const testSnapshot = await getDocs(testCollection);
+        console.log('Firebase connection test successful');
+      } catch (testError) {
+        console.log('Firebase connection test failed (this is expected if test collection doesn\'t exist):', testError);
+      }
+      
       // Fetch assignments
+      console.log('Fetching assignments...');
       const assignmentsQuery = query(
         collection(db, 'assignments'),
         orderBy('assignedAt', 'desc')
@@ -81,39 +97,52 @@ export default function AdminAssignmentsPage() {
       })) as Assignment[];
 
       // Fetch approved providers from providers collection
+      console.log('Fetching providers...');
       const providersQuery = query(
         collection(db, 'providers'),
         where('status', '==', 'approved')
       );
       const providersSnapshot = await getDocs(providersQuery);
+      console.log('Raw providers snapshot:', providersSnapshot.docs.length, 'docs');
+      console.log('Raw provider docs:', providersSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
+      
       const providersData = providersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as Provider[];
 
       // Fetch pending requests
+      console.log('Fetching requests...');
       const requestsQuery = query(
         collection(db, 'claims'),
         where('status', '==', 'Pending')
       );
       const requestsSnapshot = await getDocs(requestsQuery);
+      console.log('Raw requests snapshot:', requestsSnapshot.docs.length, 'docs');
+      console.log('Raw request docs:', requestsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
+      
       const requestsData = requestsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate(),
       })) as Request[];
 
-      console.log('Fetched assignments:', assignmentsData.length);
-      console.log('Fetched providers:', providersData.length);
-      console.log('Fetched requests:', requestsData.length);
+      console.log('Final results:');
+      console.log('- Assignments:', assignmentsData.length);
+      console.log('- Providers:', providersData.length);
+      console.log('- Requests:', requestsData.length);
       
       setAssignments(assignmentsData);
       setProviders(providersData);
       setRequests(requestsData);
+      
+      console.log('State updated successfully');
     } catch (error) {
       console.error('Error fetching data:', error);
+      console.error('Error details:', error);
     } finally {
       setLoading(false);
+      console.log('Loading set to false');
     }
   };
 
