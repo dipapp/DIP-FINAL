@@ -184,13 +184,40 @@ export default function AdminAssignmentsPage() {
         createdAt: doc.data().createdAt?.toDate(),
       })) as Request[];
       
-      // Filter for pending requests client-side as fallback
-      const pendingRequests = requestsData.filter(request => 
-        request.status === 'Pending' || 
-        request.status === 'pending' || 
-        request.status === 'PENDING' ||
-        !request.status // Include requests without status
-      );
+      // Debug: Log all request statuses to understand what we're working with
+      console.log('All request statuses found:', requestsData.map(r => ({ 
+        id: r.id, 
+        status: r.status, 
+        assignedTo: r.assignedTo,
+        userFirstName: r.userFirstName,
+        userLastName: r.userLastName 
+      })));
+      
+      // Filter for requests that can be assigned (not already assigned to a provider)
+      // Include all requests that are not in final states (Approved, Denied, Paid, Completed, etc.)
+      const pendingRequests = requestsData.filter(request => {
+        const status = request.status?.toLowerCase();
+        const isAssigned = request.assignedTo;
+        
+        // Include if not assigned to a provider
+        if (!isAssigned) {
+          return true;
+        }
+        
+        // Include if status is pending/in review (various cases)
+        if (status === 'pending' || status === 'in review' || status === 'in_review') {
+          return true;
+        }
+        
+        // Include if no status (new requests)
+        if (!request.status) {
+          return true;
+        }
+        
+        // Exclude final states
+        const finalStates = ['approved', 'denied', 'paid', 'completed', 'cancelled', 'assigned'];
+        return !finalStates.includes(status);
+      });
       
       console.log('Final pending requests after filtering:', pendingRequests.length);
       console.log('Pending requests data:', pendingRequests);
