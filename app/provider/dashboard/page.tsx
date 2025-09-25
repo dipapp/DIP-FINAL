@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
+import { auth } from '@/lib/firebase/client';
+import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
 
 interface Assignment {
@@ -40,26 +42,42 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     fetchAssignments();
-    fetchProviderInfo();
+    
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchProviderInfo(user);
+      }
+    });
+    
+    return () => unsubscribe();
   }, []);
 
-  const fetchProviderInfo = async () => {
+  const fetchProviderInfo = async (user: any) => {
     try {
-      // For now, get the first provider as a demo - in production, this should be based on authentication
-      // TODO: Implement proper authentication to get current provider
-      const providersQuery = query(
-        collection(db, 'providers'),
-        where('status', '==', 'approved')
-      );
+      if (!user) return;
       
-      const providersSnapshot = await getDocs(providersQuery);
-      if (!providersSnapshot.empty) {
-        const providerData = providersSnapshot.docs[0].data();
+      // Get provider profile from provider_profiles collection using user UID
+      const providerProfileDoc = await getDoc(doc(db, 'provider_profiles', user.uid));
+      
+      if (providerProfileDoc.exists()) {
+        const providerData = providerProfileDoc.data();
         setProviderInfo({
           businessName: providerData.businessName || 'Unknown Business',
           providerId: providerData.providerId || 'Unknown ID',
           contactPerson: providerData.contactPerson || 'Unknown Contact',
         });
+      } else {
+        // Fallback: try to get from users collection
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setProviderInfo({
+            businessName: userData.businessName || 'Unknown Business',
+            providerId: userData.providerId || 'Unknown ID',
+            contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching provider info:', error);
