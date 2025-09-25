@@ -258,6 +258,7 @@ export default function AdminAssignmentsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Assignments</p>
                 <p className="text-2xl font-bold text-gray-900">{assignments.length}</p>
+                <p className="text-xs text-gray-500">{requests.length} pending to assign</p>
               </div>
             </div>
           </div>
