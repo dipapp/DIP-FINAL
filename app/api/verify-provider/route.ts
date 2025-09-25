@@ -50,6 +50,12 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
     const trimmedProviderId = providerId.trim();
 
+    console.log('Searching for provider with:', { 
+      providerId: trimmedProviderId, 
+      email: normalizedEmail,
+      originalEmail: email.trim()
+    });
+
     // Find provider by Provider ID and email using Admin SDK
     const providersRef = db.collection('providers');
     let providersSnapshot = await providersRef
@@ -57,12 +63,51 @@ export async function POST(request: NextRequest) {
       .where('email', '==', normalizedEmail)
       .get();
 
+    console.log('First query results:', providersSnapshot.size);
+
     // If no results, try with original email case (fallback)
     if (providersSnapshot.empty) {
       providersSnapshot = await providersRef
         .where('providerId', '==', trimmedProviderId)
         .where('email', '==', email.trim())
         .get();
+      console.log('Second query results:', providersSnapshot.size);
+    }
+
+    // Debug: Let's also try to find any provider with this email (case insensitive)
+    if (providersSnapshot.empty) {
+      const emailOnlySnapshot = await providersRef
+        .where('email', '==', normalizedEmail)
+        .get();
+      console.log('Email-only query results:', emailOnlySnapshot.size);
+      
+      if (!emailOnlySnapshot.empty) {
+        const foundProvider = emailOnlySnapshot.docs[0].data();
+        console.log('Found provider with email but different providerId:', {
+          foundProviderId: foundProvider.providerId,
+          searchedProviderId: trimmedProviderId,
+          email: foundProvider.email,
+          status: foundProvider.status
+        });
+      }
+    }
+
+    // Debug: Let's also try to find any provider with this providerId
+    if (providersSnapshot.empty) {
+      const providerIdOnlySnapshot = await providersRef
+        .where('providerId', '==', trimmedProviderId)
+        .get();
+      console.log('ProviderId-only query results:', providerIdOnlySnapshot.size);
+      
+      if (!providerIdOnlySnapshot.empty) {
+        const foundProvider = providerIdOnlySnapshot.docs[0].data();
+        console.log('Found provider with providerId but different email:', {
+          providerId: foundProvider.providerId,
+          foundEmail: foundProvider.email,
+          searchedEmail: normalizedEmail,
+          status: foundProvider.status
+        });
+      }
     }
 
     if (providersSnapshot.empty) {
@@ -74,6 +119,14 @@ export async function POST(request: NextRequest) {
 
     const providerDoc = providersSnapshot.docs[0];
     const providerData = providerDoc.data();
+
+    console.log('Found provider data:', {
+      id: providerDoc.id,
+      providerId: providerData.providerId,
+      email: providerData.email,
+      status: providerData.status,
+      businessName: providerData.businessName
+    });
 
     if (providerData.status !== 'approved') {
       return NextResponse.json(

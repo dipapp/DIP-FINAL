@@ -63,13 +63,10 @@ export default function AdminProvidersPage() {
       const provider = providers.find(p => p.id === providerId);
       if (!provider) return;
 
-      // Generate a 6-digit provider ID if approving
+      // Generate a 6-digit provider ID if approving and none exists
       let finalProviderId = provider.providerId;
-      if (newStatus === 'approved') {
-        // Always generate a new provider ID when approving (or use existing if already set)
-        if (!provider.providerId) {
-          finalProviderId = generateProviderId();
-        }
+      if (newStatus === 'approved' && !provider.providerId) {
+        finalProviderId = generateProviderId();
       }
 
       // Update provider status and providerId if needed
@@ -78,7 +75,7 @@ export default function AdminProvidersPage() {
         updatedAt: new Date(),
       };
       
-      if (newStatus === 'approved') {
+      if (newStatus === 'approved' && !provider.providerId) {
         updateData.providerId = finalProviderId;
       }
 
@@ -94,7 +91,8 @@ export default function AdminProvidersPage() {
 
         // Show success message with Provider ID and username
         if (newStatus === 'approved') {
-          alert(`Provider "${provider.businessName}" has been approved successfully!\n\nProvider Credentials:\nProvider ID: ${finalProviderId}\nUsername: ${provider.email}\n\nGive these credentials to the provider so they can complete their account setup at /provider/complete-signup`);
+          const displayProviderId = provider.providerId || finalProviderId;
+          alert(`Provider "${provider.businessName}" has been approved successfully!\n\nProvider Credentials:\nProvider ID: ${displayProviderId}\nUsername: ${provider.email}\n\nGive these credentials to the provider so they can complete their account setup at /provider/complete-signup`);
         } else if (newStatus === 'rejected') {
           alert(`Provider "${provider.businessName}" has been rejected.`);
         }
