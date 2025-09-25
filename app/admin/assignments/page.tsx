@@ -174,10 +174,16 @@ export default function AdminAssignmentsPage() {
 
       console.log('Selected request data:', selectedRequest);
       console.log('Available fields:', Object.keys(selectedRequest));
+      console.log('Provider data:', provider);
+      console.log('Provider providerId field:', provider.providerId);
+      console.log('Selected provider ID:', selectedProvider);
+
+      const finalProviderId = provider.providerId || selectedProvider;
+      console.log('Final providerId to use in assignment:', finalProviderId);
 
       const assignmentData = {
         requestId: selectedRequest.id,
-        providerId: selectedProvider,
+        providerId: finalProviderId, // Use providerId field if available, fallback to document ID
         providerName: provider.businessName,
         customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
         customerPhone: selectedRequest.userPhone || 'Not provided',
@@ -218,7 +224,7 @@ export default function AdminAssignmentsPage() {
       console.log('Creating test assignment...');
       const testAssignment = {
         requestId: 'test-request-' + Date.now(),
-        providerId: '282365', // Use the provider ID we know exists
+        providerId: '341169', // Use the provider ID that matches the logged-in provider
         providerName: 'Test Provider',
         customerName: 'Test Customer',
         customerPhone: '555-1234',
