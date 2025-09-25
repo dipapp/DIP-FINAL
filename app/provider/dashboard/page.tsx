@@ -39,9 +39,9 @@ export default function ProviderDashboard() {
 
   const fetchAssignments = async () => {
     try {
-      // Get assignments from the assignments collection
       // For now, get all assignments - in production, this should be filtered by provider ID
       // TODO: Implement proper authentication to get current provider ID
+      // For testing purposes, we'll get all assignments and let the user see them
       const assignmentsQuery = query(
         collection(db, 'assignments'),
         orderBy('assignedAt', 'desc')

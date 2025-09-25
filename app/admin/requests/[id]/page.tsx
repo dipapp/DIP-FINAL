@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { subscribeClaims, updateClaimStatus } from '@/lib/firebase/adminActions';
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, updateDoc, addDoc } from 'firebase/firestore';
 
 interface Provider {
   id: string;
@@ -61,17 +61,40 @@ export default function AdminRequestDetailPage() {
     if (!request) return;
     try {
       setAssigningProvider(true);
+      const provider = providers.find(p => p.id === providerId);
+      if (!provider) return;
+
+      // Update the claim
       await updateDoc(doc(db, 'claims', request.id), {
         assignedProviderId: providerId,
-        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
+        assignedProviderName: provider.businessName,
         assignedAt: new Date(),
         updatedAt: new Date(),
       });
+
+      // Create an assignment in the assignments collection
+      await addDoc(collection(db, 'assignments'), {
+        requestId: request.id,
+        providerId: providerId,
+        providerName: provider.businessName,
+        customerName: request.userName,
+        customerPhone: request.userPhone,
+        customerEmail: request.userEmail,
+        vehicleInfo: request.vehicleInfo,
+        issueDescription: request.issueDescription,
+        location: request.location,
+        priority: request.priority || 'medium',
+        status: 'assigned',
+        assignedAt: new Date(),
+        notes: '',
+        adminNotes: '',
+      });
+
       // Update local state
       setRequest({ 
         ...request, 
         assignedProviderId: providerId,
-        assignedProviderName: providers.find(p => p.id === providerId)?.businessName,
+        assignedProviderName: provider.businessName,
         assignedAt: new Date(),
       });
     } catch (error) {
