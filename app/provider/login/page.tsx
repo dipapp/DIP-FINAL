@@ -142,16 +142,29 @@ export default function ProviderLoginPage() {
               </div>
               
               <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-medium text-green-900 mb-2">Already Approved?</h4>
+                  <p className="text-sm text-green-700 mb-3">
+                    If you've been approved and received your Provider ID, complete your account setup here.
+                  </p>
+                  <Link
+                    href="/provider/complete-signup"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    Complete Account Setup
+                  </Link>
+                </div>
+                
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">Already Approved?</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">Alternative Registration</h4>
                   <p className="text-sm text-blue-700 mb-3">
-                    If you've already been approved as a provider, create your login account here.
+                    Use the alternative registration method if you prefer.
                   </p>
                   <Link
                     href="/provider/register"
                     className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    I'm Already Approved - Create Account
+                    Alternative Registration
                   </Link>
                 </div>
                 

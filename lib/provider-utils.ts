@@ -43,3 +43,4 @@ export function formatProviderId(id: string): string {
   // If it's not a valid format, return empty string
   return '';
 }
+

@@ -147,26 +147,42 @@ function ProviderAuthContent() {
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">What you'll need:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Business and legal entity information</li>
-                  <li>• EIN number and business license</li>
-                  <li>• Insurance and certification details</li>
-                  <li>• Service areas and specialties</li>
-                </ul>
-              </div>
-
-              <div className="text-center">
-                <a 
-                  href="/provider/signup"
-                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block"
-                >
-                  Start Application
-                </a>
-                <p className="text-xs text-gray-500 mt-2">
-                  Application takes 10-15 minutes to complete
-                </p>
+              <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-900 mb-2">Already Approved?</h4>
+                  <p className="text-sm text-green-700 mb-3">
+                    If you've been approved and received your Provider ID, complete your account setup here.
+                  </p>
+                  <a 
+                    href="/provider/complete-signup"
+                    className="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors inline-block text-center"
+                  >
+                    Complete Account Setup
+                  </a>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">New Application</h4>
+                  <p className="text-sm text-blue-700 mb-3">Apply to become a DIP provider and join our network.</p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                    <h5 className="font-medium text-blue-900 mb-2">What you'll need:</h5>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Business and legal entity information</li>
+                      <li>• EIN number and business license</li>
+                      <li>• Insurance and certification details</li>
+                      <li>• Service areas and specialties</li>
+                    </ul>
+                  </div>
+                  <a 
+                    href="/provider/signup"
+                    className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block text-center"
+                  >
+                    Start Application
+                  </a>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Application takes 10-15 minutes to complete
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -183,6 +199,7 @@ export default function ProviderAuthPage() {
     </Suspense>
   );
 }
+
 
 
 
