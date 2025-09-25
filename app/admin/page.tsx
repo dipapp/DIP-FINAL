@@ -503,7 +503,7 @@ function AdminHomeContent() {
               </p>
               <div className="flex space-x-3">
                 <Link 
-                  href="/admin/requests" 
+                  href="/admin/assignments" 
                   className="btn btn-primary text-sm px-4 py-2"
                 >
                   Assign Requests
