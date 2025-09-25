@@ -1,7 +1,7 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
 import BackButton from '@/components/BackButton';
@@ -48,62 +48,31 @@ export default function CompleteProviderSignupPage() {
     setError(null);
 
     try {
-      // Normalize email to lowercase for comparison
-      const normalizedEmail = formData.email.toLowerCase().trim();
-      const trimmedProviderId = formData.providerId.trim();
-      
-      console.log('Searching for provider with:', { 
-        providerId: trimmedProviderId, 
-        email: normalizedEmail,
-        originalEmail: formData.email.trim()
+      const response = await fetch('/api/verify-provider', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          providerId: formData.providerId,
+          email: formData.email
+        })
       });
-      
-      // First try: Find provider by Provider ID and email (case insensitive)
-      let providersQuery = query(
-        collection(db, 'providers'),
-        where('providerId', '==', trimmedProviderId),
-        where('email', '==', normalizedEmail)
-      );
-      let providersSnapshot = await getDocs(providersQuery);
 
-      console.log('First query results:', providersSnapshot.size);
+      const data = await response.json();
 
-      // If no results, try with original email case (fallback)
-      if (providersSnapshot.empty) {
-        providersQuery = query(
-          collection(db, 'providers'),
-          where('providerId', '==', trimmedProviderId),
-          where('email', '==', formData.email.trim())
-        );
-        providersSnapshot = await getDocs(providersQuery);
-        console.log('Second query results:', providersSnapshot.size);
-      }
-
-      if (providersSnapshot.empty) {
-        setError('Invalid Provider ID or email. Please check your credentials.');
+      if (!response.ok) {
+        setError(data.error || 'Error verifying credentials. Please try again.');
         setLoading(false);
         return;
       }
 
-      const providerDoc = providersSnapshot.docs[0];
-      const providerData = providerDoc.data();
-
-      console.log('Found provider data:', {
-        id: providerDoc.id,
-        providerId: providerData.providerId,
-        email: providerData.email,
-        status: providerData.status,
-        businessName: providerData.businessName
-      });
-
-      if (providerData.status !== 'approved') {
-        setError('Your application is not yet approved. Please contact support.');
-        setLoading(false);
-        return;
+      if (data.success && data.provider) {
+        setProvider(data.provider as Provider);
+        setSuccess('Credentials verified! Please create your password below.');
+      } else {
+        setError('Invalid response from server. Please try again.');
       }
-
-      setProvider({ id: providerDoc.id, ...providerData } as Provider);
-      setSuccess('Credentials verified! Please create your password below.');
     } catch (err: any) {
       console.error('Verification error:', err);
       setError(`Error verifying credentials: ${err.message || 'Please try again.'}`);
