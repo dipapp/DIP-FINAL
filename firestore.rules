@@ -201,14 +201,14 @@ service cloud.firestore {
     
     // === ASSIGNMENTS ===
     match /assignments/{assignmentId} {
-      // Providers can read assignments assigned to them
-      allow read: if isAuthenticated() && request.auth.uid == resource.data.providerId;
+      // Allow authenticated users to read assignments (temporary for testing)
+      allow read: if isAuthenticated();
       
-      // Providers can update assignment status
-      allow update: if isAuthenticated() && request.auth.uid == resource.data.providerId;
+      // Allow authenticated users to update assignments (temporary for testing)
+      allow update: if isAuthenticated();
       
-      // Admins can read/write all assignments
-      allow read, write: if isAdmin();
+      // Admins can read/write/create all assignments
+      allow read, write, create: if isAdmin();
     }
     
     // Block all other database access
