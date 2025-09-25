@@ -37,10 +37,13 @@ interface Provider {
 interface Request {
   id: string;
   userId: string;
-  userName: string;
+  userFirstName: string;
+  userLastName: string;
   userEmail: string;
   userPhone: string;
-  vehicleInfo: string;
+  vehicleYear: string;
+  vehicleMake: string;
+  vehicleModel: string;
   issueDescription: string;
   location: string;
   priority: string;
@@ -157,10 +160,10 @@ export default function AdminAssignmentsPage() {
         requestId: selectedRequest.id,
         providerId: selectedProvider,
         providerName: provider.businessName,
-        customerName: selectedRequest.userName,
+        customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
         customerPhone: selectedRequest.userPhone,
         customerEmail: selectedRequest.userEmail,
-        vehicleInfo: selectedRequest.vehicleInfo,
+        vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
         issueDescription: selectedRequest.issueDescription,
         location: selectedRequest.location,
         priority: selectedRequest.priority || 'medium',
@@ -464,7 +467,7 @@ export default function AdminAssignmentsPage() {
                     <option value="">Select a request...</option>
                     {requests.map(request => (
                       <option key={request.id} value={request.id}>
-                        {request.userName} - {request.issueDescription}
+                        {request.userFirstName} {request.userLastName} - {request.issueDescription}
                       </option>
                     ))}
                   </select>
