@@ -70,6 +70,9 @@ export default function AdminAssignmentsPage() {
         orderBy('assignedAt', 'desc')
       );
       const assignmentsSnapshot = await getDocs(assignmentsQuery);
+      console.log('Raw assignments snapshot:', assignmentsSnapshot.docs.length, 'docs');
+      console.log('Raw assignment docs:', assignmentsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
+      
       const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -156,6 +159,37 @@ export default function AdminAssignmentsPage() {
       fetchData();
     } catch (error) {
       console.error('Error creating assignment:', error);
+    }
+  };
+
+  const createTestAssignment = async () => {
+    try {
+      console.log('Creating test assignment...');
+      const testAssignment = {
+        requestId: 'test-request-' + Date.now(),
+        providerId: '282365', // Use the provider ID we know exists
+        providerName: 'Test Provider',
+        customerName: 'Test Customer',
+        customerPhone: '555-1234',
+        customerEmail: 'test@example.com',
+        vehicleInfo: '2020 Honda Civic',
+        issueDescription: 'Test assignment for debugging',
+        location: 'Test Location',
+        priority: 'medium',
+        status: 'assigned',
+        assignedAt: new Date(),
+        notes: 'This is a test assignment',
+        adminNotes: 'Created for debugging purposes',
+      };
+      
+      console.log('Test assignment data:', testAssignment);
+      const assignmentRef = await addDoc(collection(db, 'assignments'), testAssignment);
+      console.log('Test assignment created with ID:', assignmentRef.id);
+      
+      // Refresh the data
+      fetchData();
+    } catch (error) {
+      console.error('Error creating test assignment:', error);
     }
   };
 
@@ -276,12 +310,20 @@ export default function AdminAssignmentsPage() {
         {/* Action Buttons */}
         <div className="mb-6 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900">Assignments</h2>
-          <button
-            onClick={() => setShowAssignModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Assignment
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={createTestAssignment}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Create Test Assignment
+            </button>
+            <button
+              onClick={() => setShowAssignModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create Assignment
+            </button>
+          </div>
         </div>
 
         {/* Assignments Table */}
