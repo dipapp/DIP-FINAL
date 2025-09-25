@@ -25,6 +25,7 @@ interface Assignment {
 
 interface Provider {
   id: string;
+  providerId?: string;
   businessName: string;
   contactPerson: string;
   email: string;
