@@ -155,22 +155,36 @@ export default function AdminAssignmentsPage() {
   };
 
   const createAssignment = async () => {
-    if (!selectedRequest || !selectedProvider) return;
+    console.log('createAssignment called');
+    console.log('selectedRequest:', selectedRequest);
+    console.log('selectedProvider:', selectedProvider);
+    
+    if (!selectedRequest || !selectedProvider) {
+      console.log('Missing required data - selectedRequest:', !!selectedRequest, 'selectedProvider:', !!selectedProvider);
+      return;
+    }
 
     try {
       const provider = providers.find(p => p.id === selectedProvider);
-      if (!provider) return;
+      console.log('Found provider:', provider);
+      if (!provider) {
+        console.log('Provider not found');
+        return;
+      }
+
+      console.log('Selected request data:', selectedRequest);
+      console.log('Available fields:', Object.keys(selectedRequest));
 
       const assignmentData = {
         requestId: selectedRequest.id,
         providerId: selectedProvider,
         providerName: provider.businessName,
         customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
-        customerPhone: selectedRequest.userPhone,
-        customerEmail: selectedRequest.userEmail,
+        customerPhone: selectedRequest.userPhone || 'Not provided',
+        customerEmail: selectedRequest.userEmail || 'Not provided',
         vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
-        issueDescription: selectedRequest.issueDescription,
-        location: selectedRequest.location,
+        issueDescription: selectedRequest.issueDescription || 'No description provided',
+        location: selectedRequest.location || 'Not specified',
         priority: selectedRequest.priority || 'medium',
         status: 'assigned',
         assignedAt: new Date(),
@@ -518,7 +532,11 @@ export default function AdminAssignmentsPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={createAssignment}
+                    onClick={() => {
+                      console.log('Create Assignment button clicked in modal');
+                      console.log('Button disabled state:', !selectedRequest || !selectedProvider);
+                      createAssignment();
+                    }}
                     disabled={!selectedRequest || !selectedProvider}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
