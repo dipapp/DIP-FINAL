@@ -33,6 +33,7 @@ export default function ProviderDashboard() {
     providerId: string;
     contactPerson: string;
   } | null>(null);
+  const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -41,8 +42,6 @@ export default function ProviderDashboard() {
   });
 
   useEffect(() => {
-    fetchAssignments();
-    
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -52,6 +51,13 @@ export default function ProviderDashboard() {
     
     return () => unsubscribe();
   }, []);
+
+  // Fetch assignments when providerId changes
+  useEffect(() => {
+    if (currentProviderId) {
+      fetchAssignments();
+    }
+  }, [currentProviderId]);
 
   const fetchProviderInfo = async (user: any) => {
     try {
@@ -63,9 +69,11 @@ export default function ProviderDashboard() {
       if (providerProfileDoc.exists()) {
         const providerData = providerProfileDoc.data();
         console.log('Provider profile data:', providerData);
+        const providerId = providerData.providerId || 'Unknown ID';
+        setCurrentProviderId(providerId);
         setProviderInfo({
           businessName: providerData.businessName || providerData.legalEntityName || 'Unknown Business',
-          providerId: providerData.providerId || 'Unknown ID',
+          providerId: providerId,
           contactPerson: providerData.contactPerson || 'Unknown Contact',
         });
       } else {
@@ -86,22 +94,28 @@ export default function ProviderDashboard() {
             if (!providersSnapshot.empty) {
               const providerData = providersSnapshot.docs[0].data();
               console.log('Provider data from providers collection:', providerData);
+              const providerId = providerData.providerId || userData.providerId || 'Unknown ID';
+              setCurrentProviderId(providerId);
               setProviderInfo({
                 businessName: providerData.businessName || userData.businessName || 'Unknown Business',
-                providerId: providerData.providerId || userData.providerId || 'Unknown ID',
+                providerId: providerId,
                 contactPerson: providerData.contactPerson || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
               });
             } else {
+              const providerId = userData.providerId || 'Unknown ID';
+              setCurrentProviderId(providerId);
               setProviderInfo({
                 businessName: userData.businessName || 'Unknown Business',
-                providerId: userData.providerId || 'Unknown ID',
+                providerId: providerId,
                 contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
               });
             }
           } else {
+            const providerId = userData.providerId || 'Unknown ID';
+            setCurrentProviderId(providerId);
             setProviderInfo({
               businessName: userData.businessName || 'Unknown Business',
-              providerId: userData.providerId || 'Unknown ID',
+              providerId: providerId,
               contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
             });
           }
@@ -114,16 +128,20 @@ export default function ProviderDashboard() {
 
   const fetchAssignments = async () => {
     try {
-      // For now, get all assignments - in production, this should be filtered by provider ID
-      // TODO: Implement proper authentication to get current provider ID
-      // For testing purposes, we'll get all assignments and let the user see them
+      if (!currentProviderId) {
+        console.log('No provider ID available yet, skipping assignment fetch');
+        return;
+      }
+
+      // Filter assignments by the current provider's ID
       const assignmentsQuery = query(
         collection(db, 'assignments'),
+        where('providerId', '==', currentProviderId),
         orderBy('assignedAt', 'desc')
       );
       
       const assignmentsSnapshot = await getDocs(assignmentsQuery);
-      console.log('Fetched assignments count:', assignmentsSnapshot.docs.length);
+      console.log('Fetched assignments count for provider', currentProviderId, ':', assignmentsSnapshot.docs.length);
       const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
