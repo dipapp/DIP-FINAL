@@ -79,10 +79,16 @@ export async function GET(request: NextRequest) {
       filtered: filteredProviders.length,
       providers: filteredProviders.map(p => ({
         id: p.id,
-        providerId: p.providerId,
+        providerId: p.providerId || 'Not assigned',
         email: p.email,
         businessName: p.businessName,
-        status: p.status
+        status: p.status,
+        hasProviderId: !!p.providerId,
+        rawData: {
+          providerId: p.providerId,
+          email: p.email,
+          status: p.status
+        }
       }))
     });
 
