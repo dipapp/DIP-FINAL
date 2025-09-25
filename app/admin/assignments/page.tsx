@@ -16,7 +16,7 @@ interface Assignment {
   issueDescription: string;
   location: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   assignedAt: Date;
   dueDate?: Date;
   notes?: string;
@@ -275,6 +275,7 @@ export default function AdminAssignmentsPage() {
 
   const getStatusColor = (status: Assignment['status']) => {
     const colors = {
+      pending: 'bg-gray-100 text-gray-800',
       assigned: 'bg-blue-100 text-blue-800',
       accepted: 'bg-purple-100 text-purple-800',
       in_progress: 'bg-yellow-100 text-yellow-800',
@@ -458,12 +459,31 @@ export default function AdminAssignmentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           {assignment.status === 'assigned' && (
+                            <>
+                              <button
+                                onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                Set to Pending
+                              </button>
+                            </>
+                          )}
+                          {assignment.status === 'cancelled' && (
                             <button
-                              onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
-                              className="text-red-600 hover:text-red-900"
+                              onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
+                              className="text-blue-600 hover:text-blue-900"
                             >
-                              Cancel
+                              Set to Pending
                             </button>
+                          )}
+                          {assignment.status === 'pending' && (
+                            <span className="text-gray-600">Pending</span>
                           )}
                           {assignment.status === 'completed' && (
                             <span className="text-green-600">Completed</span>
