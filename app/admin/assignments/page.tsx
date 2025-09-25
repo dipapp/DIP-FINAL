@@ -285,6 +285,20 @@ export default function AdminAssignmentsPage() {
     }
   };
 
+  const deleteAssignment = async (assignment: Assignment) => {
+    try {
+      console.log('Deleting assignment:', assignment);
+      
+      // Delete the assignment from assignments collection
+      await deleteDoc(doc(db, 'assignments', assignment.id));
+      
+      console.log('Successfully deleted assignment');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+    }
+  };
+
   const getPriorityColor = (priority: Assignment['priority']) => {
     const colors = {
       low: 'bg-green-100 text-green-800',
@@ -494,18 +508,45 @@ export default function AdminAssignmentsPage() {
                               >
                                 Move to Pending Requests
                               </button>
+                              <button
+                                onClick={() => deleteAssignment(assignment)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete Assignment
+                              </button>
                             </>
                           )}
                           {assignment.status === 'cancelled' && (
-                            <button
-                              onClick={() => moveAssignmentBackToPending(assignment)}
-                              className="text-orange-600 hover:text-orange-900"
-                            >
-                              Move to Pending Requests
-                            </button>
+                            <>
+                              <button
+                                onClick={() => moveAssignmentBackToPending(assignment)}
+                                className="text-orange-600 hover:text-orange-900"
+                              >
+                                Move to Pending Requests
+                              </button>
+                              <button
+                                onClick={() => deleteAssignment(assignment)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete Assignment
+                              </button>
+                            </>
                           )}
                           {assignment.status === 'pending' && (
-                            <span className="text-gray-600">Pending</span>
+                            <>
+                              <button
+                                onClick={() => moveAssignmentBackToPending(assignment)}
+                                className="text-orange-600 hover:text-orange-900"
+                              >
+                                Move to Pending Requests
+                              </button>
+                              <button
+                                onClick={() => deleteAssignment(assignment)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete Assignment
+                              </button>
+                            </>
                           )}
                           {assignment.status === 'completed' && (
                             <span className="text-green-600">Completed</span>
