@@ -128,6 +128,7 @@ export default function ProviderDashboard() {
 
   const fetchAssignments = async () => {
     try {
+      console.log('fetchAssignments called with currentProviderId:', currentProviderId);
       if (!currentProviderId) {
         console.log('No provider ID available yet, skipping assignment fetch');
         return;
@@ -142,6 +143,17 @@ export default function ProviderDashboard() {
       
       const assignmentsSnapshot = await getDocs(assignmentsQuery);
       console.log('Fetched assignments count for provider', currentProviderId, ':', assignmentsSnapshot.docs.length);
+      
+      // Debug: Let's also fetch ALL assignments to see what's in the database
+      const allAssignmentsQuery = query(collection(db, 'assignments'));
+      const allAssignmentsSnapshot = await getDocs(allAssignmentsQuery);
+      console.log('All assignments in database:', allAssignmentsSnapshot.docs.length);
+      console.log('All assignment data:', allAssignmentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        providerId: doc.data().providerId,
+        customerName: doc.data().customerName,
+        status: doc.data().status
+      })));
       const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
