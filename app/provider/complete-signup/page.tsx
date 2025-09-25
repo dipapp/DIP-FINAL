@@ -1,8 +1,6 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase/client';
+// Removed client-side Firebase imports - now using server-side API
 import { useRouter } from 'next/navigation';
 import BackButton from '@/components/BackButton';
 
@@ -103,107 +101,31 @@ export default function CompleteProviderSignupPage() {
     setError(null);
 
     try {
-      // Check if account already exists by trying to sign in first
-      try {
-        await signInWithEmailAndPassword(auth, provider.email, 'dummy-password');
-        // If we get here, account exists but password is wrong
-        setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
-        setLoading(false);
-        return;
-      } catch (signInErr: any) {
-        if (signInErr.code === 'auth/user-not-found') {
-          // Account doesn't exist, proceed with creation
-        } else if (signInErr.code === 'auth/wrong-password') {
-          // Account exists but wrong password - check if it's a half-created account
-          try {
-            const response = await fetch('/api/complete-provider-setup', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                providerId: provider.providerId,
-                email: provider.email
-              })
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-              setSuccess('Account setup completed! You can now sign in at /provider/login');
-              setTimeout(() => {
-                router.push('/provider/login');
-              }, 2000);
-              setLoading(false);
-              return;
-            } else {
-              setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
-              setLoading(false);
-              return;
-            }
-          } catch (setupErr) {
-            setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
-            setLoading(false);
-            return;
-          }
-        } else {
-          // Other error, proceed with creation attempt
-        }
-      }
-
-      // Create Firebase Auth account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        provider.email, 
-        formData.password
-      );
-      
-      const user = userCredential.user;
-      
-      // Update user profile
-      await updateProfile(user, {
-        displayName: `${provider.contactPerson} (${provider.businessName})`
+      // Use server-side API to create the account
+      const response = await fetch('/api/create-provider-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          providerId: provider.providerId,
+          email: provider.email,
+          password: formData.password
+        })
       });
 
-      // Create user document
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: provider.email,
-        firstName: provider.contactPerson.split(' ')[0] || provider.contactPerson,
-        lastName: provider.contactPerson.split(' ').slice(1).join(' ') || '',
-        phoneNumber: provider.phone,
-        isProvider: true,
-        providerId: provider.providerId,
-        businessName: provider.businessName,
-        isActive: true,
-        createdAt: new Date(),
-      });
+      const data = await response.json();
 
-      // Create provider profile
-      await setDoc(doc(db, 'provider_profiles', user.uid), {
-        providerId: provider.providerId,
-        businessName: provider.businessName,
-        contactPerson: provider.contactPerson,
-        email: provider.email,
-        phone: provider.phone,
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      setSuccess('Account created successfully! Redirecting to provider dashboard...');
-      
-      // Redirect to provider dashboard after 2 seconds
-      setTimeout(() => {
-        router.push('/provider/dashboard');
-      }, 2000);
-
-    } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('An account with this email already exists. You can sign in at /provider/login or contact support if you need help.');
+      if (response.ok && data.success) {
+        setSuccess('Account created successfully! You can now sign in at /provider/login');
+        setTimeout(() => {
+          router.push('/provider/login');
+        }, 2000);
       } else {
-        setError(err.message || 'Error creating account');
+        setError(data.error || 'Error creating account');
       }
+    } catch (err: any) {
+      setError(err.message || 'Error creating account');
     } finally {
       setLoading(false);
     }
