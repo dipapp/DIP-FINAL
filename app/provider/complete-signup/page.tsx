@@ -114,10 +114,38 @@ export default function CompleteProviderSignupPage() {
         if (signInErr.code === 'auth/user-not-found') {
           // Account doesn't exist, proceed with creation
         } else if (signInErr.code === 'auth/wrong-password') {
-          // Account exists but wrong password
-          setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
-          setLoading(false);
-          return;
+          // Account exists but wrong password - check if it's a half-created account
+          try {
+            const response = await fetch('/api/complete-provider-setup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                providerId: provider.providerId,
+                email: provider.email
+              })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              setSuccess('Account setup completed! You can now sign in at /provider/login');
+              setTimeout(() => {
+                router.push('/provider/login');
+              }, 2000);
+              setLoading(false);
+              return;
+            } else {
+              setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
+              setLoading(false);
+              return;
+            }
+          } catch (setupErr) {
+            setError('An account with this email already exists. Please sign in at /provider/login or contact support if you forgot your password.');
+            setLoading(false);
+            return;
+          }
         } else {
           // Other error, proceed with creation attempt
         }
