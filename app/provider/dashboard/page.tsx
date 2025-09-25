@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
+import { auth } from '@/lib/firebase/client';
+import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
 
 interface Applicant {
@@ -23,6 +25,7 @@ interface Applicant {
 export default function ProviderDashboard() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -31,15 +34,44 @@ export default function ProviderDashboard() {
   });
 
   useEffect(() => {
-    fetchApplicants();
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Get provider ID from user document
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setCurrentProviderId(userData.providerId);
+          }
+        } catch (error) {
+          console.error('Error getting provider ID:', error);
+        }
+      } else {
+        setCurrentProviderId(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (currentProviderId) {
+      fetchApplicants();
+    }
+  }, [currentProviderId]);
+
   const fetchApplicants = async () => {
+    if (!currentProviderId) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      // For now, get all applicants - in production, this should be filtered by provider ID
-      // TODO: Implement proper authentication to get current provider ID
+      // Filter applicants by current provider ID
       const applicantsQuery = query(
         collection(db, 'applicants'),
+        where('providerId', '==', currentProviderId),
         orderBy('assignedAt', 'desc')
       );
       
