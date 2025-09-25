@@ -50,15 +50,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let query = db.collection('providers');
+    let providersSnapshot;
     
     if (providerId) {
-      query = query.where('providerId', '==', providerId);
+      providersSnapshot = await db.collection('providers')
+        .where('providerId', '==', providerId)
+        .get();
     } else if (email) {
-      query = query.where('email', '==', email);
+      providersSnapshot = await db.collection('providers')
+        .where('email', '==', email)
+        .get();
+    } else {
+      return NextResponse.json(
+        { error: 'Provider ID or email is required' },
+        { status: 400 }
+      );
     }
-
-    const providersSnapshot = await query.get();
 
     if (providersSnapshot.empty) {
       return NextResponse.json(
