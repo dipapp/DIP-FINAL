@@ -269,6 +269,8 @@ export default function AdminAssignmentsPage() {
     );
   }
 
+  console.log('Component render - showAssignModal:', showAssignModal);
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -351,7 +353,12 @@ export default function AdminAssignmentsPage() {
               Create Test Assignment
             </button>
             <button
-              onClick={() => setShowAssignModal(true)}
+              onClick={() => {
+                console.log('Create Assignment button clicked');
+                console.log('Current showAssignModal state:', showAssignModal);
+                setShowAssignModal(true);
+                console.log('setShowAssignModal(true) called');
+              }}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Create Assignment
@@ -450,6 +457,7 @@ export default function AdminAssignmentsPage() {
         {/* Assignment Modal */}
         {showAssignModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            {console.log('Modal is rendering, showAssignModal:', showAssignModal)}
             <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Create Assignment</h3>
@@ -467,7 +475,7 @@ export default function AdminAssignmentsPage() {
                     <option value="">Select a request...</option>
                     {requests.map(request => (
                       <option key={request.id} value={request.id}>
-                        {request.userFirstName} {request.userLastName} - {request.issueDescription}
+                        {request.userFirstName} {request.userLastName} - {request.vehicleYear} {request.vehicleMake} {request.vehicleModel}
                       </option>
                     ))}
                   </select>
