@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import Link from 'next/link';
 
@@ -36,32 +36,33 @@ export default function ProviderDashboard() {
 
   const fetchApplicants = async () => {
     try {
-      // For now, get all applicants - in production, this should be filtered by provider ID
+      // Get assignments from the assignments collection
+      // For now, get all assignments - in production, this should be filtered by provider ID
       // TODO: Implement proper authentication to get current provider ID
-      const applicantsQuery = query(
-        collection(db, 'applicants'),
+      const assignmentsQuery = query(
+        collection(db, 'assignments'),
         orderBy('assignedAt', 'desc')
       );
       
-      const applicantsSnapshot = await getDocs(applicantsQuery);
-      const applicantsData = applicantsSnapshot.docs.map(doc => ({
+      const assignmentsSnapshot = await getDocs(assignmentsQuery);
+      const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         assignedAt: doc.data().assignedAt?.toDate(),
         dueDate: doc.data().dueDate?.toDate(),
       })) as Applicant[];
       
-      setApplicants(applicantsData);
+      setApplicants(assignmentsData);
       
       // Calculate stats
       setStats({
-        total: applicantsData.length,
-        pending: applicantsData.filter(a => a.status === 'assigned').length,
-        inProgress: applicantsData.filter(a => a.status === 'in_progress').length,
-        completed: applicantsData.filter(a => a.status === 'completed').length,
+        total: assignmentsData.length,
+        pending: assignmentsData.filter(a => a.status === 'assigned').length,
+        inProgress: assignmentsData.filter(a => a.status === 'in_progress').length,
+        completed: assignmentsData.filter(a => a.status === 'completed').length,
       });
     } catch (error) {
-      console.error('Error fetching applicants:', error);
+      console.error('Error fetching assignments:', error);
     } finally {
       setLoading(false);
     }
@@ -69,13 +70,16 @@ export default function ProviderDashboard() {
 
   const updateApplicantStatus = async (applicantId: string, newStatus: Applicant['status']) => {
     try {
-      // Update applicant status
-      // This would require a server-side function or admin SDK
-      console.log(`Updating applicant ${applicantId} to ${newStatus}`);
-      // For now, just refresh the data
+      // Update assignment status in the assignments collection
+      await updateDoc(doc(db, 'assignments', applicantId), {
+        status: newStatus,
+        updatedAt: new Date(),
+      });
+      console.log(`Updated assignment ${applicantId} to ${newStatus}`);
+      // Refresh the data
       fetchApplicants();
     } catch (error) {
-      console.error('Error updating applicant:', error);
+      console.error('Error updating assignment:', error);
     }
   };
 
