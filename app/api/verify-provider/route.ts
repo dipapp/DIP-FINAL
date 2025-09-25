@@ -1,6 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase/client';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+
+// Initialize Firebase Admin if not already initialized
+if (!getApps().length) {
+  try {
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY_B64) {
+      console.error('Missing Firebase Admin environment variables:', {
+        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY_B64: !!process.env.FIREBASE_PRIVATE_KEY_B64
+      });
+      throw new Error('Missing Firebase Admin environment variables');
+    }
+
+    const privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8');
+
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      }),
+    });
+    console.log('Firebase Admin initialized successfully');
+  } catch (error) {
+    console.error('Firebase Admin initialization error:', error);
+    throw error;
+  }
+}
+
+const db = getFirestore();
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,23 +50,19 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
     const trimmedProviderId = providerId.trim();
 
-    // Find provider by Provider ID and email
-    const providersQuery = query(
-      collection(db, 'providers'),
-      where('providerId', '==', trimmedProviderId),
-      where('email', '==', normalizedEmail)
-    );
-    
-    let providersSnapshot = await getDocs(providersQuery);
+    // Find provider by Provider ID and email using Admin SDK
+    const providersRef = db.collection('providers');
+    let providersSnapshot = await providersRef
+      .where('providerId', '==', trimmedProviderId)
+      .where('email', '==', normalizedEmail)
+      .get();
 
     // If no results, try with original email case (fallback)
     if (providersSnapshot.empty) {
-      const fallbackQuery = query(
-        collection(db, 'providers'),
-        where('providerId', '==', trimmedProviderId),
-        where('email', '==', email.trim())
-      );
-      providersSnapshot = await getDocs(fallbackQuery);
+      providersSnapshot = await providersRef
+        .where('providerId', '==', trimmedProviderId)
+        .where('email', '==', email.trim())
+        .get();
     }
 
     if (providersSnapshot.empty) {
