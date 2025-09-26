@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
+import { useRouter } from 'next/navigation';
 
 interface Assignment {
   id: string;
@@ -54,6 +55,7 @@ interface Request {
 }
 
 export default function AdminAssignmentsPage() {
+  const router = useRouter();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
@@ -546,7 +548,11 @@ export default function AdminAssignmentsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {assignments.map((assignment) => (
-                    <tr key={assignment.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={assignment.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{assignment.customerName}</div>
@@ -559,6 +565,11 @@ export default function AdminAssignmentsPage() {
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
                         <div className="text-sm text-gray-500">{assignment.location}</div>
+                        {assignment.issueDescription === 'No description provided' && (
+                          <div className="text-xs text-red-600 mt-1">
+                            ⚠️ Original request may have been deleted by member
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
@@ -574,47 +585,18 @@ export default function AdminAssignmentsPage() {
                         {assignment.assignedAt.toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          {assignment.status === 'assigned' && (
+                        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                          {/* Show action buttons for all assignments except completed ones */}
+                          {assignment.status !== 'completed' && (
                             <>
-                              <button
-                                onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => moveAssignmentBackToPending(assignment)}
-                                className="text-orange-600 hover:text-orange-900"
-                              >
-                                Move to Pending Requests
-                              </button>
-                              <button
-                                onClick={() => deleteAssignment(assignment)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete Assignment
-                              </button>
-                            </>
-                          )}
-                          {assignment.status === 'cancelled' && (
-                            <>
-                              <button
-                                onClick={() => moveAssignmentBackToPending(assignment)}
-                                className="text-orange-600 hover:text-orange-900"
-                              >
-                                Move to Pending Requests
-                              </button>
-                              <button
-                                onClick={() => deleteAssignment(assignment)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete Assignment
-                              </button>
-                            </>
-                          )}
-                          {assignment.status === 'pending' && (
-                            <>
+                              {assignment.status === 'assigned' && (
+                                <button
+                                  onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Cancel
+                                </button>
+                              )}
                               <button
                                 onClick={() => moveAssignmentBackToPending(assignment)}
                                 className="text-orange-600 hover:text-orange-900"
