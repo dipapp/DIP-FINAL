@@ -525,13 +525,14 @@ export default function AdminAssignmentsPage() {
               <p className="text-gray-600">Create your first assignment to get started.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {assignments.map((assignment) => (
-                <div 
-                  key={assignment.id} 
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
-                >
+            <div className="space-y-0">
+              {assignments.map((assignment, index) => (
+                <div key={assignment.id}>
+                  {index > 0 && <div className="h-px bg-gray-200 my-4"></div>}
+                  <div 
+                    className="bg-white rounded-lg shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 cursor-pointer border border-gray-100"
+                    onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
+                  >
                   <div className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
                       {/* Customer */}
@@ -614,6 +615,7 @@ export default function AdminAssignmentsPage() {
                         )}
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               ))}
