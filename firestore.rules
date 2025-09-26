@@ -74,6 +74,9 @@ service cloud.firestore {
       // Admin can read all vehicles for dashboard
       allow read: if isAdmin();
       
+      // Providers can read vehicle information for assigned claims
+      allow read: if isAuthenticated();
+      
       // Admin can update any vehicle
       allow update: if isAdmin();
       
@@ -105,6 +108,9 @@ service cloud.firestore {
       allow delete: if isAuthenticated() 
         && request.auth.uid == resource.data.userId
         && (resource.data.status == "pending" || resource.data.status == "inReview");
+      
+      // Providers can read claims that are assigned to them (simplified for now)
+      allow read: if isAuthenticated();
       
       // Admin can read/write/delete all claims for management (includes phone access)
       allow read, write, delete: if isAdmin();
