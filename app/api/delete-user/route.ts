@@ -5,11 +5,31 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin SDK
 if (!getApps().length) {
+  // Handle base64 encoded private key
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY_B64;
+  if (privateKey) {
+    // Decode base64 private key
+    privateKey = Buffer.from(privateKey, 'base64').toString('utf8');
+  } else {
+    // Fallback to regular private key
+    privateKey = process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+  }
+
   const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    projectId: process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+    privateKey: privateKey?.replace(/\\n/g, '\n'),
   };
+
+  // Check if we have the required credentials
+  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
+    console.error('Missing Firebase Admin credentials:', {
+      projectId: !!serviceAccount.projectId,
+      clientEmail: !!serviceAccount.clientEmail,
+      privateKey: !!serviceAccount.privateKey,
+    });
+    throw new Error('Firebase Admin credentials not properly configured');
+  }
 
   initializeApp({
     credential: cert(serviceAccount),
