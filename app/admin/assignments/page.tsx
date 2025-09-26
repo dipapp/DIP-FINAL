@@ -22,6 +22,7 @@ interface Assignment {
   dueDate?: Date;
   notes?: string;
   adminNotes?: string;
+  requestDeleted?: boolean; // Flag to track if original request was deleted
 }
 
 interface Provider {
@@ -210,6 +211,20 @@ export default function AdminAssignmentsPage() {
       console.log('Final pending requests after filtering:', pendingRequests.length);
       console.log('Pending requests data:', pendingRequests);
 
+      // Check for deleted requests - create a set of existing request IDs
+      const existingRequestIds = new Set(requestsSnapshot.docs.map(doc => doc.id));
+      console.log('Existing request IDs:', Array.from(existingRequestIds));
+      
+      // Update assignments to mark which ones have deleted original requests
+      const assignmentsWithDeletedFlag = assignmentsData.map(assignment => {
+        const requestDeleted = !existingRequestIds.has(assignment.requestId);
+        console.log(`Assignment ${assignment.id} - Request ${assignment.requestId} - Deleted: ${requestDeleted}`);
+        return {
+          ...assignment,
+          requestDeleted
+        };
+      });
+
       console.log('=== FINAL RESULTS ===');
       console.log('- Total Assignments:', assignmentsData.length);
       console.log('- Available Providers:', providersData.length);
@@ -224,7 +239,7 @@ export default function AdminAssignmentsPage() {
         console.log('4. assignedTo field is set on all requests');
       }
       
-      setAssignments(assignmentsData);
+      setAssignments(assignmentsWithDeletedFlag);
       setProviders(providersData);
       setRequests(pendingRequests);
       
@@ -565,6 +580,11 @@ export default function AdminAssignmentsPage() {
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
                         <div className="text-sm text-gray-500">{assignment.location}</div>
+                        {assignment.requestDeleted && (
+                          <div className="text-xs text-red-600 mt-1">
+                            ⚠️ Original request may have been deleted by member
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
