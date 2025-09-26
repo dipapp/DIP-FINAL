@@ -529,90 +529,136 @@ export default function AdminAssignmentsPage() {
               {assignments.map((assignment) => (
                 <div 
                   key={assignment.id} 
-                  className="bg-white rounded-lg shadow-sm hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 cursor-pointer border border-gray-100"
+                  className="bg-white rounded-xl shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border-l-4 border-blue-500 overflow-hidden"
                   onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
                 >
-                  <div className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
-                      {/* Customer */}
-                      <div className="md:col-span-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Customer</div>
-                        <div className="text-sm font-medium text-gray-900 truncate">{assignment.customerName}</div>
-                        <div className="text-xs text-gray-500 truncate">{assignment.customerPhone}</div>
-                      </div>
-                      
-                      {/* Provider */}
-                      <div className="md:col-span-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Provider</div>
-                        <div className="text-sm text-gray-900 truncate">{assignment.providerName}</div>
-                      </div>
-                      
-                      {/* Service */}
-                      <div className="md:col-span-2">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Service</div>
-                        <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
-                        <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
-                        {assignment.requestDeleted && (
-                          <div className="text-xs text-red-600 mt-1 flex items-center">
-                            <span className="mr-1">⚠️</span>
-                            <span className="truncate">Original request may have been deleted by member</span>
+                  {/* Header Section */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-blue-600 font-bold text-lg">
+                              {assignment.customerName.charAt(0).toUpperCase()}
+                            </span>
                           </div>
-                        )}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{assignment.customerName}</h3>
+                          <p className="text-sm text-gray-600">{assignment.customerPhone}</p>
+                        </div>
                       </div>
-                      
-                      {/* Vehicle */}
-                      <div className="md:col-span-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Vehicle</div>
-                        <div className="text-sm text-gray-900 truncate">{assignment.vehicleInfo}</div>
-                      </div>
-                      
-                      {/* Status */}
-                      <div className="md:col-span-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Status</div>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
+                      <div className="flex items-center space-x-3">
+                        <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(assignment.status)}`}>
                           {assignment.status.replace('_', ' ').charAt(0).toUpperCase() + assignment.status.replace('_', ' ').slice(1)}
                         </span>
-                      </div>
-                      
-                      {/* Assigned Date */}
-                      <div className="md:col-span-1">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Assigned</div>
-                        <div className="text-sm text-gray-500">{assignment.assignedAt.toLocaleDateString()}</div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Assigned</div>
+                          <div className="text-sm font-medium text-gray-900">{assignment.assignedAt.toLocaleDateString()}</div>
+                        </div>
                       </div>
                     </div>
-                    
-                    {/* Actions Row */}
-                    <div className="mt-4 pt-4 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex flex-wrap gap-2">
-                        {/* Show action buttons for all assignments except completed ones */}
-                        {assignment.status !== 'completed' && (
-                          <>
-                            {assignment.status === 'assigned' && (
-                              <button
-                                onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
-                                className="text-red-600 hover:text-red-900 text-sm px-3 py-1 rounded-md hover:bg-red-50 border border-red-200"
-                              >
-                                Cancel
-                              </button>
-                            )}
-                            <button
-                              onClick={() => moveAssignmentBackToPending(assignment)}
-                              className="text-orange-600 hover:text-orange-900 text-sm px-3 py-1 rounded-md hover:bg-orange-50 border border-orange-200"
-                            >
-                              Move to Pending
-                            </button>
-                            <button
-                              onClick={() => deleteAssignment(assignment)}
-                              className="text-red-600 hover:text-red-900 text-sm px-3 py-1 rounded-md hover:bg-red-50 border border-red-200"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                        {assignment.status === 'completed' && (
-                          <span className="text-green-600 text-sm px-3 py-1 bg-green-50 rounded-md border border-green-200">Completed</span>
-                        )}
+                  </div>
+
+                  {/* Main Content */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Service Info */}
+                      <div className="md:col-span-2">
+                        <div className="mb-4">
+                          <div className="flex items-center mb-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Service Details</h4>
+                          </div>
+                          <p className="text-gray-900 font-medium mb-1">{assignment.issueDescription}</p>
+                          <p className="text-gray-600 text-sm flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {assignment.location}
+                          </p>
+                          {assignment.requestDeleted && (
+                            <div className="mt-2 flex items-center text-red-600 bg-red-50 px-3 py-2 rounded-md">
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                              </svg>
+                              <span className="text-sm">Original request may have been deleted by member</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Provider & Vehicle Info */}
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Provider</h4>
+                          </div>
+                          <p className="text-gray-900 font-medium">{assignment.providerName}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Vehicle</h4>
+                          </div>
+                          <p className="text-gray-900 font-medium flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                            {assignment.vehicleInfo}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="bg-gray-50 px-6 py-4 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-wrap gap-3">
+                      {assignment.status !== 'completed' && (
+                        <>
+                          {assignment.status === 'assigned' && (
+                            <button
+                              onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
+                              className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                              Cancel
+                            </button>
+                          )}
+                          <button
+                            onClick={() => moveAssignmentBackToPending(assignment)}
+                            className="inline-flex items-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-lg text-orange-700 bg-white hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Move to Pending
+                          </button>
+                          <button
+                            onClick={() => deleteAssignment(assignment)}
+                            className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                          </button>
+                        </>
+                      )}
+                      {assignment.status === 'completed' && (
+                        <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg">
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Completed
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
