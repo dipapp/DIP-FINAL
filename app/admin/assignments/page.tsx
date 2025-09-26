@@ -525,50 +525,31 @@ export default function AdminAssignmentsPage() {
               <p className="text-gray-600">Create your first assignment to get started.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                      Customer
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                      Provider
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                      Service
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
-                      Vehicle
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                      Assigned
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {assignments.map((assignment) => (
-                    <tr 
-                      key={assignment.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 truncate">{assignment.customerName}</div>
-                          <div className="text-xs text-gray-500 truncate">{assignment.customerPhone}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+            <div className="space-y-4">
+              {assignments.map((assignment) => (
+                <div 
+                  key={assignment.id} 
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
+                >
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
+                      {/* Customer */}
+                      <div className="md:col-span-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Customer</div>
+                        <div className="text-sm font-medium text-gray-900 truncate">{assignment.customerName}</div>
+                        <div className="text-xs text-gray-500 truncate">{assignment.customerPhone}</div>
+                      </div>
+                      
+                      {/* Provider */}
+                      <div className="md:col-span-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Provider</div>
                         <div className="text-sm text-gray-900 truncate">{assignment.providerName}</div>
-                      </td>
-                      <td className="px-4 py-3">
+                      </div>
+                      
+                      {/* Service */}
+                      <div className="md:col-span-2">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Service</div>
                         <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
                         <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
                         {assignment.requestDeleted && (
@@ -577,54 +558,65 @@ export default function AdminAssignmentsPage() {
                             <span className="truncate">Original request may have been deleted by member</span>
                           </div>
                         )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      </div>
+                      
+                      {/* Vehicle */}
+                      <div className="md:col-span-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Vehicle</div>
                         <div className="text-sm text-gray-900 truncate">{assignment.vehicleInfo}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      </div>
+                      
+                      {/* Status */}
+                      <div className="md:col-span-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Status</div>
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
                           {assignment.status.replace('_', ' ').charAt(0).toUpperCase() + assignment.status.replace('_', ' ').slice(1)}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {assignment.assignedAt.toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <div className="flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
-                          {/* Show action buttons for all assignments except completed ones */}
-                          {assignment.status !== 'completed' && (
-                            <>
-                              {assignment.status === 'assigned' && (
-                                <button
-                                  onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
-                                  className="text-red-600 hover:text-red-900 text-xs px-1 py-0.5 rounded hover:bg-red-50"
-                                >
-                                  Cancel
-                                </button>
-                              )}
+                      </div>
+                      
+                      {/* Assigned Date */}
+                      <div className="md:col-span-1">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Assigned</div>
+                        <div className="text-sm text-gray-500">{assignment.assignedAt.toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Actions Row */}
+                    <div className="mt-4 pt-4 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex flex-wrap gap-2">
+                        {/* Show action buttons for all assignments except completed ones */}
+                        {assignment.status !== 'completed' && (
+                          <>
+                            {assignment.status === 'assigned' && (
                               <button
-                                onClick={() => moveAssignmentBackToPending(assignment)}
-                                className="text-orange-600 hover:text-orange-900 text-xs px-1 py-0.5 rounded hover:bg-orange-50"
+                                onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
+                                className="text-red-600 hover:text-red-900 text-sm px-3 py-1 rounded-md hover:bg-red-50 border border-red-200"
                               >
-                                Move to Pending
+                                Cancel
                               </button>
-                              <button
-                                onClick={() => deleteAssignment(assignment)}
-                                className="text-red-600 hover:text-red-900 text-xs px-1 py-0.5 rounded hover:bg-red-50"
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
-                          {assignment.status === 'completed' && (
-                            <span className="text-green-600 text-xs">Completed</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                            )}
+                            <button
+                              onClick={() => moveAssignmentBackToPending(assignment)}
+                              className="text-orange-600 hover:text-orange-900 text-sm px-3 py-1 rounded-md hover:bg-orange-50 border border-orange-200"
+                            >
+                              Move to Pending
+                            </button>
+                            <button
+                              onClick={() => deleteAssignment(assignment)}
+                              className="text-red-600 hover:text-red-900 text-sm px-3 py-1 rounded-md hover:bg-red-50 border border-red-200"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                        {assignment.status === 'completed' && (
+                          <span className="text-green-600 text-sm px-3 py-1 bg-green-50 rounded-md border border-green-200">Completed</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
