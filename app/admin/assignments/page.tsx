@@ -525,29 +525,29 @@ export default function AdminAssignmentsPage() {
               <p className="text-gray-600">Create your first assignment to get started.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                       Provider
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                       Service
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                       Vehicle
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                       Assigned
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                       Actions
                     </th>
                   </tr>
@@ -559,64 +559,65 @@ export default function AdminAssignmentsPage() {
                       className="hover:bg-gray-50 cursor-pointer"
                       onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{assignment.customerName}</div>
-                          <div className="text-sm text-gray-500">{assignment.customerPhone}</div>
+                          <div className="text-sm font-medium text-gray-900 truncate">{assignment.customerName}</div>
+                          <div className="text-xs text-gray-500 truncate">{assignment.customerPhone}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{assignment.providerName}</div>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 truncate">{assignment.providerName}</div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
-                        <div className="text-sm text-gray-500">{assignment.location}</div>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
+                        <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
                         {assignment.requestDeleted && (
-                          <div className="text-xs text-red-600 mt-1">
-                            ⚠️ Original request may have been deleted by member
+                          <div className="text-xs text-red-600 mt-1 flex items-center">
+                            <span className="mr-1">⚠️</span>
+                            <span className="truncate">Original request may have been deleted by member</span>
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{assignment.vehicleInfo}</div>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 truncate">{assignment.vehicleInfo}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
                           {assignment.status.replace('_', ' ').charAt(0).toUpperCase() + assignment.status.replace('_', ' ').slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         {assignment.assignedAt.toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <div className="flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
                           {/* Show action buttons for all assignments except completed ones */}
                           {assignment.status !== 'completed' && (
                             <>
                               {assignment.status === 'assigned' && (
                                 <button
                                   onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}
-                                  className="text-red-600 hover:text-red-900"
+                                  className="text-red-600 hover:text-red-900 text-xs px-1 py-0.5 rounded hover:bg-red-50"
                                 >
                                   Cancel
                                 </button>
                               )}
                               <button
                                 onClick={() => moveAssignmentBackToPending(assignment)}
-                                className="text-orange-600 hover:text-orange-900"
+                                className="text-orange-600 hover:text-orange-900 text-xs px-1 py-0.5 rounded hover:bg-orange-50"
                               >
-                                Move to Pending Requests
+                                Move to Pending
                               </button>
                               <button
                                 onClick={() => deleteAssignment(assignment)}
-                                className="text-red-600 hover:text-red-900"
+                                className="text-red-600 hover:text-red-900 text-xs px-1 py-0.5 rounded hover:bg-red-50"
                               >
-                                Delete Assignment
+                                Delete
                               </button>
                             </>
                           )}
                           {assignment.status === 'completed' && (
-                            <span className="text-green-600">Completed</span>
+                            <span className="text-green-600 text-xs">Completed</span>
                           )}
                         </div>
                       </td>
