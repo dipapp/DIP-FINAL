@@ -76,7 +76,15 @@ function AdminHomeContent() {
   
   console.log('Admin Dashboard - Requests grouped by status:', statusGroups);
 
-  const pendingRequestsCount = requests.filter(c => c.status === 'Pending').length;
+  const pendingRequestsCount = requests.filter(c => 
+    c.status === 'Pending' || 
+    c.status === 'pending' || 
+    c.status === 'In Review' || 
+    c.status === 'in_review' ||
+    c.status === 'Approved' ||  // Approved requests should be available for assignment
+    !c.status ||  // Include requests without status
+    !c.assignedTo  // Include requests not assigned to a provider
+  ).length;
   const approvedRequestsCount = requests.filter(c => c.status === 'Approved').length;
   
   console.log('Admin Dashboard - Pending requests count:', pendingRequestsCount);
@@ -84,10 +92,10 @@ function AdminHomeContent() {
   
   // Debug assignment-related stats
   const inProgressCount = requests.filter(r => r.status === 'In Progress' || r.status === 'in_progress' || r.status === 'Assigned').length;
-  const completedCount = requests.filter(r => r.status === 'Completed' || r.status === 'completed' || r.status === 'Approved').length;
+  const completedCount = requests.filter(r => r.status === 'Completed' || r.status === 'completed').length;
   console.log('Admin Dashboard - In Progress requests count:', inProgressCount);
   console.log('Admin Dashboard - Completed requests count:', completedCount);
-  console.log('Admin Dashboard - All request statuses:', requests.map(r => ({ id: r.id, status: r.status, userFirstName: r.userFirstName })));
+  console.log('Admin Dashboard - All request statuses:', requests.map(r => ({ id: r.id, status: r.status, userFirstName: r.userFirstName, assignedTo: r.assignedTo })));
 
   const stats = {
     totalUsers: users.length,
@@ -104,7 +112,7 @@ function AdminHomeContent() {
     pendingProviders: providers.filter(p => p.status === 'pending').length,
     // Assignment-related stats
     inProgressRequests: requests.filter(r => r.status === 'In Progress' || r.status === 'in_progress' || r.status === 'Assigned').length,
-    completedRequests: requests.filter(r => r.status === 'Completed' || r.status === 'completed' || r.status === 'Approved').length,
+    completedRequests: requests.filter(r => r.status === 'Completed' || r.status === 'completed').length,
   };
 
   const tabs = [

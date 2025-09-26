@@ -215,8 +215,8 @@ export default function AdminAssignmentsPage() {
           return true;
         }
         
-        // Exclude final states
-        const finalStates = ['approved', 'denied', 'paid', 'completed', 'cancelled', 'assigned'];
+        // Exclude final states (but keep 'approved' as available for assignment)
+        const finalStates = ['denied', 'paid', 'completed', 'cancelled', 'assigned'];
         return !finalStates.includes(status);
       });
       
