@@ -529,7 +529,7 @@ export default function AdminAssignmentsPage() {
               {assignments.map((assignment) => (
                 <div 
                   key={assignment.id} 
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
                 >
                   <div className="p-4">
