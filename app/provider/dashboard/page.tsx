@@ -384,11 +384,17 @@ export default function ProviderDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
+                          <Link
+                            href={`/provider/assignment/${assignment.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            View Details
+                          </Link>
                           {assignment.status === 'assigned' && (
                             <>
                               <button
                                 onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}
-                                className="text-blue-600 hover:text-blue-900"
+                                className="text-green-600 hover:text-green-900"
                               >
                                 Accept
                               </button>
