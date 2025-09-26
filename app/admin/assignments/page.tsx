@@ -565,11 +565,6 @@ export default function AdminAssignmentsPage() {
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
                         <div className="text-sm text-gray-500">{assignment.location}</div>
-                        {assignment.issueDescription === 'No description provided' && (
-                          <div className="text-xs text-red-600 mt-1">
-                            ⚠️ Original request may have been deleted by member
-                          </div>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>

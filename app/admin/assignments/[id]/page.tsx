@@ -287,7 +287,7 @@ export default function AdminAssignmentDetailPage() {
             </div>
           </div>
 
-          {/* Request Deleted Warning */}
+          {/* Request Deleted Warning - Only show when we can confirm the request was actually deleted */}
           {requestDeleted && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center">
