@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { subscribeVehiclesByOwner, subscribeClaimsByUser } from '@/lib/firebase/adminActions';
 import BackButton from '@/components/BackButton';
@@ -66,14 +66,28 @@ export default function AdminUserDetailPage() {
     try {
       setDeleting(true);
       
-      // Delete user document
-      await deleteDoc(doc(db, 'users', uid));
+      // Call API endpoint to delete user from both Firestore and Firebase Auth
+      const response = await fetch('/api/delete-user', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+
+      const result = await response.json();
+      console.log('User deletion result:', result);
       
       // Navigate back to users list
       router.push('/admin?tab=users');
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete user. Please try again.');
+      alert(`Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setDeleting(false);
       setShowDeleteModal(false);
