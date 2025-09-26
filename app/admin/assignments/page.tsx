@@ -397,15 +397,6 @@ export default function AdminAssignmentsPage() {
     }
   };
 
-  const getPriorityColor = (priority: Assignment['priority']) => {
-    const colors = {
-      low: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800',
-    };
-    return colors[priority];
-  };
 
   const getStatusColor = (status: Assignment['status']) => {
     const colors = {
@@ -548,7 +539,7 @@ export default function AdminAssignmentsPage() {
                       Service
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Priority
+                      Vehicle
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -587,9 +578,7 @@ export default function AdminAssignmentsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
-                          {assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1)}
-                        </span>
+                        <div className="text-sm text-gray-900">{assignment.vehicleInfo}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
