@@ -121,10 +121,9 @@ export default function AdminAssignmentsPage() {
         ...doc.data(),
       })) as Provider[];
 
-      // Fetch pending requests - try multiple status values
-      console.log('Fetching requests...');
+      // Fetch ALL requests (same approach as admin home page)
+      console.log('Fetching ALL requests...');
       
-      // First, let's get ALL claims to see what status values exist
       const allClaimsQuery = query(collection(db, 'claims'));
       const allClaimsSnapshot = await getDocs(allClaimsQuery);
       console.log('All claims in database:', allClaimsSnapshot.docs.length);
@@ -132,7 +131,8 @@ export default function AdminAssignmentsPage() {
         id: doc.id, 
         status: doc.data().status,
         userFirstName: doc.data().userFirstName,
-        userLastName: doc.data().userLastName
+        userLastName: doc.data().userLastName,
+        assignedTo: doc.data().assignedTo
       })));
       
       // Group by status to see what status values exist
@@ -147,34 +147,8 @@ export default function AdminAssignmentsPage() {
       
       console.log('Claims grouped by status:', statusGroups);
       
-      // Now try to fetch pending requests with different possible status values
-      let requestsQuery;
-      let requestsSnapshot;
-      
-      // Try 'Pending' first
-      try {
-        requestsQuery = query(
-          collection(db, 'claims'),
-          where('status', '==', 'Pending')
-        );
-        requestsSnapshot = await getDocs(requestsQuery);
-        console.log('Pending requests found:', requestsSnapshot.docs.length);
-      } catch (error) {
-        console.log('Error fetching Pending requests:', error);
-        // Try 'pending' (lowercase)
-        try {
-          requestsQuery = query(
-            collection(db, 'claims'),
-            where('status', '==', 'pending')
-          );
-          requestsSnapshot = await getDocs(requestsQuery);
-          console.log('pending requests found:', requestsSnapshot.docs.length);
-        } catch (error2) {
-          console.log('Error fetching pending requests:', error2);
-          // If both fail, get all claims and filter client-side
-          requestsSnapshot = allClaimsSnapshot;
-        }
-      }
+      // Use all claims for filtering (same as admin home page)
+      const requestsSnapshot = allClaimsSnapshot;
       
       console.log('Raw requests snapshot:', requestsSnapshot.docs.length, 'docs');
       console.log('Raw request docs:', requestsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
@@ -208,42 +182,26 @@ export default function AdminAssignmentsPage() {
         userLastName: r.userLastName 
       })));
       
-      // Filter for requests that can be assigned (not already assigned to a provider)
+      // Filter for requests that can be assigned (same logic as admin home page)
       const pendingRequests = requestsData.filter(request => {
-        const status = request.status?.toLowerCase();
-        const isAssigned = request.assignedTo;
-        
         console.log('Checking request:', {
           id: request.id,
           status: request.status,
-          statusLower: status,
-          assignedTo: request.assignedTo,
-          isAssigned: isAssigned
+          assignedTo: request.assignedTo
         });
         
-        // Include if not assigned to a provider
-        if (!isAssigned) {
-          console.log('Including - not assigned to provider');
-          return true;
-        }
+        // Use the exact same filtering logic as admin home page
+        const shouldInclude = 
+          request.status === 'Pending' || 
+          request.status === 'pending' || 
+          request.status === 'In Review' || 
+          request.status === 'in_review' ||
+          request.status === 'Approved' ||  // Approved requests should be available for assignment
+          !request.status ||  // Include requests without status
+          !request.assignedTo;  // Include requests not assigned to a provider
         
-        // Include if status is pending/in review/approved (various cases)
-        if (status === 'pending' || status === 'in review' || status === 'in_review' || status === 'approved') {
-          console.log('Including - status allows assignment');
-          return true;
-        }
-        
-        // Include if no status (new requests)
-        if (!request.status) {
-          console.log('Including - no status');
-          return true;
-        }
-        
-        // Exclude final states
-        const finalStates = ['denied', 'paid', 'completed', 'cancelled', 'assigned'];
-        const isFinalState = finalStates.includes(status);
-        console.log('Final state check:', { status, isFinalState, finalStates });
-        return !isFinalState;
+        console.log('Should include:', shouldInclude, 'for request:', request.id);
+        return shouldInclude;
       });
       
       console.log('=== FILTERING RESULTS ===');
