@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { subscribeVehiclesByOwner, subscribeClaimsByUser } from '@/lib/firebase/adminActions';
 import BackButton from '@/components/BackButton';
@@ -18,6 +18,8 @@ export default function AdminUserDetailPage() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [claims, setClaims] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
@@ -58,6 +60,26 @@ export default function AdminUserDetailPage() {
     };
   }, [uid]);
 
+  const handleDeleteUser = async () => {
+    if (!user || !uid) return;
+    
+    try {
+      setDeleting(true);
+      
+      // Delete user document
+      await deleteDoc(doc(db, 'users', uid));
+      
+      // Navigate back to users list
+      router.push('/admin?tab=users');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading || !user) {
     return (
       <div className="card text-center py-12">
@@ -77,10 +99,16 @@ export default function AdminUserDetailPage() {
             <h1 className="text-2xl font-bold">{user.firstName} {user.lastName}</h1>
             <p className="text-muted">{user.email}</p>
           </div>
-          <div className="text-right">
+          <div className="flex items-center space-x-4">
             <span className={`badge ${user.isActive ? 'badge-success' : 'badge-error'}`}>
               {user.isActive ? '✓ Active' : '✖ Inactive'}
             </span>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Delete User
+            </button>
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-4">
@@ -171,6 +199,52 @@ export default function AdminUserDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 text-center mb-2">Delete User</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500 text-center">
+                  Are you sure you want to delete <strong>{user.firstName} {user.lastName}</strong>?
+                </p>
+                <p className="text-sm text-gray-500 text-center mt-2">
+                  This action cannot be undone. This will permanently delete the user and all their data.
+                </p>
+                <div className="mt-4 text-sm text-gray-600">
+                  <p><strong>User Details:</strong></p>
+                  <p>Email: {user.email}</p>
+                  <p>Vehicles: {vehicles.length}</p>
+                  <p>Claims: {claims.length}</p>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete User'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -50,6 +50,9 @@ service cloud.firestore {
       
       // Admin can create user accounts manually
       allow create: if isAdmin();
+      
+      // Admin can delete user accounts
+      allow delete: if isAdmin();
     }
     
     // === VEHICLE MANAGEMENT ===
