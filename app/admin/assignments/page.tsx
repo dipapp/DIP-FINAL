@@ -179,6 +179,20 @@ export default function AdminAssignmentsPage() {
       console.log('Raw requests snapshot:', requestsSnapshot.docs.length, 'docs');
       console.log('Raw request docs:', requestsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })));
       
+      // Debug: Show all request data before filtering
+      console.log('=== ALL REQUESTS BEFORE FILTERING ===');
+      requestsSnapshot.docs.forEach((doc, index) => {
+        const data = doc.data();
+        console.log(`Request ${index + 1}:`, {
+          id: doc.id,
+          status: data.status,
+          userFirstName: data.userFirstName,
+          userLastName: data.userLastName,
+          assignedTo: data.assignedTo,
+          createdAt: data.createdAt
+        });
+      });
+      
       const requestsData = requestsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -195,38 +209,60 @@ export default function AdminAssignmentsPage() {
       })));
       
       // Filter for requests that can be assigned (not already assigned to a provider)
-      // Include all requests that are not in final states (Approved, Denied, Paid, Completed, etc.)
       const pendingRequests = requestsData.filter(request => {
         const status = request.status?.toLowerCase();
         const isAssigned = request.assignedTo;
         
+        console.log('Checking request:', {
+          id: request.id,
+          status: request.status,
+          statusLower: status,
+          assignedTo: request.assignedTo,
+          isAssigned: isAssigned
+        });
+        
         // Include if not assigned to a provider
         if (!isAssigned) {
+          console.log('Including - not assigned to provider');
           return true;
         }
         
-        // Include if status is pending/in review (various cases)
-        if (status === 'pending' || status === 'in review' || status === 'in_review') {
+        // Include if status is pending/in review/approved (various cases)
+        if (status === 'pending' || status === 'in review' || status === 'in_review' || status === 'approved') {
+          console.log('Including - status allows assignment');
           return true;
         }
         
         // Include if no status (new requests)
         if (!request.status) {
+          console.log('Including - no status');
           return true;
         }
         
-        // Exclude final states (but keep 'approved' as available for assignment)
+        // Exclude final states
         const finalStates = ['denied', 'paid', 'completed', 'cancelled', 'assigned'];
-        return !finalStates.includes(status);
+        const isFinalState = finalStates.includes(status);
+        console.log('Final state check:', { status, isFinalState, finalStates });
+        return !isFinalState;
       });
       
+      console.log('=== FILTERING RESULTS ===');
       console.log('Final pending requests after filtering:', pendingRequests.length);
       console.log('Pending requests data:', pendingRequests);
 
-      console.log('Final results:');
-      console.log('- Assignments:', assignmentsData.length);
-      console.log('- Providers:', providersData.length);
-      console.log('- Requests:', pendingRequests.length);
+      console.log('=== FINAL RESULTS ===');
+      console.log('- Total Assignments:', assignmentsData.length);
+      console.log('- Available Providers:', providersData.length);
+      console.log('- Pending Requests (available for assignment):', pendingRequests.length);
+      
+      if (pendingRequests.length === 0) {
+        console.log('⚠️  NO PENDING REQUESTS FOUND!');
+        console.log('This could mean:');
+        console.log('1. All requests are already assigned');
+        console.log('2. All requests are in final states');
+        console.log('3. Request statuses don\'t match expected values');
+        console.log('4. assignedTo field is set on all requests');
+      }
       
       setAssignments(assignmentsData);
       setProviders(providersData);
