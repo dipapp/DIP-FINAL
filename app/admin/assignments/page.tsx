@@ -318,36 +318,6 @@ export default function AdminAssignmentsPage() {
     }
   };
 
-  const createTestAssignment = async () => {
-    try {
-      console.log('Creating test assignment...');
-      const testAssignment = {
-        requestId: 'test-request-' + Date.now(),
-        providerId: '341169', // Use the provider ID that matches the logged-in provider
-        providerName: 'Test Provider',
-        customerName: 'Test Customer',
-        customerPhone: '555-1234',
-        customerEmail: 'test@example.com',
-        vehicleInfo: '2020 Honda Civic',
-        issueDescription: 'Test assignment for debugging',
-        location: 'Test Location',
-        priority: 'medium',
-        status: 'assigned',
-        assignedAt: new Date(),
-        notes: 'This is a test assignment',
-        adminNotes: 'Created for debugging purposes',
-      };
-      
-      console.log('Test assignment data:', testAssignment);
-      const assignmentRef = await addDoc(collection(db, 'assignments'), testAssignment);
-      console.log('Test assignment created with ID:', assignmentRef.id);
-      
-      // Refresh the data
-      fetchData();
-    } catch (error) {
-      console.error('Error creating test assignment:', error);
-    }
-  };
 
   const updateAssignmentStatus = async (assignmentId: string, newStatus: Assignment['status']) => {
     try {
@@ -496,12 +466,6 @@ export default function AdminAssignmentsPage() {
         <div className="mb-6 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900">Assignments</h2>
           <div className="flex space-x-3">
-            <button
-              onClick={createTestAssignment}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Create Test Assignment
-            </button>
             <button
               onClick={() => {
                 console.log('Create Assignment button clicked');
