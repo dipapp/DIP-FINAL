@@ -125,9 +125,9 @@ export async function POST(request: NextRequest) {
       metadata: {
         vehicleId: vehicleId,
         userId: userId,
-        source: 'ios_app'
+        source: 'ios_app',
+        customer_email: decodedToken.email || ''
       },
-      customer_email: decodedToken.email || undefined,
       automatic_payment_methods: {
         enabled: true,
       },
