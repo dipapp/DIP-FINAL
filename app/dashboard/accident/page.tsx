@@ -122,7 +122,7 @@ export default function AccidentRequestPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Submit New Request</h1>
-            <p className="text-gray-600">Provide details about your accident to submit your claim.</p>
+            <p className="text-gray-600">Provide details about your service request.</p>
           </div>
 
           <form onSubmit={handleClaimSubmit} className="space-y-6">
@@ -266,8 +266,8 @@ export default function AccidentRequestPage() {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Your Accident Claims</h2>
-            <p className="text-gray-600">Track and manage your accident claims</p>
+            <h2 className="text-xl font-bold text-gray-900">Your Requests</h2>
+            <p className="text-gray-600">Track and manage your service requests</p>
           </div>
         </div>
 
@@ -278,15 +278,15 @@ export default function AccidentRequestPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Claims Yet</h3>
-            <p className="text-gray-600 mb-6">Submit a new request to get started with your accident claim.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Requests Yet</h3>
+            <p className="text-gray-600 mb-6">Submit a new request to get started with your service request.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {claims.map((claim) => (
               <div key={claim.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Accident Claim</h3>
+                  <h3 className="font-semibold text-gray-900">Service Request</h3>
                   {getStatusBadge(claim.status)}
                 </div>
                 
