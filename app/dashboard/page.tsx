@@ -121,19 +121,19 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-5">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Request Assistance
+            Accident Assistance
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            Need help? Submit a service request and get connected with professional support services.
+            Been in an accident? Get immediate help with emergency contacts and file your claim.
           </p>
           <Link 
-            href="/dashboard/claims" 
-            className="inline-flex items-center bg-green-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+            href="/dashboard/accident" 
+            className="inline-flex items-center bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            Get Help Now
+            I'm in an Accident
           </Link>
         </div>
       </div>
@@ -178,17 +178,17 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-5">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-5">
           <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Quick Service Requests</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Emergency Preparedness</h4>
               <p className="text-gray-700 text-sm leading-relaxed">
-                For faster assistance, have your vehicle information and location ready when submitting service requests.
+                In case of an accident, stay calm and use the emergency workflow to get immediate help and file your claim efficiently.
               </p>
             </div>
           </div>
