@@ -14,8 +14,6 @@ export default function AccidentRequestPage() {
   // Claim form state
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [incidentDate, setIncidentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
@@ -40,7 +38,7 @@ export default function AccidentRequestPage() {
 
   const handleClaimSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedVehicle || !amount || !description.trim() || !location.trim() || !phoneNumber.trim()) {
+    if (!selectedVehicle || !location.trim() || !phoneNumber.trim()) {
       alert('Please fill in all required fields.');
       return;
     }
@@ -65,8 +63,8 @@ export default function AccidentRequestPage() {
       }
 
       await submitClaim(claimId, {
-        amount: parseFloat(amount),
-        description: `${description.trim()}\n\nLocation: ${location.trim()}`,
+        amount: 0,
+        description: `Location: ${location.trim()}`,
         userPhoneNumber: phoneNumber.trim(),
         photoURLs,
         date: new Date(incidentDate)
@@ -74,8 +72,6 @@ export default function AccidentRequestPage() {
 
       // Reset form
       setSelectedVehicle('');
-      setAmount('');
-      setDescription('');
       setLocation('');
       setPhoneNumber('');
       setPhotos([]);
@@ -162,20 +158,6 @@ export default function AccidentRequestPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estimated Damage Amount *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="$0.00"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -205,19 +187,6 @@ export default function AccidentRequestPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Incident Description *
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what happened, including any injuries or damage..."
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
