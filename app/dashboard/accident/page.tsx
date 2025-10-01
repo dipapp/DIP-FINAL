@@ -121,9 +121,20 @@ export default function AccidentRequestPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-2xl mx-auto p-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Submit New Request</h1>
-              <p className="text-gray-600">Provide details about your accident to submit your claim.</p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Submit New Request</h1>
+                <p className="text-gray-600">Provide details about your accident to submit your claim.</p>
+              </div>
+              <button
+                onClick={() => setShowClaimForm(false)}
+                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back
+              </button>
             </div>
 
             <form onSubmit={handleClaimSubmit} className="space-y-6">
