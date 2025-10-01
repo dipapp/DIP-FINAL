@@ -111,11 +111,10 @@ export default function AccidentRequestPage() {
 
       await submitClaim(claimId, {
         amount: parseFloat(amount),
-        description: description.trim(),
+        description: `${description.trim()}\n\nLocation: ${location.trim()}`,
         userPhoneNumber: phoneNumber.trim(),
         photoURLs,
-        incidentDate: new Date(incidentDate),
-        location: location.trim()
+        date: new Date(incidentDate)
       });
 
       // Reset form
