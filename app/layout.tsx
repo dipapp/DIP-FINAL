@@ -69,6 +69,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <div className="mb-1 md:mb-0">
                     DIP is a membership program, not an insurance company.
                   </div>
+                  <div className="mb-1 md:mb-0">
+                    John 3:16
+                  </div>
                   <div>
                     © 2025 DIP. All rights reserved.
                   </div>
