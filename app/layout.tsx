@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     DIP is a membership program, not an insurance company.
                   </div>
                   <div>
-                    © 2025 Driver Impact Protection. All rights reserved.
+                    © 2025 DIP. All rights reserved.
                   </div>
                 </div>
               </div>
