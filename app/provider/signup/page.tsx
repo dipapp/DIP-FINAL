@@ -577,7 +577,7 @@ export default function ProviderSignupPage() {
                     />
                     <div className="text-sm">
                       <p className="text-gray-700">
-                        I agree to the <a href="#" className="text-blue-600 hover:text-blue-700">Provider Terms of Service</a> and <a href="#" className="text-blue-600 hover:text-blue-700">Privacy Policy</a>.
+                        I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Privacy Policy</a>.
                       </p>
                     </div>
                   </div>

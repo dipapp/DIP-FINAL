@@ -304,7 +304,7 @@ function AuthPageContent() {
                   </button>
                   <div className="text-xs">
                     <p className="text-gray-700 leading-relaxed">
-                      I agree to the <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a> and <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>. I consent to receive disclosures electronically.
+                      I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>. I consent to receive disclosures electronically.
                     </p>
                   </div>
                 </div>
