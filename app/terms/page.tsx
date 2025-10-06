@@ -21,7 +21,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Agreement to Terms</h2>
             <p className="text-gray-700 mb-4">
-              These Terms of Service ("Terms") constitute a legally binding agreement between you ("Member," "you," or "your") and Driver Impact Protection, Inc. ("DIP," "we," "us," or "our"), a California corporation. By accessing or using our services, you agree to be bound by these Terms.
+              These Terms of Service ("Terms") constitute a legally binding agreement between you ("Member," "you," or "your") and DIP, Inc. ("DIP," "we," "us," or "our"), a California corporation. By accessing or using our services, you agree to be bound by these Terms.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>Important:</strong> DIP is a membership program, not an insurance company. We do not provide insurance coverage, but rather membership-based services to assist with vehicle-related incidents and provide member benefits.
@@ -179,7 +179,7 @@ export default function TermsOfService() {
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700">
-                <strong>Driver Impact Protection, Inc.</strong><br />
+                <strong>DIP, Inc.</strong><br />
                 Email: legal@dipapp.com<br />
                 Phone: 1-800-DIP-HELP<br />
                 Address: [Company Address]

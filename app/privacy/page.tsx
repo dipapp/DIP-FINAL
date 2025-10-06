@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 mb-4">
-              Driver Impact Protection, Inc. ("DIP," "we," "us," or "our") respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our membership services.
+              DIP, Inc. ("DIP," "we," "us," or "our") respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our membership services.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>Important:</strong> DIP is a membership program, not an insurance company. We collect and process personal information to provide membership services and member benefits.
@@ -205,7 +205,7 @@ export default function PrivacyPolicy() {
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700">
-                <strong>Driver Impact Protection, Inc.</strong><br />
+                <strong>DIP, Inc.</strong><br />
                 Privacy Officer<br />
                 Email: privacy@dipapp.com<br />
                 Phone: 1-800-DIP-HELP<br />

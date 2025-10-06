@@ -3,8 +3,8 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 
 export const metadata = {
-  title: 'DIP - Driver Impact Protection',
-  description: 'Professional vehicle protection services for California drivers',
+  title: 'DIP',
+  description: 'Professional vehicle membership services for California drivers',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

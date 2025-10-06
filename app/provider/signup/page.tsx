@@ -572,7 +572,7 @@ export default function ProviderSignupPage() {
                       name="agreedToTerms"
                       checked={formData.agreedToTerms}
                       onChange={handleInputChange}
-                      className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       required
                     />
                     <div className="text-sm">
@@ -588,7 +588,7 @@ export default function ProviderSignupPage() {
                       name="agreedToBackgroundCheck"
                       checked={formData.agreedToBackgroundCheck}
                       onChange={handleInputChange}
-                      className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       required
                     />
                     <div className="text-sm">
@@ -604,7 +604,7 @@ export default function ProviderSignupPage() {
                       name="agreedToCompliance"
                       checked={formData.agreedToCompliance}
                       onChange={handleInputChange}
-                      className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       required
                     />
                     <div className="text-sm">
