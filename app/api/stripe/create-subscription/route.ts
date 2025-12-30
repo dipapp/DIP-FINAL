@@ -163,13 +163,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 3: Extract client secret from the already-expanded invoice
-    const invoice = subscription.latest_invoice as Stripe.Invoice;
+    // Cast to any to allow access to expanded fields without TS blocking
+    const invoice = subscription.latest_invoice as any as Stripe.Invoice;
 
     if (!invoice || typeof invoice === 'string') {
       throw new Error('Invoice was not expanded properly');
     }
 
-    const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
+    const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
 
     if (!paymentIntent || typeof paymentIntent === 'string') {
       throw new Error('Payment intent was not expanded properly');
