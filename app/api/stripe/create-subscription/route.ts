@@ -140,50 +140,57 @@ export async function POST(request: NextRequest) {
       console.log('Created new Stripe customer:', customer.id);
     }
 
-    console.log('Creating Stripe subscription...');
-    
-    // Step 1: Create subscription WITHOUT expand
+    // Step 2: Create subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [
-        {
-          price: process.env.STRIPE_PRICE_ID!,
-        },
-      ],
+      items: [{ price: process.env.STRIPE_PRICE_ID! }],
       payment_behavior: 'default_incomplete',
       payment_settings: {
+        payment_method_types: ['card'],
         save_default_payment_method: 'on_subscription',
       },
-      metadata: {
-        userId: userId,
-        vehicleId: vehicleId,
-        platform: 'iOS',
-      },
+      metadata: { userId, vehicleId: vehicleId || '', platform: 'iOS' },
     });
 
-    console.log('Stripe subscription created:', subscription.id);
+    console.log('✅ Created subscription:', subscription.id);
 
-    // Step 2: Retrieve subscription WITH expand to get client secret
-    const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
+    // Step 3: Retrieve with expand
+    const expandedSub = await stripe.subscriptions.retrieve(subscription.id, {
       expand: ['latest_invoice.payment_intent'],
     });
 
-    console.log('Subscription retrieved with expand');
+    console.log('📦 Expanded sub type:', typeof expandedSub.latest_invoice);
 
-    // Extract client secret using same pattern as create-payment-intent
-    const latestInvoice = expandedSubscription.latest_invoice as Stripe.Invoice;
-    const paymentIntent = (latestInvoice as any).payment_intent as Stripe.PaymentIntent;
-    const clientSecret = paymentIntent?.client_secret;
+    // Step 4: Careful extraction
+    const latestInvoice = expandedSub.latest_invoice;
 
-    if (!clientSecret) {
-      console.error('No client secret found in subscription');
-      return NextResponse.json(
-        { error: 'Failed to retrieve client secret from subscription' },
-        { status: 500 }
-      );
+    if (typeof latestInvoice === 'string') {
+      throw new Error('Invoice was not expanded, got string ID: ' + latestInvoice);
     }
 
-    console.log('Stripe subscription client secret retrieved');
+    if (!latestInvoice) {
+      throw new Error('No latest_invoice on subscription');
+    }
+
+    console.log('📦 Invoice type:', typeof (latestInvoice as any).payment_intent);
+
+    const paymentIntent = (latestInvoice as any).payment_intent;
+
+    if (typeof paymentIntent === 'string') {
+      throw new Error('PaymentIntent was not expanded, got string ID: ' + paymentIntent);
+    }
+
+    if (!paymentIntent) {
+      throw new Error('No payment_intent on invoice');
+    }
+
+    const clientSecret = paymentIntent.client_secret;
+
+    if (!clientSecret) {
+      throw new Error('No client_secret on payment intent');
+    }
+
+    console.log('✅ Got client secret');
     
     return NextResponse.json({
       clientSecret: clientSecret,
