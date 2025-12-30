@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         subscriptionId: subscription.id,
         status: subscription.status,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        currentPeriodEnd: subscription.current_period_end,
+        currentPeriodEnd: (subscription as any).current_period_end,
         message: 'Subscription is already scheduled for cancellation at period end',
       });
     }
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       subscriptionId: updatedSubscription.id,
       status: updatedSubscription.status,
       cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
-      currentPeriodEnd: updatedSubscription.current_period_end,
+      currentPeriodEnd: (updatedSubscription as any).current_period_end,
       message: 'Subscription will be canceled at the end of the current billing period',
     });
   } catch (error) {
