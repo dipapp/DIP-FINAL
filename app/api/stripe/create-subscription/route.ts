@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       console.log('✅ Created new customer:', customer.id);
     }
 
-    // Step 2: Create subscription WITHOUT expand
+    // Step 2: Create subscription WITH proper expand
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: process.env.STRIPE_PRICE_ID! }],
@@ -44,30 +44,24 @@ export async function POST(request: Request) {
         save_default_payment_method: 'on_subscription',
       },
       metadata: { userId, vehicleId: vehicleId || '', platform: 'iOS' },
+      expand: ['latest_invoice.payment_intent'],
     });
 
     console.log('✅ Created subscription:', subscription.id);
 
-    // Step 3: Get the invoice ID
-    const invoiceId = subscription.latest_invoice as string;
-    
-    // Step 4: Retrieve the invoice to get payment intent
-    const invoice = await stripe.invoices.retrieve(invoiceId);
+    // Step 3: Extract client secret from expanded data
+    const invoice = subscription.latest_invoice;
 
-    console.log('✅ Retrieved invoice:', invoice.id, 'Status:', invoice.status);
-
-    if (!(invoice as any).payment_intent) {
-      console.error('❌ Invoice has no payment_intent:', JSON.stringify(invoice, null, 2));
-      throw new Error('Invoice does not have a payment intent yet. Invoice status: ' + invoice.status);
+    if (!invoice || typeof invoice === 'string') {
+      throw new Error('Invoice was not expanded');
     }
 
-    // Step 5: Get payment intent ID and retrieve it
-    const paymentIntentId = (invoice as any).payment_intent as string;
+    const paymentIntent = (invoice as any).payment_intent;
 
-    console.log('✅ Payment intent ID:', paymentIntentId);
+    if (!paymentIntent || typeof paymentIntent === 'string') {
+      throw new Error('PaymentIntent was not expanded');
+    }
 
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
     const clientSecret = paymentIntent.client_secret;
 
     if (!clientSecret) {
