@@ -31,24 +31,28 @@ export async function POST(request: Request) {
       console.log('📦 payment_intent value:', subscription.latest_invoice.payment_intent);
     }
 
-    // Check if there's a pending_setup_intent (for subscriptions without payment)
+    console.log('📦 pending_setup_intent type:', typeof subscription.pending_setup_intent);
+    console.log('📦 pending_setup_intent value:', subscription.pending_setup_intent);
+
     if (subscription.pending_setup_intent) {
-      console.log('📦 Found pending_setup_intent:', subscription.pending_setup_intent);
-      // Retrieve the setup intent to get client secret
-      const setupIntent: any = await stripe.setupIntents.retrieve(
-        typeof subscription.pending_setup_intent === 'string' 
-          ? subscription.pending_setup_intent 
-          : subscription.pending_setup_intent.id
-      );
-      const clientSecret = setupIntent.client_secret;
-      console.log('✅ Got client secret from setup intent:', !!clientSecret);
+      console.log('✅ Has pending_setup_intent, retrieving...');
+      const setupIntentId = typeof subscription.pending_setup_intent === 'string' 
+        ? subscription.pending_setup_intent 
+        : subscription.pending_setup_intent.id;
+      
+      const setupIntent: any = await stripe.setupIntents.retrieve(setupIntentId);
+      console.log('✅ Retrieved setup intent:', setupIntent.id);
+      console.log('✅ Setup intent client_secret:', !!setupIntent.client_secret);
+      
       return NextResponse.json({
-        clientSecret,
+        clientSecret: setupIntent.client_secret,
         subscriptionId: subscription.id,
         customerId: customer.id,
         status: subscription.status,
       });
     }
+
+    console.log('⚠️ No pending_setup_intent, trying invoice payment_intent...');
 
     // Otherwise try to get payment intent from invoice
     const invoiceId = typeof subscription.latest_invoice === 'string' 
