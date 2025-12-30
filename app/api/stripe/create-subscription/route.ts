@@ -165,14 +165,24 @@ export async function POST(request: NextRequest) {
     console.log('✅ Stripe subscription created:', subscription.id);
 
     // Extract client secret from the expanded payment intent
-    const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
-    const paymentIntent = (latestInvoice as any).payment_intent as Stripe.PaymentIntent;
-    const clientSecret = paymentIntent?.client_secret;
+    // @ts-ignore - Stripe types can be string or object after expand
+    const invoice = subscription.latest_invoice as Stripe.Invoice;
+    const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
+
+    if (!paymentIntent || typeof paymentIntent === 'string') {
+      console.error('❌ Payment intent was not expanded properly');
+      return NextResponse.json(
+        { error: 'Payment intent was not expanded properly' },
+        { status: 500 }
+      );
+    }
+
+    const clientSecret = paymentIntent.client_secret;
 
     if (!clientSecret) {
-      console.error('❌ No client secret found in subscription');
+      console.error('❌ Client secret not found on payment intent');
       return NextResponse.json(
-        { error: 'Failed to retrieve client secret from subscription' },
+        { error: 'Client secret not found on payment intent' },
         { status: 500 }
       );
     }
