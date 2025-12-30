@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     // Extract client secret from the expanded payment intent
     const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
-    const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+    const paymentIntent = (latestInvoice as any).payment_intent as Stripe.PaymentIntent;
     const clientSecret = paymentIntent?.client_secret;
 
     if (!clientSecret) {
