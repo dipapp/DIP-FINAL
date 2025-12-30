@@ -31,11 +31,37 @@ export async function POST(request: Request) {
       console.log('📦 payment_intent value:', subscription.latest_invoice.payment_intent);
     }
 
-    // Extract client secret using any types
-    const clientSecret = subscription?.latest_invoice?.payment_intent?.client_secret;
-    console.log('📦 clientSecret:', clientSecret);
+    // Check if there's a pending_setup_intent (for subscriptions without payment)
+    if (subscription.pending_setup_intent) {
+      console.log('📦 Found pending_setup_intent:', subscription.pending_setup_intent);
+      // Retrieve the setup intent to get client secret
+      const setupIntent: any = await stripe.setupIntents.retrieve(
+        typeof subscription.pending_setup_intent === 'string' 
+          ? subscription.pending_setup_intent 
+          : subscription.pending_setup_intent.id
+      );
+      const clientSecret = setupIntent.client_secret;
+      console.log('✅ Got client secret from setup intent:', !!clientSecret);
+      return NextResponse.json({
+        clientSecret,
+        subscriptionId: subscription.id,
+        customerId: customer.id,
+        status: subscription.status,
+      });
+    }
 
-    console.log('✅ Got client secret:', !!clientSecret);
+    // Otherwise try to get payment intent from invoice
+    const invoiceId = typeof subscription.latest_invoice === 'string' 
+      ? subscription.latest_invoice 
+      : subscription.latest_invoice.id;
+      
+    const invoice: any = await stripe.invoices.retrieve(invoiceId, {
+      expand: ['payment_intent'],
+    });
+
+    const clientSecret = invoice.payment_intent?.client_secret;
+
+    console.log('✅ Got client secret from payment intent:', !!clientSecret);
 
     return NextResponse.json({
       clientSecret,
