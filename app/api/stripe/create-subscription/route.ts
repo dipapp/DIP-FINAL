@@ -168,7 +168,8 @@ export async function POST(request: NextRequest) {
       { expand: ['payment_intent'] }
     );
 
-    const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
+    // Stripe typing returns a response wrapper; access via any to read payment_intent
+    const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
 
     if (!paymentIntent || typeof paymentIntent === 'string') {
       throw new Error('Failed to retrieve payment intent from invoice');
