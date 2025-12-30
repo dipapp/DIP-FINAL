@@ -1,195 +1,70 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
 
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  try {
-    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY_B64) {
-      console.error('Missing Firebase Admin environment variables:', {
-        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
-        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
-        FIREBASE_PRIVATE_KEY_B64: !!process.env.FIREBASE_PRIVATE_KEY_B64
-      });
-      throw new Error('Missing Firebase Admin environment variables');
-    }
-
-    const privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8');
-
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
-      }),
-    });
-    console.log('Firebase Admin initialized successfully');
-  } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
-    throw error;
-  }
-}
-
-if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
-  console.error('Missing Stripe environment variables:', {
-    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-    STRIPE_PRICE_ID: !!process.env.STRIPE_PRICE_ID
-  });
-  throw new Error('Missing Stripe environment variables');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 });
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    console.log('🚀 Creating Stripe subscription request received');
-    
     const { userId, vehicleId, email, name } = await request.json();
-    console.log('Request data:', { userId, vehicleId, email, name });
 
-    if (!userId || !vehicleId || !email || !name) {
-      console.log('❌ Missing required fields');
-      return NextResponse.json(
-        { error: 'userId, vehicleId, email, and name are required' },
-        { status: 400 }
-      );
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    // Verify the user is authenticated
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('❌ No authorization header');
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    console.log('🚀 Creating subscription for:', { userId, vehicleId, email });
 
-    const idToken = authHeader.split('Bearer ')[1];
-    console.log('Verifying ID token...');
-    
-    let decodedToken;
-    try {
-      decodedToken = await getAuth().verifyIdToken(idToken);
-      console.log('Token verified for user:', decodedToken.uid);
-      if (decodedToken.uid !== userId) {
-        console.log('❌ Token UID mismatch');
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 403 }
-        );
-      }
-    } catch (error) {
-      console.error('❌ Token verification error:', error);
-      return NextResponse.json(
-        { error: 'Invalid authentication token' },
-        { status: 401 }
-      );
-    }
-
-    // Get vehicle details from Firestore to verify ownership
-    console.log('Fetching vehicle from Firestore...');
-    const db = getFirestore();
-    const vehicleDoc = await db.collection('vehicles').doc(vehicleId).get();
-    
-    if (!vehicleDoc.exists) {
-      console.log('❌ Vehicle not found:', vehicleId);
-      return NextResponse.json(
-        { error: 'Vehicle not found' },
-        { status: 404 }
-      );
-    }
-
-    const vehicleData = vehicleDoc.data();
-    if (!vehicleData || vehicleData.ownerId !== userId) {
-      console.log('❌ Vehicle ownership mismatch');
-      return NextResponse.json(
-        { error: 'Unauthorized - vehicle does not belong to user' },
-        { status: 403 }
-      );
-    }
-
-    console.log('Creating or finding Stripe customer...');
-    
-    // Find existing customer by email or create new one
+    // Step 1: Create or find customer
     let customer;
     const existingCustomers = await stripe.customers.list({
-      email: email,
       limit: 1,
+      email: email,
     });
 
     if (existingCustomers.data.length > 0) {
       customer = existingCustomers.data[0];
-      console.log('Found existing Stripe customer:', customer.id);
+      console.log('✅ Found existing customer:', customer.id);
     } else {
       customer = await stripe.customers.create({
         email: email,
-        name: name,
-        metadata: {
-          userId: userId,
-          platform: 'iOS',
-        },
+        name: name || 'DIP Member',
+        metadata: { userId, vehicleId: vehicleId || '', platform: 'iOS' },
       });
-      console.log('Created new Stripe customer:', customer.id);
+      console.log('✅ Created new customer:', customer.id);
     }
 
-    console.log('Creating Stripe subscription...');
-    
-    // Create subscription with the specified parameters
+    // Step 2: Create subscription WITHOUT expand
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [
-        {
-          price: process.env.STRIPE_PRICE_ID!,
-        },
-      ],
+      items: [{ price: process.env.STRIPE_PRICE_ID! }],
       payment_behavior: 'default_incomplete',
       payment_settings: {
+        payment_method_types: ['card'],
         save_default_payment_method: 'on_subscription',
       },
-      expand: ['latest_invoice.payment_intent'],
-      metadata: {
-        userId: userId,
-        vehicleId: vehicleId,
-        platform: 'iOS',
-      },
+      metadata: { userId, vehicleId: vehicleId || '', platform: 'iOS' },
     });
 
-    // Step 3: Get the payment intent ID from the invoice
-    const invoice = subscription.latest_invoice as any as Stripe.Invoice;
+    console.log('✅ Created subscription:', subscription.id);
 
-    if (!invoice || typeof invoice === 'string') {
-      throw new Error('Invoice was not expanded');
-    }
-
-    // Get the payment intent ID (might be string or object)
-    let paymentIntentId: string;
-    if (typeof (invoice as any).payment_intent === 'string') {
-      paymentIntentId = (invoice as any).payment_intent;
-    } else if ((invoice as any).payment_intent?.id) {
-      paymentIntentId = (invoice as any).payment_intent.id;
-    } else {
-      throw new Error('No payment intent found on invoice');
-    }
-
-    // Fetch the payment intent to get the client secret
+    // Step 3: Get the invoice ID
+    const invoiceId = subscription.latest_invoice as string;
+    
+    // Step 4: Retrieve the invoice to get payment intent
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    
+    // Step 5: Get payment intent ID and retrieve it
+    const paymentIntentId = invoice.payment_intent as string;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
+    
     const clientSecret = paymentIntent.client_secret;
 
     if (!clientSecret) {
-      throw new Error('Client secret not found');
+      throw new Error('No client secret on payment intent');
     }
 
-    console.log('✅ Created subscription:', subscription.id);
-    console.log('✅ Retrieved payment intent:', paymentIntent.id);
+    console.log('✅ Got client secret for payment intent:', paymentIntent.id);
 
     return NextResponse.json({
       clientSecret: clientSecret,
@@ -197,15 +72,12 @@ export async function POST(request: NextRequest) {
       customerId: customer.id,
       status: subscription.status,
     });
-  } catch (error) {
-    console.error('❌ Stripe subscription creation error:', error);
+
+  } catch (error: any) {
+    console.error('❌ Subscription creation error:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to create subscription', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      },
+      { error: error.message || 'Failed to create subscription' },
       { status: 500 }
     );
   }
 }
-
