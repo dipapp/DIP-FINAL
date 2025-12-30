@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 3: Get the payment intent ID from the invoice
-    const invoice = subscription.latest_invoice as Stripe.Invoice;
+    const invoice = subscription.latest_invoice as any as Stripe.Invoice;
 
     if (!invoice || typeof invoice === 'string') {
       throw new Error('Invoice was not expanded');
@@ -171,10 +171,10 @@ export async function POST(request: NextRequest) {
 
     // Get the payment intent ID (might be string or object)
     let paymentIntentId: string;
-    if (typeof invoice.payment_intent === 'string') {
-      paymentIntentId = invoice.payment_intent;
-    } else if (invoice.payment_intent?.id) {
-      paymentIntentId = invoice.payment_intent.id;
+    if (typeof (invoice as any).payment_intent === 'string') {
+      paymentIntentId = (invoice as any).payment_intent;
+    } else if ((invoice as any).payment_intent?.id) {
+      paymentIntentId = (invoice as any).payment_intent.id;
     } else {
       throw new Error('No payment intent found on invoice');
     }
