@@ -21,8 +21,19 @@ export async function POST(request: Request) {
       expand: ['latest_invoice.payment_intent'],
     });
 
+    console.log('✅ Subscription created:', subscription.id);
+    console.log('📦 Subscription object keys:', Object.keys(subscription));
+    console.log('📦 latest_invoice type:', typeof subscription.latest_invoice);
+    console.log('📦 latest_invoice value:', subscription.latest_invoice);
+    if (subscription.latest_invoice) {
+      console.log('📦 invoice keys:', Object.keys(subscription.latest_invoice));
+      console.log('📦 payment_intent type:', typeof subscription.latest_invoice.payment_intent);
+      console.log('📦 payment_intent value:', subscription.latest_invoice.payment_intent);
+    }
+
     // Extract client secret using any types
     const clientSecret = subscription?.latest_invoice?.payment_intent?.client_secret;
+    console.log('📦 clientSecret:', clientSecret);
 
     console.log('✅ Got client secret:', !!clientSecret);
 
