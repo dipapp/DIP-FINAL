@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const invoice = await stripe.invoices.retrieve(invoiceId);
     
     // Step 5: Get payment intent ID and retrieve it
-    const paymentIntentId = invoice.payment_intent as string;
+    const paymentIntentId = (invoice as any).payment_intent as string;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
     const clientSecret = paymentIntent.client_secret;
