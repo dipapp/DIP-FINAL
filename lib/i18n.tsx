@@ -25,8 +25,8 @@ const translations = {
     // Landing page
     'landing.tagline': 'Drive with confidence knowing you\'re supported',
     'landing.whyChoose': 'Why Choose DIP?',
-    'landing.completeProtection': 'Complete Benefits',
-    'landing.completeProtectionDesc': 'Your membership benefits are fully active when accidents happen',
+    'landing.completeBenefits': 'Complete Benefits',
+    'landing.completeBenefitsDesc': 'Your membership benefits are fully active when accidents happen',
     'landing.monthlyPrice': 'Just $20/month',
     'landing.monthlyPriceDesc': 'Affordable monthly membership that saves you thousands',
     'landing.instantClaims': 'Instant Requests & Roadside Accident Towing',
@@ -126,8 +126,8 @@ const translations = {
     // Landing page
     'landing.tagline': 'Conduce con confianza sabiendo que estás apoyado',
     'landing.whyChoose': '¿Por qué elegir DIP?',
-    'landing.completeProtection': 'Beneficios Completos',
-    'landing.completeProtectionDesc': 'Tus beneficios de membresía están completamente activos cuando ocurren accidentes',
+    'landing.completeBenefits': 'Beneficios Completos',
+    'landing.completeBenefitsDesc': 'Tus beneficios de membresía están completamente activos cuando ocurren accidentes',
     'landing.monthlyPrice': 'Solo $20/mes',
     'landing.monthlyPriceDesc': 'Membresía mensual asequible que te ahorra miles',
     'landing.instantClaims': 'Solicitudes Instantáneas y Remolque por Accidente',

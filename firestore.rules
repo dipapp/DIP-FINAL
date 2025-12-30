@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// DIP (Deductible Impact Protection) Firebase Security Rules
+// DIP Firebase Security Rules
 service cloud.firestore {
   match /databases/{database}/documents {
     
