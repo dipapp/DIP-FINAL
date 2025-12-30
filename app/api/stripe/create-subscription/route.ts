@@ -162,17 +162,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Step 3: Get the client secret from the payment intent
-    const invoice = await stripe.invoices.retrieve(
-      subscription.latest_invoice as string,
-      { expand: ['payment_intent'] }
-    );
+    // Step 3: Extract client secret from the already-expanded invoice
+    const invoice = subscription.latest_invoice as Stripe.Invoice;
 
-    // Stripe typing returns a response wrapper; access via any to read payment_intent
-    const paymentIntent = (invoice as any).payment_intent as Stripe.PaymentIntent;
+    if (!invoice || typeof invoice === 'string') {
+      throw new Error('Invoice was not expanded properly');
+    }
+
+    const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
 
     if (!paymentIntent || typeof paymentIntent === 'string') {
-      throw new Error('Failed to retrieve payment intent from invoice');
+      throw new Error('Payment intent was not expanded properly');
     }
 
     const clientSecret = paymentIntent.client_secret;
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Created subscription:', subscription.id);
-    console.log('✅ Payment intent:', paymentIntent.id);
+    console.log('✅ Got client secret from payment intent:', paymentIntent.id);
 
     return NextResponse.json({
       clientSecret: clientSecret,
