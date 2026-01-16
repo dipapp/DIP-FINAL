@@ -16,23 +16,31 @@ export async function POST(request: Request) {
 
     // Step 1: Create/find customer
     const customers = await stripe.customers.list({ email, limit: 1 });
-    const customer = customers.data[0] || await stripe.customers.create({ 
-      email, 
-      name: name || 'DIP Member' 
-    });
+    let customer = customers.data[0];
+    
+    if (!customer) {
+      customer = await stripe.customers.create({ 
+        email, 
+        name: name || 'DIP Member' 
+      });
+      console.log('✅ Created new customer:', customer.id);
+    } else {
+      console.log('✅ Found existing customer:', customer.id);
+    }
 
     // Step 2: Create subscription with payment_behavior: 'default_incomplete'
-    // This automatically creates a payment intent for the first invoice
+    // Explicitly set payment_method_types to ensure a PaymentIntent is created
     const subscription: any = await stripe.subscriptions.create({
       customer: customer.id,
       items: [
         {
-          price: process.env.STRIPE_PRICE_ID, // The $20/month price ID
+          price: process.env.STRIPE_PRICE_ID,
         },
       ],
       payment_behavior: 'default_incomplete',
       payment_settings: {
         save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card'], // Explicitly require card payment
       },
       expand: ['latest_invoice.payment_intent'],
       metadata: {
@@ -45,71 +53,39 @@ export async function POST(request: Request) {
     console.log('✅ Created Subscription:', subscription.id);
     console.log('🔍 Subscription status:', subscription.status);
     console.log('🔍 Latest invoice exists:', !!subscription.latest_invoice);
+    console.log('🔍 Latest invoice ID:', subscription.latest_invoice?.id);
     console.log('🔍 Latest invoice status:', subscription.latest_invoice?.status);
+    console.log('🔍 Payment intent from subscription:', subscription.latest_invoice?.payment_intent?.id || 'none');
     
-    // Step 3: Handle invoice and payment intent
-    let invoice = subscription.latest_invoice;
-    let clientSecret = invoice?.payment_intent?.client_secret;
+    // Get the client secret from the subscription's latest invoice payment intent
+    let clientSecret = subscription.latest_invoice?.payment_intent?.client_secret;
     
-    console.log('🔍 Initial payment intent exists:', !!invoice?.payment_intent);
-    console.log('🔍 Initial client secret exists:', !!clientSecret);
-    
-    // If no payment intent exists, try to get the invoice with expanded payment_intent
-    if (!clientSecret && invoice) {
-      console.log('🔧 Retrieving invoice with payment intent...');
-      try {
-        invoice = await stripe.invoices.retrieve(invoice.id, {
-          expand: ['payment_intent']
-        });
-        clientSecret = invoice?.payment_intent?.client_secret;
-        console.log('🔍 Retrieved invoice status:', invoice.status);
-        console.log('🔍 Payment intent exists after retrieval:', !!invoice?.payment_intent);
-      } catch (retrieveError: any) {
-        console.error('❌ Error retrieving invoice:', retrieveError.message);
-      }
-    }
-    
-    // If still no payment intent and invoice is in draft/open, try to finalize
-    if (!clientSecret && invoice && (invoice.status === 'draft' || invoice.status === 'open')) {
-      console.log('🔧 Finalizing invoice to create payment intent...');
-      try {
-        invoice = await stripe.invoices.finalizeInvoice(invoice.id, {
-          auto_advance: false, // Don't auto-charge, wait for confirmation
-          expand: ['payment_intent'], // Expand to get payment_intent details
-        });
-        clientSecret = invoice?.payment_intent?.client_secret;
-        console.log('✅ Invoice finalized:', invoice.id);
-        console.log('🔍 Finalized invoice status:', invoice.status);
-        console.log('🔍 Payment intent exists after finalization:', !!invoice?.payment_intent);
-      } catch (finalizeError: any) {
-        console.error('❌ Error finalizing invoice:', finalizeError.message);
-        // If finalization fails, the invoice might already be finalized, try retrieving again
-        try {
-          invoice = await stripe.invoices.retrieve(invoice.id, {
-            expand: ['payment_intent']
-          });
-          clientSecret = invoice?.payment_intent?.client_secret;
-          console.log('🔧 Retrieved invoice after finalization error');
-        } catch (secondRetrieveError: any) {
-          console.error('❌ Error on second retrieval:', secondRetrieveError.message);
-        }
-      }
+    // If still no payment intent, the invoice might need to be retrieved separately
+    if (!clientSecret && subscription.latest_invoice?.id) {
+      console.log('🔧 Payment intent not in subscription response, retrieving invoice...');
+      const invoice = await stripe.invoices.retrieve(subscription.latest_invoice.id, {
+        expand: ['payment_intent']
+      });
+      console.log('🔍 Retrieved invoice payment_intent:', invoice.payment_intent?.id || 'none');
+      clientSecret = invoice.payment_intent?.client_secret;
     }
     
     if (!clientSecret) {
-      console.error('❌ No payment intent created for subscription.');
+      console.error('❌ Failed to get payment intent for subscription.');
+      console.error('🔍 This usually means the Price ID is not configured for card payments.');
+      console.error('🔍 Check Stripe Dashboard → Products → Your Price → Make sure it is a recurring price.');
       console.error('Invoice details:', {
-        id: invoice?.id,
-        status: invoice?.status,
-        payment_intent: invoice?.payment_intent?.id || 'none',
-        subscription_id: subscription.id
+        id: subscription.latest_invoice?.id,
+        status: subscription.latest_invoice?.status,
+        amount_due: subscription.latest_invoice?.amount_due,
+        collection_method: subscription.latest_invoice?.collection_method,
       });
       return NextResponse.json({ 
-        error: 'Failed to create payment intent for subscription. Please check Stripe configuration.' 
+        error: 'Failed to create payment intent for subscription. Check Stripe price configuration.' 
       }, { status: 500 });
     }
 
-    console.log('✅ Client secret:', !!clientSecret);
+    console.log('✅ Client secret obtained successfully');
 
     // Return the client secret from the subscription's first invoice payment intent
     return NextResponse.json({
