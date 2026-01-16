@@ -70,18 +70,49 @@ export async function POST(request: Request) {
       clientSecret = invoice.payment_intent?.client_secret;
     }
     
-    if (!clientSecret) {
-      console.error('❌ Failed to get payment intent for subscription.');
-      console.error('🔍 This usually means the Price ID is not configured for card payments.');
-      console.error('🔍 Check Stripe Dashboard → Products → Your Price → Make sure it is a recurring price.');
-      console.error('Invoice details:', {
-        id: subscription.latest_invoice?.id,
-        status: subscription.latest_invoice?.status,
-        amount_due: subscription.latest_invoice?.amount_due,
-        collection_method: subscription.latest_invoice?.collection_method,
+    // If no PaymentIntent was created (customer has no payment method on file),
+    // create ONE PaymentIntent specifically to pay this subscription's first invoice
+    if (!clientSecret && subscription.latest_invoice) {
+      console.log('🔧 No PaymentIntent from subscription - creating one to pay the invoice...');
+      
+      const invoice = subscription.latest_invoice;
+      
+      // Create a PaymentIntent linked to the subscription/invoice
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: invoice.amount_due, // $20.00 = 2000 cents
+        currency: invoice.currency || 'usd',
+        customer: customer.id,
+        setup_future_usage: 'off_session', // Save payment method for future subscription charges
+        metadata: {
+          userId,
+          vehicleId: vehicleId || '',
+          platform: 'iOS',
+          subscription_id: subscription.id,
+          invoice_id: invoice.id,
+          type: 'subscription_first_payment', // Flag for webhook to know this pays the invoice
+        },
       });
+      
+      console.log('✅ Created PaymentIntent to pay invoice:', paymentIntent.id);
+      console.log('🔗 Linked to subscription:', subscription.id);
+      console.log('🔗 Linked to invoice:', invoice.id);
+      
+      clientSecret = paymentIntent.client_secret;
+      
+      // Return with metadata about the payment setup
+      return NextResponse.json({
+        clientSecret: clientSecret,
+        subscriptionId: subscription.id,
+        customerId: customer.id,
+        invoiceId: invoice.id,
+        paymentIntentId: paymentIntent.id,
+      });
+    }
+    
+    if (!clientSecret) {
+      console.error('❌ Failed to create payment intent for subscription.');
       return NextResponse.json({ 
-        error: 'Failed to create payment intent for subscription. Check Stripe price configuration.' 
+        error: 'Failed to create payment intent for subscription.' 
       }, { status: 500 });
     }
 
