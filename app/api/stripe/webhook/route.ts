@@ -22,40 +22,75 @@ export async function POST(request: Request) {
       
       const metadata = paymentIntent.metadata;
       
-      // NEW FLOW: PaymentIntent was created to pay a subscription's first invoice
-      if (metadata.type === 'subscription_first_payment' && metadata.invoice_id && metadata.subscription_id) {
-        console.log('🔗 Payment is for subscription first invoice');
-        console.log('📄 Invoice ID:', metadata.invoice_id);
-        console.log('📋 Subscription ID:', metadata.subscription_id);
+      // NEW FLOW: PaymentIntent was created for subscription first payment
+      if (metadata.type === 'subscription_first_payment') {
+        console.log('🔗 Payment is for subscription first payment');
+        
+        const priceId = metadata.priceId || process.env.STRIPE_PRICE_ID;
+        console.log('🔍 Using Price ID:', priceId);
+        
+        if (!priceId) {
+          console.error('❌ No Price ID found in metadata or environment');
+          return NextResponse.json({ error: 'No Price ID configured' }, { status: 500 });
+        }
         
         try {
-          // Attach the payment method to the customer for future subscription payments
-          if (paymentIntent.payment_method) {
-            await stripe.paymentMethods.attach(paymentIntent.payment_method, {
-              customer: paymentIntent.customer,
-            });
-            console.log('✅ Payment method attached to customer');
-            
-            // Set as default payment method for the subscription
-            await stripe.subscriptions.update(metadata.subscription_id, {
-              default_payment_method: paymentIntent.payment_method,
-            });
-            console.log('✅ Payment method set as default for subscription');
+          // Step 1: Cancel any incomplete subscription if one was created
+          if (metadata.subscription_id) {
+            try {
+              await stripe.subscriptions.cancel(metadata.subscription_id);
+              console.log('✅ Cancelled incomplete subscription:', metadata.subscription_id);
+            } catch (cancelErr: any) {
+              console.log('⚠️ Could not cancel subscription (may already be cancelled):', cancelErr.message);
+            }
           }
           
-          // Pay the invoice to activate the subscription
-          const invoice = await stripe.invoices.pay(metadata.invoice_id, {
-            paid_out_of_band: true, // Mark as paid (payment already collected via PaymentIntent)
-          });
-          console.log('✅ Invoice marked as paid:', invoice.id);
-          console.log('✅ Invoice status:', invoice.status);
+          // Step 2: Attach the payment method to the customer
+          if (paymentIntent.payment_method) {
+            try {
+              await stripe.paymentMethods.attach(paymentIntent.payment_method, {
+                customer: paymentIntent.customer,
+              });
+              console.log('✅ Payment method attached to customer');
+            } catch (attachErr: any) {
+              // Payment method might already be attached
+              console.log('⚠️ Payment method attach:', attachErr.message);
+            }
+            
+            // Set as default payment method for customer
+            await stripe.customers.update(paymentIntent.customer, {
+              invoice_settings: {
+                default_payment_method: paymentIntent.payment_method,
+              },
+            });
+            console.log('✅ Payment method set as default for customer');
+          }
           
-          // The subscription should now be active
-          const subscription = await stripe.subscriptions.retrieve(metadata.subscription_id);
-          console.log('✅ Subscription status after payment:', subscription.status);
+          // Step 3: Create a NEW active subscription with a trial period
+          // The trial ends in ~30 days, so the first real charge happens next month
+          // (we already collected the first month's payment via the PaymentIntent)
+          const trialEnd = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60); // 30 days from now
+          
+          const newSubscription = await stripe.subscriptions.create({
+            customer: paymentIntent.customer,
+            items: [{ price: priceId }],
+            default_payment_method: paymentIntent.payment_method,
+            trial_end: trialEnd,
+            metadata: {
+              userId: metadata.userId,
+              vehicleId: metadata.vehicleId,
+              platform: metadata.platform,
+              original_payment_intent: paymentIntent.id,
+            },
+          });
+          
+          console.log('✅ Created active subscription:', newSubscription.id);
+          console.log('✅ Subscription status:', newSubscription.status);
+          console.log('✅ Trial ends:', new Date(trialEnd * 1000).toISOString());
+          console.log('✅ Next billing date:', new Date(newSubscription.current_period_end * 1000).toISOString());
           
         } catch (err: any) {
-          console.error('❌ Error activating subscription:', err.message);
+          console.error('❌ Error creating subscription:', err.message);
         }
       }
       // LEGACY FLOW: Old PaymentIntent that needs a subscription created (for backward compatibility)
