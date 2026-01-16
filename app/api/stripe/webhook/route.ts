@@ -1,5 +1,33 @@
 import { NextResponse } from 'next/server';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Initialize Firebase Admin if not already initialized
+if (!getApps().length) {
+  try {
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY_B64) {
+      console.error('Missing Firebase Admin environment variables:', {
+        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY_B64: !!process.env.FIREBASE_PRIVATE_KEY_B64
+      });
+    } else {
+      const privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, 'base64').toString('utf-8');
+      initializeApp({
+        credential: cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: privateKey,
+        }),
+      });
+      console.log('Firebase Admin initialized successfully in webhook');
+    }
+  } catch (error) {
+    console.error('Firebase Admin initialization error:', error);
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -87,6 +115,27 @@ export async function POST(request: Request) {
           console.log('✅ Created active subscription:', newSubscription.id);
           console.log('✅ Subscription status:', newSubscription.status);
           console.log('✅ Trial ends:', new Date(trialEnd * 1000).toISOString());
+          
+          // Step 4: Update the vehicle document in Firestore with the subscriptionId
+          if (metadata.vehicleId && getApps().length > 0) {
+            try {
+              const db = getFirestore();
+              await db.collection('vehicles').doc(metadata.vehicleId).update({
+                subscriptionId: newSubscription.id,
+                subscriptionStatus: newSubscription.status,
+                subscriptionCreatedAt: new Date().toISOString(),
+              });
+              console.log('✅ Updated vehicle in Firestore:', metadata.vehicleId);
+              console.log('✅ Set subscriptionId:', newSubscription.id);
+            } catch (firestoreErr: any) {
+              console.error('❌ Error updating Firestore:', firestoreErr.message);
+              // Don't fail the webhook if Firestore update fails
+              // The subscription was still created successfully
+            }
+          } else {
+            console.log('⚠️ No vehicleId in metadata or Firebase not initialized, skipping Firestore update');
+          }
+          
           console.log('✅ Subscription created successfully!');
           
         } catch (err: any) {
@@ -94,10 +143,8 @@ export async function POST(request: Request) {
         }
       }
       // LEGACY FLOW: Old PaymentIntent that needs a subscription created (for backward compatibility)
-      // This should NOT be triggered by new payments - remove this block after verifying new flow works
       else if (metadata.subscriptionPrice && !metadata.subscription_id) {
-        console.log('⚠️ Legacy flow: Creating subscription from payment (should not happen with new code)');
-        console.log('🚀 Creating subscription from payment');
+        console.log('⚠️ Legacy flow: Creating subscription from payment');
         
         const subscription = await stripe.subscriptions.create({
           customer: paymentIntent.customer,
@@ -112,6 +159,21 @@ export async function POST(request: Request) {
         });
         
         console.log('✅ Subscription created:', subscription.id);
+        
+        // Also update Firestore for legacy flow
+        if (metadata.vehicleId && getApps().length > 0) {
+          try {
+            const db = getFirestore();
+            await db.collection('vehicles').doc(metadata.vehicleId).update({
+              subscriptionId: subscription.id,
+              subscriptionStatus: subscription.status,
+              subscriptionCreatedAt: new Date().toISOString(),
+            });
+            console.log('✅ Updated vehicle in Firestore (legacy):', metadata.vehicleId);
+          } catch (firestoreErr: any) {
+            console.error('❌ Error updating Firestore (legacy):', firestoreErr.message);
+          }
+        }
       }
     }
 
