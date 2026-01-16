@@ -87,10 +87,10 @@ export async function POST(request: Request) {
           console.log('✅ Created active subscription:', newSubscription.id);
           console.log('✅ Subscription status:', newSubscription.status);
           console.log('✅ Trial ends:', new Date(trialEnd * 1000).toISOString());
-          console.log('✅ Next billing date:', new Date(newSubscription.current_period_end * 1000).toISOString());
+          console.log('✅ Subscription created successfully!');
           
         } catch (err: any) {
-          console.error('❌ Error creating subscription:', err.message);
+          console.error('❌ Error in subscription flow:', err.message);
         }
       }
       // LEGACY FLOW: Old PaymentIntent that needs a subscription created (for backward compatibility)
