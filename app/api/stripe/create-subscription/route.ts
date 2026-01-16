@@ -5,6 +5,14 @@ export async function POST(request: Request) {
   try {
     const { userId, vehicleId, email, name } = await request.json();
     console.log('🚀 Creating subscription');
+    
+    // Validate Price ID exists
+    if (!process.env.STRIPE_PRICE_ID) {
+      console.error('❌ STRIPE_PRICE_ID environment variable is not set');
+      return NextResponse.json({ error: 'Stripe configuration error' }, { status: 500 });
+    }
+    
+    console.log('🔍 Using Price ID:', process.env.STRIPE_PRICE_ID);
 
     // Step 1: Create/find customer
     const customers = await stripe.customers.list({ email, limit: 1 });
@@ -35,11 +43,26 @@ export async function POST(request: Request) {
     });
 
     console.log('✅ Created Subscription:', subscription.id);
-    console.log('✅ Client secret:', !!subscription.latest_invoice.payment_intent.client_secret);
+    console.log('🔍 Subscription status:', subscription.status);
+    console.log('🔍 Latest invoice exists:', !!subscription.latest_invoice);
+    console.log('🔍 Payment intent exists:', !!subscription.latest_invoice?.payment_intent);
+    
+    // Check if we have the necessary payment intent data
+    const clientSecret = subscription.latest_invoice?.payment_intent?.client_secret;
+    
+    if (!clientSecret) {
+      console.error('❌ No payment intent created for subscription. Check Price ID configuration.');
+      console.error('Latest invoice:', subscription.latest_invoice);
+      return NextResponse.json({ 
+        error: 'No payment intent created for subscription. Please check that the Price ID is configured for recurring billing.' 
+      }, { status: 500 });
+    }
+
+    console.log('✅ Client secret:', !!clientSecret);
 
     // Return the client secret from the subscription's first invoice payment intent
     return NextResponse.json({
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      clientSecret: clientSecret,
       subscriptionId: subscription.id,
       customerId: customer.id,
     });
