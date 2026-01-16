@@ -45,16 +45,34 @@ export async function POST(request: Request) {
     console.log('✅ Created Subscription:', subscription.id);
     console.log('🔍 Subscription status:', subscription.status);
     console.log('🔍 Latest invoice exists:', !!subscription.latest_invoice);
-    console.log('🔍 Payment intent exists:', !!subscription.latest_invoice?.payment_intent);
+    console.log('🔍 Latest invoice status:', subscription.latest_invoice?.status);
     
-    // Check if we have the necessary payment intent data
-    const clientSecret = subscription.latest_invoice?.payment_intent?.client_secret;
+    // Step 3: Finalize the invoice to create the payment intent
+    let invoice = subscription.latest_invoice;
+    
+    if (invoice && invoice.status === 'open') {
+      console.log('🔧 Finalizing invoice to create payment intent...');
+      invoice = await stripe.invoices.finalizeInvoice(invoice.id, {
+        auto_advance: false, // Don't auto-charge, wait for confirmation
+        expand: ['payment_intent'], // Expand to get payment_intent details
+      });
+      console.log('✅ Invoice finalized:', invoice.id);
+      console.log('🔍 Finalized invoice status:', invoice.status);
+    }
+    
+    // Now check for payment intent
+    const clientSecret = invoice?.payment_intent?.client_secret;
+    console.log('🔍 Payment intent exists after finalization:', !!invoice?.payment_intent);
     
     if (!clientSecret) {
-      console.error('❌ No payment intent created for subscription. Check Price ID configuration.');
-      console.error('Latest invoice:', subscription.latest_invoice);
+      console.error('❌ No payment intent created after finalizing invoice.');
+      console.error('Invoice details:', {
+        id: invoice?.id,
+        status: invoice?.status,
+        payment_intent: invoice?.payment_intent?.id || 'none'
+      });
       return NextResponse.json({ 
-        error: 'No payment intent created for subscription. Please check that the Price ID is configured for recurring billing.' 
+        error: 'Failed to create payment intent for subscription.' 
       }, { status: 500 });
     }
 
