@@ -47,32 +47,65 @@ export async function POST(request: Request) {
     console.log('🔍 Latest invoice exists:', !!subscription.latest_invoice);
     console.log('🔍 Latest invoice status:', subscription.latest_invoice?.status);
     
-    // Step 3: Finalize the invoice to create the payment intent
+    // Step 3: Handle invoice and payment intent
     let invoice = subscription.latest_invoice;
+    let clientSecret = invoice?.payment_intent?.client_secret;
     
-    if (invoice && invoice.status === 'open') {
-      console.log('🔧 Finalizing invoice to create payment intent...');
-      invoice = await stripe.invoices.finalizeInvoice(invoice.id, {
-        auto_advance: false, // Don't auto-charge, wait for confirmation
-        expand: ['payment_intent'], // Expand to get payment_intent details
-      });
-      console.log('✅ Invoice finalized:', invoice.id);
-      console.log('🔍 Finalized invoice status:', invoice.status);
+    console.log('🔍 Initial payment intent exists:', !!invoice?.payment_intent);
+    console.log('🔍 Initial client secret exists:', !!clientSecret);
+    
+    // If no payment intent exists, try to get the invoice with expanded payment_intent
+    if (!clientSecret && invoice) {
+      console.log('🔧 Retrieving invoice with payment intent...');
+      try {
+        invoice = await stripe.invoices.retrieve(invoice.id, {
+          expand: ['payment_intent']
+        });
+        clientSecret = invoice?.payment_intent?.client_secret;
+        console.log('🔍 Retrieved invoice status:', invoice.status);
+        console.log('🔍 Payment intent exists after retrieval:', !!invoice?.payment_intent);
+      } catch (retrieveError: any) {
+        console.error('❌ Error retrieving invoice:', retrieveError.message);
+      }
     }
     
-    // Now check for payment intent
-    const clientSecret = invoice?.payment_intent?.client_secret;
-    console.log('🔍 Payment intent exists after finalization:', !!invoice?.payment_intent);
+    // If still no payment intent and invoice is in draft/open, try to finalize
+    if (!clientSecret && invoice && (invoice.status === 'draft' || invoice.status === 'open')) {
+      console.log('🔧 Finalizing invoice to create payment intent...');
+      try {
+        invoice = await stripe.invoices.finalizeInvoice(invoice.id, {
+          auto_advance: false, // Don't auto-charge, wait for confirmation
+          expand: ['payment_intent'], // Expand to get payment_intent details
+        });
+        clientSecret = invoice?.payment_intent?.client_secret;
+        console.log('✅ Invoice finalized:', invoice.id);
+        console.log('🔍 Finalized invoice status:', invoice.status);
+        console.log('🔍 Payment intent exists after finalization:', !!invoice?.payment_intent);
+      } catch (finalizeError: any) {
+        console.error('❌ Error finalizing invoice:', finalizeError.message);
+        // If finalization fails, the invoice might already be finalized, try retrieving again
+        try {
+          invoice = await stripe.invoices.retrieve(invoice.id, {
+            expand: ['payment_intent']
+          });
+          clientSecret = invoice?.payment_intent?.client_secret;
+          console.log('🔧 Retrieved invoice after finalization error');
+        } catch (secondRetrieveError: any) {
+          console.error('❌ Error on second retrieval:', secondRetrieveError.message);
+        }
+      }
+    }
     
     if (!clientSecret) {
-      console.error('❌ No payment intent created after finalizing invoice.');
+      console.error('❌ No payment intent created for subscription.');
       console.error('Invoice details:', {
         id: invoice?.id,
         status: invoice?.status,
-        payment_intent: invoice?.payment_intent?.id || 'none'
+        payment_intent: invoice?.payment_intent?.id || 'none',
+        subscription_id: subscription.id
       });
       return NextResponse.json({ 
-        error: 'Failed to create payment intent for subscription.' 
+        error: 'Failed to create payment intent for subscription. Please check Stripe configuration.' 
       }, { status: 500 });
     }
 
