@@ -13,29 +13,35 @@ export async function POST(request: Request) {
       name: name || 'DIP Member' 
     });
 
-    // Step 2: Create a PaymentIntent for the first $20 payment
-    const paymentIntent: any = await stripe.paymentIntents.create({
-      amount: 2000, // $20.00 in cents
-      currency: 'usd',
+    // Step 2: Create subscription with payment_behavior: 'default_incomplete'
+    // This automatically creates a payment intent for the first invoice
+    const subscription: any = await stripe.subscriptions.create({
       customer: customer.id,
-      setup_future_usage: 'off_session', // Save for future charges
+      items: [
+        {
+          price: process.env.STRIPE_PRICE_ID, // The $20/month price ID
+        },
+      ],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        save_default_payment_method: 'on_subscription',
+      },
+      expand: ['latest_invoice.payment_intent'],
       metadata: {
         userId,
         vehicleId: vehicleId || '',
         platform: 'iOS',
-        subscriptionPrice: process.env.STRIPE_PRICE_ID,
       },
     });
 
-    console.log('✅ Created PaymentIntent:', paymentIntent.id);
-    console.log('✅ Client secret:', !!paymentIntent.client_secret);
+    console.log('✅ Created Subscription:', subscription.id);
+    console.log('✅ Client secret:', !!subscription.latest_invoice.payment_intent.client_secret);
 
-    // Return the client secret (subscription will be created via webhook after payment)
+    // Return the client secret from the subscription's first invoice payment intent
     return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      subscriptionId: subscription.id,
       customerId: customer.id,
-      paymentIntentId: paymentIntent.id,
-      // Note: Subscription should be created via webhook after payment succeeds
     });
   } catch (error: any) {
     console.error('❌ Error:', error.message);
