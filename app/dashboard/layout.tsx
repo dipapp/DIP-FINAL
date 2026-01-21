@@ -70,37 +70,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-5">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-gray-900">
+          <div className="py-3">
+            <div className="flex items-center justify-between mb-3">
+              <h1 className="text-lg font-semibold text-gray-900">
                 My DIP Account
               </h1>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-600 font-medium">Active</span>
+              <div className="flex items-center space-x-1.5 bg-green-50 px-2.5 py-1 rounded-full">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-green-700 font-medium">Active</span>
               </div>
             </div>
             
             {/* Tab Navigation */}
-            <div className="flex space-x-1 overflow-x-auto pb-px">
+            <div className="flex space-x-0.5 overflow-x-auto">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
                   <Link 
                     key={tab.href} 
                     href={tab.href}
-                    className={`group relative flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
+                    className={`group relative flex items-center space-x-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
                       isActive 
-                        ? 'bg-blue-50 text-blue-600 shadow-sm' 
+                        ? 'bg-blue-50 text-blue-600' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
                     )}
-                    <div className={`transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}>
-                      {tab.icon}
-                    </div>
+                    {tab.icon}
                     <span>{tab.label}</span>
                   </Link>
                 );
@@ -111,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
         
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {children}
       </div>
     </div>
