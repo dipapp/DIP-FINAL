@@ -66,9 +66,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="border-t border-gray-700 pt-3">
                 <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
                   <div className="mb-1 md:mb-0">
-                    DIP is a membership program, not an insurance company.
-                  </div>
-                  <div className="mb-1 md:mb-0">
                     John 3:16
                   </div>
                   <div>
