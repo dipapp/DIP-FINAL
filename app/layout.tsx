@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     John 3:16
                   </div>
                   <div>
-                    © 2025 DIP. All rights reserved.
+                    © 2025-2026 DIP. All rights reserved.
                   </div>
                 </div>
               </div>
