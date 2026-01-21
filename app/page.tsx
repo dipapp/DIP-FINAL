@@ -317,6 +317,60 @@ export default function HomePage() {
           </a>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-10">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            {/* Brand */}
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <img src="/dip-logo.png" alt="DIP" className="h-8 w-auto brightness-0 invert" />
+                <span className="text-xl font-bold">DIP</span>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                DIP is a digital membership platform providing vehicle management tools and coordination services. 
+                DIP is NOT an insurance company and does not provide insurance coverage.
+              </p>
+              <p className="text-gray-500 text-xs">
+                © {new Date().getFullYear()} DIP. All rights reserved.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li><a href="/auth/sign-up" className="hover:text-white transition-colors">Join DIP</a></li>
+                <li><a href="/auth/sign-up?tab=login" className="hover:text-white transition-colors">Member Sign In</a></li>
+                <li><a href="/dashboard" className="hover:text-white transition-colors">My Account</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+              </ul>
+              <div className="mt-4">
+                <h4 className="font-semibold mb-2">Contact</h4>
+                <a href="mailto:support@dipmembers.com" className="text-gray-400 text-sm hover:text-white transition-colors">
+                  support@dipmembers.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom disclaimer */}
+          <div className="border-t border-gray-800 mt-8 pt-6">
+            <p className="text-gray-500 text-xs text-center">
+              DIP is a membership program, not an insurance company. We do not provide coverage, reimbursement, or guaranteed services.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
