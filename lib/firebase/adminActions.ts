@@ -25,8 +25,40 @@ export function subscribeVehiclesByOwner(ownerId: string, callback: (vehicles: V
 }
 
 export function subscribeClaims(callback: (claims: any[]) => void) {
-  const q = query(collection(db, 'claims'), orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))));
+  // Query from both "requests" (iOS) and "claims" (web) collections
+  const claimsById = new Map<string, any>();
+  
+  const updateCallback = () => {
+    const allClaims = Array.from(claimsById.values()).sort((a, b) => {
+      const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+      const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+      return bTime - aTime;
+    });
+    callback(allClaims);
+  };
+  
+  // Subscribe to "requests" collection (iOS)
+  const q1 = query(collection(db, 'requests'), orderBy('createdAt', 'desc'));
+  const unsub1 = onSnapshot(q1, (snap) => {
+    snap.docs.forEach((d) => {
+      claimsById.set(d.id, { id: d.id, source: 'requests', ...(d.data() as any) });
+    });
+    updateCallback();
+  });
+  
+  // Subscribe to "claims" collection (web)
+  const q2 = query(collection(db, 'claims'), orderBy('createdAt', 'desc'));
+  const unsub2 = onSnapshot(q2, (snap) => {
+    snap.docs.forEach((d) => {
+      claimsById.set(d.id, { id: d.id, source: 'claims', ...(d.data() as any) });
+    });
+    updateCallback();
+  });
+  
+  return () => {
+    unsub1();
+    unsub2();
+  };
 }
 
 export function subscribeClaimsByUser(userId: string, callback: (claims: any[]) => void) {
@@ -44,7 +76,13 @@ export async function setUserActive(uid: string, isActive: boolean) {
 }
 
 export async function updateClaimStatus(claimId: string, status: ClaimStatus) {
-  await updateDoc(doc(db, 'claims', claimId), { status, updatedAt: new Date() });
+  // Try updating in both collections - one will succeed
+  try {
+    await updateDoc(doc(db, 'requests', claimId), { status, updatedAt: new Date() });
+  } catch (e) {
+    // If not in requests, try claims
+    await updateDoc(doc(db, 'claims', claimId), { status, updatedAt: new Date() });
+  }
 }
 
 export async function updateVehicleAdmin(vehicleId: string, update: Partial<{ make: string; model: string; year: string; vin: string; licensePlate: string; state: string; color: string; isActive: boolean }>) {

@@ -134,6 +134,7 @@ export async function deleteByUrl(url: string) {
 
 export function subscribeMyClaims(callback: (claims: any[]) => void) {
   // Manage both auth and snapshot unsubs together
+  // iOS uses "requests" collection, web uses "claims" - query both
   let innerUnsub1: (() => void) | null = null;
   let innerUnsub2: (() => void) | null = null;
   let claimsById: Map<string, any> = new Map();
@@ -165,8 +166,8 @@ export function subscribeMyClaims(callback: (claims: any[]) => void) {
     };
     
     try {
-      // Query by userId (web format)
-      const q1 = query(collection(db, 'claims'), where('userId', '==', u.uid));
+      // Query from "requests" collection (iOS uses this)
+      const q1 = query(collection(db, 'requests'), where('userId', '==', u.uid));
       innerUnsub1 = onSnapshot(
         q1,
         (snap) => {
@@ -176,12 +177,12 @@ export function subscribeMyClaims(callback: (claims: any[]) => void) {
           updateCallback();
         },
         (error) => {
-          console.error('subscribeMyClaims (userId) error:', error);
+          console.error('subscribeMyClaims (requests) error:', error);
         }
       );
       
-      // Also query by uid (iOS format) in case some claims use that field
-      const q2 = query(collection(db, 'claims'), where('uid', '==', u.uid));
+      // Also query from "claims" collection (web uses this)
+      const q2 = query(collection(db, 'claims'), where('userId', '==', u.uid));
       innerUnsub2 = onSnapshot(
         q2,
         (snap) => {
@@ -191,8 +192,7 @@ export function subscribeMyClaims(callback: (claims: any[]) => void) {
           updateCallback();
         },
         (error) => {
-          // This might fail if uid field doesn't exist - that's okay
-          console.log('subscribeMyClaims (uid) - field may not exist:', error.message);
+          console.error('subscribeMyClaims (claims) error:', error);
         }
       );
     } catch (err) {
@@ -253,8 +253,12 @@ export async function getClaimById(claimId: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  const docRef = doc(db, 'claims', claimId);
-  const docSnap = await getDoc(docRef);
+  // Try "requests" collection first (iOS), then "claims" (web)
+  let docSnap = await getDoc(doc(db, 'requests', claimId));
+  
+  if (!docSnap.exists()) {
+    docSnap = await getDoc(doc(db, 'claims', claimId));
+  }
   
   if (!docSnap.exists()) {
     throw new Error('Request not found');
@@ -333,8 +337,14 @@ export async function cancelClaim(claimId: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  const docRef = doc(db, 'claims', claimId);
-  const docSnap = await getDoc(docRef);
+  // Try "requests" collection first (iOS), then "claims" (web)
+  let docRef = doc(db, 'requests', claimId);
+  let docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) {
+    docRef = doc(db, 'claims', claimId);
+    docSnap = await getDoc(docRef);
+  }
   
   if (!docSnap.exists()) {
     throw new Error('Claim not found');

@@ -21,24 +21,30 @@ export default function DashboardPage() {
         try {
           const vehiclesSnap = await getDocs(query(collection(db, 'vehicles'), where('ownerId', '==', u.uid)));
           
-          // Query claims by both userId (web) and uid (iOS) to catch all
-          const requestsSnap1 = await getDocs(query(collection(db, 'claims'), where('userId', '==', u.uid)));
-          let requestsSnap2Size = 0;
+          // Query from both "requests" (iOS) and "claims" (web) collections
+          const allRequestIds = new Set<string>();
+          
+          // Query "requests" collection (iOS uses this)
           try {
-            const requestsSnap2 = await getDocs(query(collection(db, 'claims'), where('uid', '==', u.uid)));
-            // Dedupe by id
-            const allIds = new Set(requestsSnap1.docs.map(d => d.id));
-            requestsSnap2.docs.forEach(d => allIds.add(d.id));
-            requestsSnap2Size = allIds.size - requestsSnap1.size;
-          } catch {
-            // uid field might not exist, that's okay
+            const requestsSnap = await getDocs(query(collection(db, 'requests'), where('userId', '==', u.uid)));
+            requestsSnap.docs.forEach(d => allRequestIds.add(d.id));
+          } catch (e) {
+            console.log('requests collection query failed:', e);
+          }
+          
+          // Query "claims" collection (web uses this)
+          try {
+            const claimsSnap = await getDocs(query(collection(db, 'claims'), where('userId', '==', u.uid)));
+            claimsSnap.docs.forEach(d => allRequestIds.add(d.id));
+          } catch (e) {
+            console.log('claims collection query failed:', e);
           }
           
           const activeVehicles = vehiclesSnap.docs.filter(d => d.data().isActive);
           
           setStats({
             vehicles: vehiclesSnap.size,
-            requests: requestsSnap1.size + requestsSnap2Size,
+            requests: allRequestIds.size,
             activeVehicles: activeVehicles.length
           });
         } catch (error) {
