@@ -304,48 +304,53 @@ export default function ProfilePage() {
       <InfoModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms & Privacy">
         <div className="space-y-4 text-sm text-gray-700">
           <p className="font-semibold text-gray-900">
-            Effective Date: {profile?.createdAt?.toDate?.()?.toLocaleDateString?.() || new Date().toLocaleDateString()}
+            Effective Date: January 15, 2026
           </p>
           
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">1. Membership Agreement</h4>
-            <p className="leading-relaxed">
-              By using DIP services, you agree to these terms. DIP is a membership program that provides deductible impact protection for registered vehicles. This is not an insurance product.
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <h4 className="font-bold text-yellow-800 mb-2">DIP IS NOT INSURANCE</h4>
+            <p className="text-yellow-800 text-xs leading-relaxed">
+              DIP is a digital membership platform and vehicle management tool. DIP does NOT sell, provide, or administer insurance of any kind. DIP does NOT provide coverage, reimbursement, or financial protection.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">2. Eligibility</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">1. Eligibility</h4>
             <p className="leading-relaxed">
-              Members must be at least 18 years old with a valid driver&apos;s license. Vehicles must have active auto insurance coverage to be eligible for DIP membership.
+              You must be at least 18 years of age to use the DIP App. By using the App, you represent and warrant that you are at least 18 years old and have the legal capacity to enter into this agreement.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">3. Coverage</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">2. Membership Features</h4>
+            <p className="leading-relaxed mb-2">DIP membership may include access to:</p>
+            <ul className="list-disc pl-5 space-y-1 text-xs">
+              <li>Digital vehicle wallet and document storage tools</li>
+              <li>Incident and accident documentation features</li>
+              <li>Referral and coordination tools for independent third-party providers</li>
+              <li>Vehicle marketplace for buying and selling vehicles</li>
+              <li>Promotional coupons offered by participating DIP-approved collision centers</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">3. Billing & Cancellation</h4>
             <p className="leading-relaxed">
-              DIP covers up to $1,000 per incident for qualifying deductible expenses. Claims must be submitted within 30 days of the incident and repairs must be completed at a DIP-certified partner shop.
+              Membership fees are billed on a recurring basis and are NON-REFUNDABLE. You may cancel your membership at any time. Cancellation takes effect at the end of the current billing period.
             </p>
           </div>
           
           <div>
             <h4 className="font-semibold text-gray-900 mb-2">4. Privacy Policy</h4>
             <p className="leading-relaxed">
-              We collect identity information (name, email, phone), vehicle information (VIN, photos), and insurance details to set up your account, verify identity, assist with claims, and prevent fraud. We retain this data only as long as necessary for these purposes.
+              We collect account information (name, email, phone), identity documents, vehicle information, and payment details to provide our services. Your data is securely protected using industry-standard encryption. We do NOT sell your personal information.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">5. Data Security</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">5. Third-Party Providers</h4>
             <p className="leading-relaxed">
-              Your data is securely protected using industry-standard encryption and security practices. We do not sell your personal information to third parties.
-            </p>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">6. Cancellation</h4>
-            <p className="leading-relaxed">
-              You may cancel your membership at any time. Cancellation takes effect at the end of your current billing period. No refunds are provided for partial months.
+              All collision centers, repair facilities, and other service providers accessible through DIP are independent third parties. DIP does not employ, supervise, or guarantee their services.
             </p>
           </div>
           
