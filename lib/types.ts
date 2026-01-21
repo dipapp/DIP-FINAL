@@ -88,10 +88,12 @@ export type MarketplaceListing = {
   isActive: boolean;
   createdAt: any;
   updatedAt: any;
+  // Location fields
   locationCity?: string;
   locationZip?: string;
   latitude?: number;
   longitude?: number;
+  // Vehicle-specific fields
   vehicleMake?: string;
   vehicleModel?: string;
   vehicleYear?: string;
@@ -99,6 +101,7 @@ export type MarketplaceListing = {
   vehicleMileage?: string;
   vehicleVIN?: string;
   titleStatus?: TitleStatus;
+  // Parts-specific fields
   partType?: string;
   compatibleVehicles?: string;
 };
