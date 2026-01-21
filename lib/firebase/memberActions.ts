@@ -288,6 +288,45 @@ export async function deleteClaimPhoto(claimId: string, photoURL: string) {
   await deleteByUrl(photoURL);
 }
 
+export async function cancelClaim(claimId: string) {
+  const u = auth.currentUser;
+  if (!u) throw new Error('Not authenticated');
+  
+  const docRef = doc(db, 'claims', claimId);
+  const docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) {
+    throw new Error('Claim not found');
+  }
+  
+  const claimData = docSnap.data();
+  
+  // Verify ownership
+  if (claimData.userId !== u.uid) {
+    throw new Error('Access denied - you can only cancel your own requests');
+  }
+  
+  // Only allow cancellation of Pending or In Review claims
+  const cancellableStatuses = ['Pending', 'In Review'];
+  if (!cancellableStatuses.includes(claimData.status)) {
+    throw new Error('Cannot cancel a request that has already been processed');
+  }
+  
+  // Delete all photos from storage
+  if (claimData.photoURLs && Array.isArray(claimData.photoURLs)) {
+    for (const photoUrl of claimData.photoURLs) {
+      try {
+        await deleteByUrl(photoUrl);
+      } catch (error) {
+        console.warn('Failed to delete photo:', photoUrl, error);
+      }
+    }
+  }
+  
+  // Delete the claim document
+  await deleteDoc(docRef);
+}
+
 export async function updateVehicle(vehicleId: string, update: Partial<{ make: string; model: string; year: string; vin: string; licensePlate: string; state: string; color: string }>) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');

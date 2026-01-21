@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getClaimById, addPhotosToClaim, updateClaimDescription, deleteClaimPhoto } from '@/lib/firebase/memberActions';
+import { getClaimById, addPhotosToClaim, updateClaimDescription, deleteClaimPhoto, cancelClaim } from '@/lib/firebase/memberActions';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
@@ -23,6 +23,8 @@ export default function RequestDetailPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const hasLoadedRef = useRef(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   async function loadClaim() {
     if (!claimId || hasLoadedRef.current) return;
@@ -113,6 +115,22 @@ export default function RequestDetailPage() {
     }
   }
 
+  async function handleCancelRequest() {
+    setCancelling(true);
+    try {
+      await cancelClaim(claimId);
+      setShowCancelModal(false);
+      router.push('/dashboard/claims');
+    } catch (err: any) {
+      setError(err.message || 'Failed to cancel request');
+      setCancelling(false);
+      setShowCancelModal(false);
+    }
+  }
+
+  // Check if claim can be cancelled
+  const canCancel = request?.status === 'Pending' || request?.status === 'In Review';
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { class: string; icon: string }> = {
       'Pending': { class: 'px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full', icon: '⏳' },
@@ -125,6 +143,129 @@ export default function RequestDetailPage() {
       <span className={config.class}>
         {config.icon} {status}
       </span>
+    );
+  };
+
+  // Status Timeline Component
+  const StatusTimeline = ({ status }: { status: string }) => {
+    const steps = [
+      { key: 'Pending', label: 'Submitted', icon: '📝' },
+      { key: 'In Review', label: 'In Review', icon: '👀' },
+      { key: 'Approved', label: 'Approved', icon: '✅' },
+      { key: 'Denied', label: 'Denied', icon: '❌' },
+    ];
+
+    const getStepStatus = (stepKey: string) => {
+      const statusOrder = ['Pending', 'In Review', 'Approved', 'Denied'];
+      const currentIndex = statusOrder.indexOf(status);
+      const stepIndex = statusOrder.indexOf(stepKey);
+      
+      // Special handling for Approved/Denied - they're mutually exclusive final states
+      if (status === 'Approved') {
+        if (stepKey === 'Denied') return 'inactive';
+        if (stepIndex <= 2) return stepIndex < currentIndex ? 'completed' : (stepIndex === currentIndex ? 'current' : 'inactive');
+      }
+      if (status === 'Denied') {
+        if (stepKey === 'Approved') return 'inactive';
+        if (stepIndex <= 1) return 'completed';
+        if (stepKey === 'Denied') return 'current';
+        return 'inactive';
+      }
+      
+      if (stepIndex < currentIndex) return 'completed';
+      if (stepIndex === currentIndex) return 'current';
+      return 'inactive';
+    };
+
+    const getStepColor = (stepStatus: string, stepKey: string) => {
+      if (stepStatus === 'completed') return 'bg-green-500';
+      if (stepStatus === 'current') {
+        if (stepKey === 'Pending') return 'bg-yellow-500';
+        if (stepKey === 'In Review') return 'bg-blue-500';
+        if (stepKey === 'Approved') return 'bg-green-500';
+        if (stepKey === 'Denied') return 'bg-red-500';
+      }
+      return 'bg-gray-300';
+    };
+
+    const getLineColor = (stepStatus: string) => {
+      return stepStatus === 'completed' ? 'bg-green-500' : 'bg-gray-300';
+    };
+
+    // Filter steps based on current status - show appropriate final state
+    const visibleSteps = status === 'Denied' 
+      ? steps.filter(s => s.key !== 'Approved')
+      : steps.filter(s => s.key !== 'Denied');
+
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Status Timeline</h2>
+        </div>
+
+        <div className="flex items-center justify-between">
+          {visibleSteps.map((step, index) => {
+            const stepStatus = getStepStatus(step.key);
+            const isLast = index === visibleSteps.length - 1;
+            
+            return (
+              <div key={step.key} className="flex items-center flex-1">
+                {/* Step circle and label */}
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold transition-all duration-300 ${getStepColor(stepStatus, step.key)}`}
+                  >
+                    {stepStatus === 'completed' ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <span className="text-sm">{step.icon}</span>
+                    )}
+                  </div>
+                  <span className={`mt-2 text-xs font-medium text-center ${stepStatus === 'inactive' ? 'text-gray-400' : 'text-gray-700'}`}>
+                    {step.label}
+                  </span>
+                </div>
+                
+                {/* Connecting line */}
+                {!isLast && (
+                  <div className={`flex-1 h-1 mx-2 rounded transition-all duration-300 ${getLineColor(stepStatus)}`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Status message */}
+        <div className="mt-6 p-4 rounded-lg bg-gray-50">
+          {status === 'Pending' && (
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold text-yellow-600">Your request has been submitted.</span> Our team will review it shortly.
+            </p>
+          )}
+          {status === 'In Review' && (
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold text-blue-600">Your request is currently being reviewed.</span> We&apos;ll notify you once a decision is made.
+            </p>
+          )}
+          {status === 'Approved' && (
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold text-green-600">Great news! Your request has been approved.</span> You will receive further instructions soon.
+            </p>
+          )}
+          {status === 'Denied' && (
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold text-red-600">Unfortunately, your request was denied.</span> Please contact support if you have questions.
+            </p>
+          )}
+        </div>
+      </div>
     );
   };
 
@@ -222,6 +363,9 @@ export default function RequestDetailPage() {
         </div>
         {getStatusBadge(request.status)}
       </div>
+
+      {/* Status Timeline */}
+      <StatusTimeline status={request.status || 'Pending'} />
 
       {/* Claim Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -455,17 +599,17 @@ export default function RequestDetailPage() {
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Request Dates */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Timeline</h2>
+          <h2 className="text-xl font-bold text-gray-900">Request Dates</h2>
         </div>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 font-medium">Created:</span>
@@ -480,6 +624,79 @@ export default function RequestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Request Section */}
+      {canCancel && (
+        <div className="bg-white rounded-lg border border-red-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Cancel Request</h3>
+              <p className="text-sm text-gray-600">
+                You can cancel this request since it hasn&apos;t been processed yet.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCancelModal(true)}
+              className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Cancel Request
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Cancel Request</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to cancel this service request? All photos and information associated with this request will be permanently deleted.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={cancelling}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Keep Request
+              </button>
+              <button
+                onClick={handleCancelRequest}
+                disabled={cancelling}
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+              >
+                {cancelling ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Cancelling...
+                  </>
+                ) : (
+                  'Cancel Request'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
