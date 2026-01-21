@@ -204,55 +204,56 @@ export default function ProfilePage() {
       </div>
 
       {/* About DIP Modal */}
-      <InfoModal isOpen={showAbout} onClose={() => setShowAbout(false)} title="About DIP">
+      <InfoModal isOpen={showAbout} onClose={() => setShowAbout(false)} title="About dip">
         <div className="space-y-4">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-2xl">dip</span>
-            </div>
-            <p className="text-gray-500 text-sm">Version 1.0.0</p>
-          </div>
-          
           <p className="text-gray-700 leading-relaxed">
-            DIP (Deductible Impact Protection) is a membership-based service that protects you from unexpected auto insurance deductibles.
+            dip is a digital auto wallet and membership platform.
           </p>
           
           <p className="text-gray-700 leading-relaxed">
-            Add your vehicles, purchase coverage, and submit claims all in one place. Our trusted partner network ensures guaranteed quality repairs at certified shops.
+            dip helps drivers organize vehicle information, document incidents, and navigate next steps using simple digital tools — all in one place.
+          </p>
+
+          <p className="text-gray-700 leading-relaxed">
+            dip is also a car marketplace that connects you with buyers and sellers.
           </p>
           
-          <div className="bg-blue-50 rounded-lg p-4 mt-4">
-            <h4 className="font-semibold text-gray-900 mb-2">Key Features:</h4>
-            <ul className="space-y-2 text-gray-700 text-sm">
-              <li className="flex items-center">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Up to $1,000 deductible coverage
+          <p className="text-gray-700 leading-relaxed">
+            dip does not provide insurance, roadside assistance, towing services, or motor club benefits.
+          </p>
+          
+          <div className="mt-4">
+            <p className="font-semibold text-gray-900 mb-3">With dip, you can:</p>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>Securely store your driver&apos;s license, vehicle registration, and insurance information</span>
               </li>
-              <li className="flex items-center">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                24/7 Claims Support
+              <li className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>Document vehicle incidents in real time using guided tools</span>
               </li>
-              <li className="flex items-center">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                No waiting period
+              <li className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>Use coordination features to connect with independent third-party service providers</span>
               </li>
-              <li className="flex items-center">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Cancel anytime
+              <li className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>Access discounts or promotional offers from participating, independent repair facilities</span>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-2">•</span>
+                <span>Buy and sell vehicles, parts, and accessories through our marketplace</span>
               </li>
             </ul>
           </div>
           
-          <p className="text-gray-500 text-xs text-center mt-4">
-            © 1994–2025 DIP. All rights reserved.
+          <p className="text-gray-700 leading-relaxed mt-4">
+            All services accessed through dip are provided by independent third-party providers. Selection of any service provider is entirely at the member&apos;s discretion.
+          </p>
+          
+          <p className="text-gray-600 text-sm mt-4">
+            dip is not an insurance company and does not provide coverage, reimbursement, or guaranteed services.
           </p>
         </div>
       </InfoModal>
