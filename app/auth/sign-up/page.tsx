@@ -453,22 +453,12 @@ function AuthPageContent() {
               </div>
               
               {/* Terms notice */}
-              <div className="text-center">
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  By tapping &quot;Create Account&quot; you agree to DIP&apos;s{' '}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Terms of Service</a>
-                  {' '}and acknowledge the{' '}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Privacy Policy</a>.
-                </p>
-                <a 
-                  href="/terms" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
-                >
-                  View Terms of Service & Privacy Policy
-                </a>
-              </div>
+              <p className="text-xs text-gray-500 text-center leading-relaxed">
+                By tapping &quot;Create Account&quot; you agree to DIP&apos;s{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Terms of Service</a>
+                {' '}and acknowledge the{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Privacy Policy</a>.
+              </p>
               
               <button 
                 type="submit" 

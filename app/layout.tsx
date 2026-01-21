@@ -37,29 +37,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <span className="text-lg font-bold">DIP</span>
                   </div>
                   <p className="text-gray-400 text-sm">
-                    Professional vehicle support services for California drivers.
+                    Your digital wallet & automotive marketplace.
                   </p>
                 </div>
                 
-                {/* Services */}
+                {/* Marketplace */}
                 <div>
-                  <h4 className="font-semibold mb-2 text-sm">Services</h4>
+                  <h4 className="font-semibold mb-2 text-sm">Marketplace</h4>
                   <div className="space-y-1 text-sm text-gray-400">
-                    <div>Accident Support Services</div>
-                    <div>Vehicle Membership</div>
-                    <div>Emergency Support</div>
-                    <div>Member Benefits</div>
+                    <div>Buy & Sell Vehicles</div>
+                    <div>Auto Parts & Accessories</div>
+                    <div>Vehicle Services</div>
+                    <div>Member Listings</div>
                   </div>
                 </div>
                 
                 {/* Support */}
                 <div>
                   <h4 className="font-semibold mb-2 text-sm">Support</h4>
-                  <div className="space-y-1 text-sm text-gray-400">
-                    <div>24/7 Emergency</div>
-                    <div>Member Support</div>
-                    <div>Help Center</div>
-                    <div>Contact Us</div>
+                  <div className="space-y-1 text-sm">
+                    <a href="mailto:support@dipmembers.com" className="text-gray-400 hover:text-white transition-colors block">
+                      Contact Us
+                    </a>
                   </div>
                 </div>
               </div>
