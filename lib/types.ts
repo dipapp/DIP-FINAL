@@ -68,3 +68,63 @@ export type Claim = {
   updatedAt: any;
 };
 
+// Marketplace Types
+export type ListingCategory = 'vehicle' | 'parts';
+export type ItemCondition = 'new' | 'used' | 'for_parts';
+export type TitleStatus = 'clean' | 'salvage' | 'lien_sale';
+
+export type MarketplaceListing = {
+  id: string;
+  sellerId: string;
+  sellerEmail: string;
+  sellerName: string;
+  sellerPhone?: string;
+  category: ListingCategory;
+  title: string;
+  price: number;
+  condition: ItemCondition;
+  description: string;
+  photoURLs: string[];
+  isActive: boolean;
+  createdAt: any;
+  updatedAt: any;
+  locationCity?: string;
+  locationZip?: string;
+  latitude?: number;
+  longitude?: number;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleYear?: string;
+  vehicleColor?: string;
+  vehicleMileage?: string;
+  vehicleVIN?: string;
+  titleStatus?: TitleStatus;
+  partType?: string;
+  compatibleVehicles?: string;
+};
+
+export type MarketplaceConversation = {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  listingPhotoURL?: string;
+  sellerId: string;
+  sellerName: string;
+  buyerId: string;
+  buyerName: string;
+  lastMessage: string;
+  lastMessageTimestamp: any;
+  unreadForBuyer: number;
+  unreadForSeller: number;
+  participants: string[];
+};
+
+export type MarketplaceMessage = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  timestamp: any;
+  isRead: boolean;
+};
