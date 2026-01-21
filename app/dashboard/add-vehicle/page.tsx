@@ -82,7 +82,7 @@ export default function AddVehiclePage() {
       </div>
       
       <div className="max-w-4xl mx-auto">
-        <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-2xl shadow-xl p-8 mb-6 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-xl p-8 mb-6 overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
           
@@ -102,7 +102,7 @@ export default function AddVehiclePage() {
           <div className="mb-8">
             <div className="relative bg-gray-100 rounded-full h-3 mb-3 overflow-hidden">
               <div 
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-full transition-all duration-500 shadow-lg"
+                className="absolute inset-y-0 left-0 bg-blue-600 rounded-full transition-all duration-500 shadow-lg"
                 style={{ width: `${progressWidth}%` }}
               >
                 <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
@@ -119,14 +119,14 @@ export default function AddVehiclePage() {
             <div className="relative group">
               <div className={`rounded-2xl p-6 border-2 transition-all duration-300 ${
                 form.licensePlate && form.state 
-                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300 shadow-lg' 
-                  : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300 shadow-md hover:shadow-lg'
+                  ? 'bg-green-50 border-green-300 shadow-lg' 
+                  : 'bg-blue-50 border-blue-300 shadow-md hover:shadow-lg'
               }`}>
                 <div className="flex items-center mb-5">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-md ${
                     form.licensePlate && form.state 
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
-                      : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                      ? 'bg-green-600' 
+                      : 'bg-blue-600'
                   }`}>
                     {form.licensePlate && form.state ? (
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@ export default function AddVehiclePage() {
                     type="button"
                     className={`inline-flex items-center px-8 py-4 text-base font-bold rounded-xl transition-all duration-300 shadow-lg ${
                       form.licensePlate && form.state && !lookingUpVin
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-105 transform'
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:scale-105 transform'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                     disabled={!form.licensePlate || !form.state || lookingUpVin}
@@ -218,17 +218,17 @@ export default function AddVehiclePage() {
 
             <div className={`relative rounded-2xl p-6 border-2 transition-all duration-300 ${
               form.vin.length === 17 && form.make && form.model && form.year
-                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300 shadow-lg'
+                ? 'bg-green-50 border-green-300 shadow-lg'
                 : form.licensePlate && form.state
-                  ? 'bg-gradient-to-br from-gray-50 to-slate-50 border-gray-300 shadow-md'
+                  ? 'bg-gray-50 border-gray-300 shadow-md'
                   : 'bg-gray-100 border-gray-300 opacity-50'
             }`}>
               <div className="flex items-center mb-5">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-md ${
                   form.vin.length === 17 && form.make && form.model && form.year
-                    ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                    ? 'bg-green-600' 
                     : form.licensePlate && form.state
-                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                      ? 'bg-blue-600'
                       : 'bg-gray-300'
                 }`}>
                   {form.vin.length === 17 && form.make && form.model && form.year ? (
@@ -349,7 +349,7 @@ export default function AddVehiclePage() {
             </div>
 
             {isFormValid && (
-              <div className="relative bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 shadow-xl overflow-hidden">
+              <div className="relative bg-green-600 rounded-2xl p-6 shadow-xl overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                 <div className="relative flex items-center justify-center space-x-4">
                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -374,17 +374,11 @@ export default function AddVehiclePage() {
                 className={`group relative inline-flex items-center px-10 py-5 text-lg font-bold rounded-2xl shadow-2xl transition-all duration-300 overflow-hidden ${
                   !isFormValid || adding
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:scale-105 transform hover:shadow-2xl'
+                    : 'bg-blue-600 text-white hover:scale-105 transform hover:shadow-2xl hover:bg-blue-700'
                 }`}
                 onClick={createVehicle}
                 disabled={!isFormValid || adding}
               >
-                {!isFormValid && !adding && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20"></div>
-                )}
-                {isFormValid && !adding && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                )}
                 
                 <span className="relative z-10 flex items-center">
                   {adding ? (

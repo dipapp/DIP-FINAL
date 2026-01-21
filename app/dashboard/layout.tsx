@@ -63,16 +63,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Dashboard Header with gradient */}
-      <div className="relative bg-white/80 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
-        {/* Gradient accent bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Dashboard Header */}
+      <div className="relative bg-white border-b border-gray-200 shadow-sm">
+        {/* Accent bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-5">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold text-gray-900">
                 My DIP Account
               </h1>
               <div className="flex items-center space-x-2">
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             
-            {/* Modern Tab Navigation */}
+            {/* Tab Navigation */}
             <div className="flex space-x-1 overflow-x-auto pb-px">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
@@ -91,12 +91,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href={tab.href}
                     className={`group relative flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
                       isActive 
-                        ? 'bg-gradient-to-b from-blue-50 to-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
+                        ? 'bg-blue-50 text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
                     )}
                     <div className={`transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}>
                       {tab.icon}
