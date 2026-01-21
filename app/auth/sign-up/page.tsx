@@ -28,8 +28,6 @@ function AuthPageContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [optedInMarketing, setOptedInMarketing] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,10 +83,6 @@ function AuthPageContent() {
       setError('Passwords do not match.');
       return;
     }
-    if (!agreedToTerms) {
-      setError('You must agree to the Terms and Conditions.');
-      return;
-    }
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
       return;
@@ -112,7 +106,7 @@ function AuthPageContent() {
         firstName,
         lastName,
         phoneNumber,
-        marketingOptIn: optedInMarketing,
+        marketingOptIn: false,
         isAdmin: cred.user.email === 'admin@dipmembers.com',
         isActive: true,
         createdAt: serverTimestamp(),
@@ -210,12 +204,9 @@ function AuthPageContent() {
           <div className="text-center mb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/dip-logo.png" alt="DIP Logo" className="h-12 w-auto mx-auto mb-3" />
-            <h1 className="text-xl font-bold text-gray-900 mb-1">
+            <h1 className="text-xl font-bold text-gray-900">
               {selectedTab === 0 ? 'Sign In to Your Account' : 'Join DIP Today'}
             </h1>
-            <p className="text-gray-600 text-sm">
-              {selectedTab === 0 ? 'Access your membership services' : 'Start your membership in minutes'}
-            </p>
           </div>
 
           {/* Tab Navigation - AAA Style */}
@@ -287,6 +278,14 @@ function AuthPageContent() {
                   </>
                 )}
               </button>
+
+              {/* Terms notice for Google Sign In */}
+              <p className="text-xs text-gray-500 text-center leading-relaxed">
+                By tapping Continue with Google you agree to DIP&apos;s{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a>
+                {' '}and acknowledge the{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>.
+              </p>
               
               {/* Divider */}
               <div className="relative my-4">
@@ -453,52 +452,28 @@ function AuthPageContent() {
                 />
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                  <button 
-                    type="button" 
-                    onClick={() => setAgreedToTerms(!agreedToTerms)} 
-                    className={`mt-1 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-                      agreedToTerms ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {agreedToTerms && <span className="text-xs font-bold">✓</span>}
-                  </button>
-                  <div className="text-xs">
-                    <p className="text-gray-700 leading-relaxed">
-                      I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>. I consent to receive disclosures electronically.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-2">
-                  <button 
-                    type="button" 
-                    onClick={() => setOptedInMarketing(!optedInMarketing)} 
-                    className={`mt-1 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-                      optedInMarketing ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {optedInMarketing && <span className="text-xs font-bold">✓</span>}
-                  </button>
-                  <p className="text-xs text-gray-700">Send me updates about new services and benefits.</p>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    <strong>Privacy Notice:</strong> We collect personal and vehicle information to provide membership services, verify identity, and process service requests. Your data is securely protected and only used as described in our Privacy Policy. DIP is a membership program, not an insurance company.
-                  </p>
-                </div>
+              {/* Terms notice */}
+              <div className="text-center">
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  By tapping &quot;Create Account&quot; you agree to DIP&apos;s{' '}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Terms of Service</a>
+                  {' '}and acknowledge the{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium underline">Privacy Policy</a>.
+                </p>
+                <a 
+                  href="/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
+                >
+                  View Terms of Service & Privacy Policy
+                </a>
               </div>
               
               <button 
                 type="submit" 
-                disabled={!agreedToTerms || loading} 
-                className={`w-full font-semibold py-2 rounded-lg transition-colors ${
-                  agreedToTerms 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                disabled={loading} 
+                className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
@@ -506,7 +481,7 @@ function AuthPageContent() {
                     Creating Account...
                   </div>
                 ) : (
-                  'Join DIP'
+                  'Create Account'
                 )}
               </button>
             </form>
