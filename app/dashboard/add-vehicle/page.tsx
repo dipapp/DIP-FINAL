@@ -220,7 +220,7 @@ export default function AddVehiclePage() {
                 )}
               </button>
             </div>
-            </div>
+          </div>
           </div>
 
           {/* Step 2: Vehicle Details */}
