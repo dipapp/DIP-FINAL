@@ -63,30 +63,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Dashboard Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="py-4">
-            <h1 className="text-lg font-semibold text-gray-900 mb-3">
-              My DIP Account
-            </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Dashboard Header with gradient */}
+      <div className="relative bg-white/80 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
+        {/* Gradient accent bar */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-5">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+                My DIP Account
+              </h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-600 font-medium">Active</span>
+              </div>
+            </div>
             
-            {/* Tab Navigation */}
-            <div className="flex space-x-0.5 border-b border-gray-200 -mb-px overflow-x-auto">
+            {/* Modern Tab Navigation */}
+            <div className="flex space-x-1 overflow-x-auto pb-px">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
                   <Link 
                     key={tab.href} 
                     href={tab.href}
-                    className={`flex items-center space-x-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                    className={`group relative flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all duration-200 whitespace-nowrap ${
                       isActive 
-                        ? 'border-blue-600 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'bg-gradient-to-b from-blue-50 to-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
                     }`}
                   >
-                    {tab.icon}
+                    {isActive && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"></div>
+                    )}
+                    <div className={`transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}>
+                      {tab.icon}
+                    </div>
                     <span>{tab.label}</span>
                   </Link>
                 );
@@ -97,7 +111,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
         
       {/* Content Area */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </div>
     </div>
