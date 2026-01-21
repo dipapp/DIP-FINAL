@@ -20,12 +20,25 @@ export default function DashboardPage() {
         // Load quick stats
         try {
           const vehiclesSnap = await getDocs(query(collection(db, 'vehicles'), where('ownerId', '==', u.uid)));
-          const requestsSnap = await getDocs(query(collection(db, 'claims'), where('userId', '==', u.uid)));
+          
+          // Query claims by both userId (web) and uid (iOS) to catch all
+          const requestsSnap1 = await getDocs(query(collection(db, 'claims'), where('userId', '==', u.uid)));
+          let requestsSnap2Size = 0;
+          try {
+            const requestsSnap2 = await getDocs(query(collection(db, 'claims'), where('uid', '==', u.uid)));
+            // Dedupe by id
+            const allIds = new Set(requestsSnap1.docs.map(d => d.id));
+            requestsSnap2.docs.forEach(d => allIds.add(d.id));
+            requestsSnap2Size = allIds.size - requestsSnap1.size;
+          } catch {
+            // uid field might not exist, that's okay
+          }
+          
           const activeVehicles = vehiclesSnap.docs.filter(d => d.data().isActive);
           
           setStats({
             vehicles: vehiclesSnap.size,
-            requests: requestsSnap.size,
+            requests: requestsSnap1.size + requestsSnap2Size,
             activeVehicles: activeVehicles.length
           });
         } catch (error) {

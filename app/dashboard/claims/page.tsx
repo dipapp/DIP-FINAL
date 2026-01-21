@@ -271,71 +271,50 @@ export default function MyRequestsPage() {
       )}
 
       {/* Claims List */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
+            <h2 className="text-lg font-bold text-gray-900">Your Requests</h2>
+            <span className="text-sm text-gray-500">({serviceRequests.length})</span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Your Service Requests</h2>
         </div>
         
         {serviceRequests.length > 0 ? (
-          <div className="space-y-4">
+          <div className="divide-y divide-gray-100">
             {serviceRequests.map((request) => (
-              <div key={request.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-gray-900 capitalize">{request.type?.replace('-', ' ') || 'Service Request'}</h3>
-                      {getStatusBadge(request.status)}
-                    </div>
-                    <p className="text-gray-600 mb-2">{request.description}</p>
-                    <div className="text-sm text-gray-500 space-y-1">
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-1-1V8a1 1 0 00-1-1H9m4 8V8a1 1 0 00-1-1H9" />
-                        </svg>
-                        Vehicle: {request.vehicleYear} {request.vehicleMake} {request.vehicleModel}
-                      </div>
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Location: {request.location || 'Not specified'}
-                      </div>
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Submitted: {request.createdAt?.toDate?.()?.toLocaleString?.() || 'Unknown'}
-                      </div>
-                    </div>
+              <div key={request.id} className="py-3 flex items-center justify-between hover:bg-gray-50 -mx-4 px-4 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-gray-900 text-sm truncate">
+                      {request.vehicleYear} {request.vehicleMake} {request.vehicleModel}
+                    </span>
+                    {getStatusBadge(request.status)}
                   </div>
-                  <a
-                    href={`/dashboard/claims/${request.id}`}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    View Details
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <span>{request.createdAt?.toDate?.()?.toLocaleDateString?.() || 'Unknown date'}</span>
+                    {request.description && (
+                      <span className="truncate max-w-[200px]">{request.description}</span>
+                    )}
+                  </div>
                 </div>
+                <a
+                  href={`/dashboard/claims/${request.id}`}
+                  className="ml-4 text-sm font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                >
+                  View →
+                </a>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Service Requests</h3>
-            <p className="text-gray-600">You haven't submitted any service requests yet.</p>
+          <div className="text-center py-8">
+            <svg className="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p className="text-gray-500 text-sm">No service requests yet</p>
           </div>
         )}
       </div>

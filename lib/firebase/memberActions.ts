@@ -134,25 +134,65 @@ export async function deleteByUrl(url: string) {
 
 export function subscribeMyClaims(callback: (claims: any[]) => void) {
   // Manage both auth and snapshot unsubs together
-  let innerUnsub: (() => void) | null = null;
+  let innerUnsub1: (() => void) | null = null;
+  let innerUnsub2: (() => void) | null = null;
+  let claimsById: Map<string, any> = new Map();
+  
   const authUnsub = auth.onAuthStateChanged((u) => {
-    if (innerUnsub) {
-      innerUnsub();
-      innerUnsub = null;
+    if (innerUnsub1) {
+      innerUnsub1();
+      innerUnsub1 = null;
     }
+    if (innerUnsub2) {
+      innerUnsub2();
+      innerUnsub2 = null;
+    }
+    claimsById = new Map();
+    
     if (!u) {
       callback([]);
       return;
     }
+    
+    const updateCallback = () => {
+      // Sort by createdAt descending (most recent first)
+      const allClaims = Array.from(claimsById.values()).sort((a, b) => {
+        const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+        const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+        return bTime - aTime;
+      });
+      callback(allClaims);
+    };
+    
     try {
-      // Remove orderBy to avoid composite index requirement; sort client-side if desired
-      const q = query(collection(db, 'claims'), where('userId', '==', u.uid));
-      innerUnsub = onSnapshot(
-        q,
-        (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))),
+      // Query by userId (web format)
+      const q1 = query(collection(db, 'claims'), where('userId', '==', u.uid));
+      innerUnsub1 = onSnapshot(
+        q1,
+        (snap) => {
+          snap.docs.forEach((d) => {
+            claimsById.set(d.id, { id: d.id, ...(d.data() as any) });
+          });
+          updateCallback();
+        },
         (error) => {
-          console.error('subscribeMyClaims error:', error);
-          callback([]);
+          console.error('subscribeMyClaims (userId) error:', error);
+        }
+      );
+      
+      // Also query by uid (iOS format) in case some claims use that field
+      const q2 = query(collection(db, 'claims'), where('uid', '==', u.uid));
+      innerUnsub2 = onSnapshot(
+        q2,
+        (snap) => {
+          snap.docs.forEach((d) => {
+            claimsById.set(d.id, { id: d.id, ...(d.data() as any) });
+          });
+          updateCallback();
+        },
+        (error) => {
+          // This might fail if uid field doesn't exist - that's okay
+          console.log('subscribeMyClaims (uid) - field may not exist:', error.message);
         }
       );
     } catch (err) {
@@ -162,7 +202,8 @@ export function subscribeMyClaims(callback: (claims: any[]) => void) {
   });
   return () => {
     authUnsub();
-    if (innerUnsub) innerUnsub();
+    if (innerUnsub1) innerUnsub1();
+    if (innerUnsub2) innerUnsub2();
   };
 }
 
