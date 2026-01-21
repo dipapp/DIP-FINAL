@@ -132,85 +132,58 @@ export async function deleteByUrl(url: string) {
   }
 }
 
-export function subscribeMyClaims(callback: (claims: any[]) => void) {
-  // Manage both auth and snapshot unsubs together
-  // iOS uses "requests" collection, web uses "claims" - query both
-  let innerUnsub1: (() => void) | null = null;
-  let innerUnsub2: (() => void) | null = null;
-  let claimsById: Map<string, any> = new Map();
+export function subscribeMyRequests(callback: (requests: any[]) => void) {
+  // Use "requests" collection (same as iOS)
+  let innerUnsub: (() => void) | null = null;
   
   const authUnsub = auth.onAuthStateChanged((u) => {
-    if (innerUnsub1) {
-      innerUnsub1();
-      innerUnsub1 = null;
+    if (innerUnsub) {
+      innerUnsub();
+      innerUnsub = null;
     }
-    if (innerUnsub2) {
-      innerUnsub2();
-      innerUnsub2 = null;
-    }
-    claimsById = new Map();
     
     if (!u) {
       callback([]);
       return;
     }
     
-    const updateCallback = () => {
-      // Sort by createdAt descending (most recent first)
-      const allClaims = Array.from(claimsById.values()).sort((a, b) => {
-        const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
-        const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
-        return bTime - aTime;
-      });
-      callback(allClaims);
-    };
-    
     try {
-      // Query from "requests" collection (iOS uses this)
-      const q1 = query(collection(db, 'requests'), where('userId', '==', u.uid));
-      innerUnsub1 = onSnapshot(
-        q1,
+      const q = query(collection(db, 'requests'), where('userId', '==', u.uid));
+      innerUnsub = onSnapshot(
+        q,
         (snap) => {
-          snap.docs.forEach((d) => {
-            claimsById.set(d.id, { id: d.id, ...(d.data() as any) });
+          const requests = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+          // Sort by createdAt descending (most recent first)
+          requests.sort((a, b) => {
+            const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+            const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+            return bTime - aTime;
           });
-          updateCallback();
+          callback(requests);
         },
         (error) => {
-          console.error('subscribeMyClaims (requests) error:', error);
-        }
-      );
-      
-      // Also query from "claims" collection (web uses this)
-      const q2 = query(collection(db, 'claims'), where('userId', '==', u.uid));
-      innerUnsub2 = onSnapshot(
-        q2,
-        (snap) => {
-          snap.docs.forEach((d) => {
-            claimsById.set(d.id, { id: d.id, ...(d.data() as any) });
-          });
-          updateCallback();
-        },
-        (error) => {
-          console.error('subscribeMyClaims (claims) error:', error);
+          console.error('subscribeMyRequests error:', error);
+          callback([]);
         }
       );
     } catch (err) {
-      console.error('subscribeMyClaims init error:', err);
+      console.error('subscribeMyRequests init error:', err);
       callback([]);
     }
   });
   return () => {
     authUnsub();
-    if (innerUnsub1) innerUnsub1();
-    if (innerUnsub2) innerUnsub2();
+    if (innerUnsub) innerUnsub();
   };
 }
 
-export async function createClaimDraft(vehicle: { id: string; make: string; model: string; year: string }, userProfile: any) {
+// Alias for backward compatibility
+export const subscribeMyClaims = subscribeMyRequests;
+
+export async function createRequestDraft(vehicle: { id: string; make: string; model: string; year: string }, userProfile: any) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
-  const refDoc = doc(collection(db, 'claims'));
+  const refDoc = doc(collection(db, 'requests'));
   const base = {
     userId: u.uid,
     userEmail: u.email ?? '',
@@ -232,14 +205,20 @@ export async function createClaimDraft(vehicle: { id: string; make: string; mode
   return refDoc.id;
 }
 
-export async function uploadClaimPhoto(claimId: string, file: File) {
-  const r = ref(storage, `claims/${claimId}/photos/photo_${Date.now()}.jpg`);
+// Alias for backward compatibility
+export const createClaimDraft = createRequestDraft;
+
+export async function uploadRequestPhoto(requestId: string, file: File) {
+  const r = ref(storage, `requests/${requestId}/photos/photo_${Date.now()}.jpg`);
   await uploadBytes(r, file, { contentType: file.type || 'image/jpeg' });
   return await getDownloadURL(r);
 }
 
-export async function submitClaim(claimId: string, data: { amount: number; description?: string; userPhoneNumber: string; photoURLs: string[]; date?: Date }) {
-  await updateDoc(doc(db, 'claims', claimId), {
+// Alias for backward compatibility
+export const uploadClaimPhoto = uploadRequestPhoto;
+
+export async function submitRequest(requestId: string, data: { amount: number; description?: string; userPhoneNumber: string; photoURLs: string[]; date?: Date }) {
+  await updateDoc(doc(db, 'requests', requestId), {
     amount: data.amount,
     description: data.description ?? '',
     userPhoneNumber: data.userPhoneNumber,
@@ -249,16 +228,14 @@ export async function submitClaim(claimId: string, data: { amount: number; descr
   });
 }
 
-export async function getClaimById(claimId: string) {
+// Alias for backward compatibility
+export const submitClaim = submitRequest;
+
+export async function getRequestById(requestId: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  // Try "requests" collection first (iOS), then "claims" (web)
-  let docSnap = await getDoc(doc(db, 'requests', claimId));
-  
-  if (!docSnap.exists()) {
-    docSnap = await getDoc(doc(db, 'claims', claimId));
-  }
+  const docSnap = await getDoc(doc(db, 'requests', requestId));
   
   if (!docSnap.exists()) {
     throw new Error('Request not found');
@@ -272,17 +249,20 @@ export async function getClaimById(claimId: string) {
   return { id: docSnap.id, ...data };
 }
 
-export async function addPhotosToClaim(claimId: string, files: File[]) {
+// Alias for backward compatibility
+export const getClaimById = getRequestById;
+
+export async function addPhotosToRequest(requestId: string, files: File[]) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
   const urls: string[] = [];
   for (const file of files) {
-    const url = await uploadClaimPhoto(claimId, file);
+    const url = await uploadRequestPhoto(requestId, file);
     urls.push(url);
   }
   
-  const docRef = doc(db, 'claims', claimId);
+  const docRef = doc(db, 'requests', requestId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists() || docSnap.data().userId !== u.uid) {
     throw new Error('Access denied');
@@ -295,11 +275,14 @@ export async function addPhotosToClaim(claimId: string, files: File[]) {
   });
 }
 
-export async function updateClaimDescription(claimId: string, description: string) {
+// Alias for backward compatibility
+export const addPhotosToClaim = addPhotosToRequest;
+
+export async function updateRequestDescription(requestId: string, description: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  const docRef = doc(db, 'claims', claimId);
+  const docRef = doc(db, 'requests', requestId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists() || docSnap.data().userId !== u.uid) {
     throw new Error('Access denied');
@@ -311,11 +294,14 @@ export async function updateClaimDescription(claimId: string, description: strin
   });
 }
 
-export async function deleteClaimPhoto(claimId: string, photoURL: string) {
+// Alias for backward compatibility
+export const updateClaimDescription = updateRequestDescription;
+
+export async function deleteRequestPhoto(requestId: string, photoURL: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  const docRef = doc(db, 'claims', claimId);
+  const docRef = doc(db, 'requests', requestId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists() || docSnap.data().userId !== u.uid) {
     throw new Error('Access denied');
@@ -333,39 +319,36 @@ export async function deleteClaimPhoto(claimId: string, photoURL: string) {
   await deleteByUrl(photoURL);
 }
 
-export async function cancelClaim(claimId: string) {
+// Alias for backward compatibility
+export const deleteClaimPhoto = deleteRequestPhoto;
+
+export async function cancelRequest(requestId: string) {
   const u = auth.currentUser;
   if (!u) throw new Error('Not authenticated');
   
-  // Try "requests" collection first (iOS), then "claims" (web)
-  let docRef = doc(db, 'requests', claimId);
-  let docSnap = await getDoc(docRef);
+  const docRef = doc(db, 'requests', requestId);
+  const docSnap = await getDoc(docRef);
   
   if (!docSnap.exists()) {
-    docRef = doc(db, 'claims', claimId);
-    docSnap = await getDoc(docRef);
+    throw new Error('Request not found');
   }
   
-  if (!docSnap.exists()) {
-    throw new Error('Claim not found');
-  }
-  
-  const claimData = docSnap.data();
+  const requestData = docSnap.data();
   
   // Verify ownership
-  if (claimData.userId !== u.uid) {
+  if (requestData.userId !== u.uid) {
     throw new Error('Access denied - you can only cancel your own requests');
   }
   
-  // Only allow cancellation of Pending or In Review claims
+  // Only allow cancellation of Pending or In Review requests
   const cancellableStatuses = ['Pending', 'In Review'];
-  if (!cancellableStatuses.includes(claimData.status)) {
+  if (!cancellableStatuses.includes(requestData.status)) {
     throw new Error('Cannot cancel a request that has already been processed');
   }
   
   // Delete all photos from storage
-  if (claimData.photoURLs && Array.isArray(claimData.photoURLs)) {
-    for (const photoUrl of claimData.photoURLs) {
+  if (requestData.photoURLs && Array.isArray(requestData.photoURLs)) {
+    for (const photoUrl of requestData.photoURLs) {
       try {
         await deleteByUrl(photoUrl);
       } catch (error) {
@@ -374,9 +357,12 @@ export async function cancelClaim(claimId: string) {
     }
   }
   
-  // Delete the claim document
+  // Delete the request document
   await deleteDoc(docRef);
 }
+
+// Alias for backward compatibility
+export const cancelClaim = cancelRequest;
 
 export async function updateVehicle(vehicleId: string, update: Partial<{ make: string; model: string; year: string; vin: string; licensePlate: string; state: string; color: string }>) {
   const u = auth.currentUser;

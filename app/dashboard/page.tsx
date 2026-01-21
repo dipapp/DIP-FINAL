@@ -20,31 +20,12 @@ export default function DashboardPage() {
         // Load quick stats
         try {
           const vehiclesSnap = await getDocs(query(collection(db, 'vehicles'), where('ownerId', '==', u.uid)));
-          
-          // Query from both "requests" (iOS) and "claims" (web) collections
-          const allRequestIds = new Set<string>();
-          
-          // Query "requests" collection (iOS uses this)
-          try {
-            const requestsSnap = await getDocs(query(collection(db, 'requests'), where('userId', '==', u.uid)));
-            requestsSnap.docs.forEach(d => allRequestIds.add(d.id));
-          } catch (e) {
-            console.log('requests collection query failed:', e);
-          }
-          
-          // Query "claims" collection (web uses this)
-          try {
-            const claimsSnap = await getDocs(query(collection(db, 'claims'), where('userId', '==', u.uid)));
-            claimsSnap.docs.forEach(d => allRequestIds.add(d.id));
-          } catch (e) {
-            console.log('claims collection query failed:', e);
-          }
-          
+          const requestsSnap = await getDocs(query(collection(db, 'requests'), where('userId', '==', u.uid)));
           const activeVehicles = vehiclesSnap.docs.filter(d => d.data().isActive);
           
           setStats({
             vehicles: vehiclesSnap.size,
-            requests: allRequestIds.size,
+            requests: requestsSnap.size,
             activeVehicles: activeVehicles.length
           });
         } catch (error) {
