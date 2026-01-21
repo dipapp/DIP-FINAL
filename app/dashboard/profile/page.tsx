@@ -302,69 +302,164 @@ export default function ProfilePage() {
 
       {/* Terms & Privacy Modal */}
       <InfoModal isOpen={showTerms} onClose={() => setShowTerms(false)} title="Terms & Privacy">
-        <div className="space-y-4 text-sm text-gray-700">
-          <p className="font-semibold text-gray-900">
-            Effective Date: January 15, 2026
-          </p>
-          
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <h4 className="font-bold text-yellow-800 mb-2">DIP IS NOT INSURANCE</h4>
-            <p className="text-yellow-800 text-xs leading-relaxed">
-              DIP is a digital membership platform and vehicle management tool. DIP does NOT sell, provide, or administer insurance of any kind. DIP does NOT provide coverage, reimbursement, or financial protection.
-            </p>
-          </div>
-          
+        <div className="space-y-6 text-sm text-gray-700">
+          {/* TERMS OF SERVICE */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">1. Eligibility</h4>
-            <p className="leading-relaxed">
-              You must be at least 18 years of age to use the DIP App. By using the App, you represent and warrant that you are at least 18 years old and have the legal capacity to enter into this agreement.
+            <h3 className="text-lg font-bold text-gray-900 mb-2">DIP – Terms of Service</h3>
+            <p className="text-gray-600 text-xs mb-4">
+              <strong>Effective Date:</strong> January 15, 2026 | <strong>Last Updated:</strong> January 15, 2026
             </p>
+            
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <h4 className="font-bold text-red-800 mb-1 text-sm">IMPORTANT LEGAL NOTICE</h4>
+              <p className="text-red-700 text-xs leading-relaxed">
+                By downloading, accessing, registering for, or using the DIP application (&quot;App&quot;), you agree to be bound by these Terms of Service. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THE APP.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 1: Eligibility and Account Requirements</h4>
+                <p className="text-xs leading-relaxed mb-2">You must be at least 18 years of age to use the DIP App. You must provide accurate, current, and complete information during registration. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <h4 className="font-bold text-yellow-800 mb-1 text-sm">Section 2: DIP IS NOT INSURANCE</h4>
+                <p className="text-yellow-800 text-xs leading-relaxed mb-2">DIP is a digital membership platform and vehicle management tool. DIP IS NOT AN INSURANCE COMPANY, INSURANCE BROKER, OR INSURANCE AGENT.</p>
+                <ul className="list-disc pl-4 text-yellow-800 text-xs space-y-1">
+                  <li>DIP does NOT sell, provide, or administer insurance of any kind</li>
+                  <li>DIP does NOT provide coverage, reimbursement, indemnification, or financial protection</li>
+                  <li>DIP membership is NOT a substitute for legally required automobile insurance</li>
+                  <li>DIP does NOT pay for vehicle repairs or reimburse any costs</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 3: Membership and Subscription</h4>
+                <p className="text-xs leading-relaxed mb-2">DIP membership may include access to:</p>
+                <ul className="list-disc pl-4 text-xs space-y-1 mb-2">
+                  <li>Digital vehicle wallet and document storage tools</li>
+                  <li>Incident and accident documentation features</li>
+                  <li>Referral and coordination tools for independent third-party providers</li>
+                  <li>Promotional coupons offered by participating DIP-approved collision centers</li>
+                  <li>Vehicle marketplace for buying and selling vehicles</li>
+                </ul>
+                <p className="text-xs leading-relaxed">Membership fees are billed on a recurring basis and are NON-REFUNDABLE except where required by applicable law. Your membership will automatically renew unless you cancel before the renewal date.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 4: Coupon Program</h4>
+                <p className="text-xs leading-relaxed">Coupons are available ONLY to active, paid DIP members and are valid ONLY at DIP-approved collision center locations. Coupon values, availability, and terms are determined by participating providers. DIP does not guarantee coupon availability or acceptance.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 5: Digital Wallet and Document Storage</h4>
+                <p className="text-xs leading-relaxed">DIP allows you to store digital copies of driver&apos;s license, vehicle registration, insurance cards, and vehicle photos. You are solely responsible for the accuracy and legality of documents you upload. DIP-stored documents may not be accepted by law enforcement or government agencies.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 6: Marketplace</h4>
+                <p className="text-xs leading-relaxed">DIP provides a peer-to-peer marketplace for users to buy and sell vehicles. DIP is a platform only and is NOT a party to any transaction. DIP does NOT guarantee any marketplace transaction, verify vehicle titles, or mediate disputes between buyers and sellers.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 7: Third-Party Service Providers</h4>
+                <p className="text-xs leading-relaxed">All collision centers, repair facilities, towing companies, and other service providers accessible through DIP are INDEPENDENT THIRD PARTIES. DIP does not employ, supervise, control, or guarantee their services.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 8: Limitation of Liability</h4>
+                <p className="text-xs leading-relaxed">THE DIP APP IS PROVIDED &quot;AS IS&quot; WITHOUT WARRANTIES OF ANY KIND. TO THE FULLEST EXTENT PERMITTED BY LAW, DIP SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 9: Dispute Resolution</h4>
+                <p className="text-xs leading-relaxed">Any dispute not resolved informally shall be resolved by BINDING ARBITRATION in Los Angeles County, California. YOU AGREE TO RESOLVE DISPUTES ON AN INDIVIDUAL BASIS ONLY AND WAIVE THE RIGHT TO PARTICIPATE IN CLASS ACTIONS.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 10: Governing Law</h4>
+                <p className="text-xs leading-relaxed">These Terms are governed by the laws of the State of California.</p>
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">2. Membership Features</h4>
-            <p className="leading-relaxed mb-2">DIP membership may include access to:</p>
-            <ul className="list-disc pl-5 space-y-1 text-xs">
-              <li>Digital vehicle wallet and document storage tools</li>
-              <li>Incident and accident documentation features</li>
-              <li>Referral and coordination tools for independent third-party providers</li>
-              <li>Vehicle marketplace for buying and selling vehicles</li>
-              <li>Promotional coupons offered by participating DIP-approved collision centers</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">3. Billing & Cancellation</h4>
-            <p className="leading-relaxed">
-              Membership fees are billed on a recurring basis and are NON-REFUNDABLE. You may cancel your membership at any time. Cancellation takes effect at the end of the current billing period.
+
+          <div className="border-t border-gray-300 pt-6">
+            {/* PRIVACY POLICY */}
+            <h3 className="text-lg font-bold text-gray-900 mb-2">DIP – Privacy Policy</h3>
+            <p className="text-gray-600 text-xs mb-4">
+              <strong>Effective Date:</strong> January 15, 2026 | <strong>Last Updated:</strong> January 15, 2026
             </p>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 1: Information We Collect</h4>
+                <p className="text-xs leading-relaxed mb-2"><strong>Information You Provide:</strong></p>
+                <ul className="list-disc pl-4 text-xs space-y-1 mb-2">
+                  <li>Account Information: Name, email address, phone number, password</li>
+                  <li>Identity Documents: Driver&apos;s license images</li>
+                  <li>Vehicle Information: VIN, make, model, year, license plate, photos</li>
+                  <li>Insurance & Registration Documents</li>
+                  <li>Payment Information (processed by Stripe)</li>
+                  <li>Marketplace Content: Listings, descriptions, photos, messages</li>
+                </ul>
+                <p className="text-xs leading-relaxed"><strong>Information Collected Automatically:</strong> Device information, usage data, log data, IP address.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 2: How We Use Your Information</h4>
+                <ul className="list-disc pl-4 text-xs space-y-1">
+                  <li>Create and manage your account</li>
+                  <li>Process membership payments and subscriptions</li>
+                  <li>Provide digital wallet and document storage features</li>
+                  <li>Facilitate marketplace listings and transactions</li>
+                  <li>Process coupon requests and coordinate with service providers</li>
+                  <li>Verify identity and prevent fraud</li>
+                  <li>Comply with legal obligations</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 3: How We Share Your Information</h4>
+                <p className="text-xs leading-relaxed mb-2">We share information with service providers (Stripe, Firebase), collision centers when you request services, and other marketplace users for listings. We may disclose information to comply with legal requirements.</p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                  <p className="text-green-800 text-xs font-semibold">WE DO NOT SELL YOUR PERSONAL INFORMATION.</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 4: Data Security</h4>
+                <p className="text-xs leading-relaxed">We implement reasonable security measures including encryption of data in transit and at rest, secure authentication systems, and access controls. No system is 100% secure.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 5: Data Retention</h4>
+                <p className="text-xs leading-relaxed">We retain your information while your account is active. Upon account deletion request, most data is deleted within 30 days. Some data may be retained for legal compliance.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 6: Your Privacy Rights</h4>
+                <p className="text-xs leading-relaxed">You may request access to, correction of, or deletion of your personal information. You may opt out of marketing communications. To exercise your rights, contact support@dipmembers.com.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 7: California Privacy Rights (CCPA/CPRA)</h4>
+                <p className="text-xs leading-relaxed">California residents have additional rights including the right to know, delete, correct, and opt-out. DIP does not sell personal information. We will not discriminate against you for exercising your privacy rights.</p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Section 8: Contact Us</h4>
+                <p className="text-xs leading-relaxed">
+                  <strong>DIP Member Support</strong><br />
+                  Email: support@dipmembers.com
+                </p>
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">4. Privacy Policy</h4>
-            <p className="leading-relaxed">
-              We collect account information (name, email, phone), identity documents, vehicle information, and payment details to provide our services. Your data is securely protected using industry-standard encryption. We do NOT sell your personal information.
-            </p>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">5. Third-Party Providers</h4>
-            <p className="leading-relaxed">
-              All collision centers, repair facilities, and other service providers accessible through DIP are independent third parties. DIP does not employ, supervise, or guarantee their services.
-            </p>
-          </div>
-          
-          <div className="pt-4 border-t border-gray-200">
-            <p className="text-gray-500 text-xs">
-              For the complete Terms of Service and Privacy Policy, visit{' '}
-              <a href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Terms of Service
-              </a>
-              {' '}and{' '}
-              <a href="/privacy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Privacy Policy
-              </a>
-              .
+
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-gray-600 text-xs text-center">
+              By using DIP, you acknowledge that you have read, understood, and agree to these Terms of Service and Privacy Policy.
             </p>
           </div>
         </div>
