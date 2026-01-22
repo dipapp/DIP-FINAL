@@ -6,7 +6,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/dashboard/vehicles');
+    router.push('/dashboard/marketplace');
   }, [router]);
 
   return null;
