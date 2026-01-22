@@ -1483,11 +1483,11 @@ function ListingDetailModal({
           {/* Photos */}
           {listing.photoURLs.length > 0 ? (
             <div className="relative">
-              <div className="bg-gray-100 flex items-center justify-center h-80">
+              <div className="bg-gray-100 flex items-center justify-center h-80 overflow-hidden">
                 <img
                   src={listing.photoURLs[currentPhotoIndex]}
                   alt={listing.title}
-                  className="w-full h-full object-contain"
+                  className="max-w-full max-h-full object-contain"
                 />
               </div>
               
