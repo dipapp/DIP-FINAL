@@ -232,212 +232,96 @@ function MyVehiclesPageContent() {
 
   if (loading) {
     return (
-      <div className="card text-center py-12">
-        <div className="loading-spinner mx-auto mb-4"></div>
-        <p className="text-muted">Loading your vehicles...</p>
+      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-sm text-gray-600">Loading your vehicles...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <div className="flex justify-start">
-        <BackButton />
-      </div>
+    <div className="space-y-4">
+      <BackButton />
 
-      {/* My Vehicles List */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-1-1V8a1 1 0 00-1-1H9m4 8V8a1 1 0 00-1-1H9" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              My Vehicles
-            </h2>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900">Wallet</h2>
+        <div className="flex items-center space-x-2">
+          <div className="bg-green-50 px-3 py-1.5 rounded-lg flex items-center space-x-1.5">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <span className="text-xs text-green-700 font-medium">{vehicles.filter(v => v.isActive).length} Active</span>
           </div>
-          
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-700 font-medium text-sm">{vehicles.filter(v => v.isActive).length} Active</span>
-              </div>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <span className="text-gray-700 font-medium text-sm">{vehicles.length} Total</span>
-              </div>
-            </div>
+          <div className="bg-gray-50 px-3 py-1.5 rounded-lg flex items-center space-x-1.5">
+            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+            <span className="text-xs text-gray-600 font-medium">{vehicles.length} Total</span>
           </div>
         </div>
+      </div>
 
-        {vehicles.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-1-1V8a1 1 0 00-1-1H9m4 8V8a1 1 0 00-1-1H9" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No vehicles yet</h3>
-            <p className="text-gray-600 mb-6">Add your first vehicle to get started with DIP benefits.</p>
+      {vehicles.length === 0 ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-1-1V8a1 1 0 00-1-1H9m4 8V8a1 1 0 00-1-1H9" />
+            </svg>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vehicles.map((vehicle) => (
-              <div key={vehicle.id} className="bg-gray-50 rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    {getVehicleIcon(vehicle.make) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={getVehicleIcon(vehicle.make) as string} alt={`${vehicle.make} logo`} className="w-10 h-10 object-contain" />
-                    ) : (
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900">{vehicle.year} {vehicle.make}</h3>
-                      <p className="text-gray-600">{vehicle.model}</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No vehicles yet</h3>
+          <p className="text-sm text-gray-600 mb-6">Add your first vehicle to get started with DIP benefits.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {vehicles.map((vehicle) => (
+            <button
+              key={vehicle.id}
+              onClick={() => {
+                setSelectedVehicle(vehicle);
+                setShowPhotoModal(true);
+              }}
+              className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all p-4 text-left"
+            >
+              <div className="flex items-center space-x-4">
+                {/* Vehicle Image/Logo */}
+                <div className="flex-shrink-0">
+                  {getVehicleIcon(vehicle.make) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      src={getVehicleIcon(vehicle.make) as string} 
+                      alt={`${vehicle.make} logo`} 
+                      className="w-20 h-20 object-contain p-2 bg-gray-50 rounded-xl"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-blue-50 rounded-xl flex items-center justify-center">
+                      <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-1-1V8a1 1 0 00-1-1H9m4 8V8a1 1 0 00-1-1H9" />
+                      </svg>
                     </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    vehicle.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
+                  )}
+                </div>
+
+                {/* Vehicle Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {vehicle.year} {vehicle.make}
+                  </h3>
+                  <p className="text-sm text-gray-600">{vehicle.model}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Updated {new Date(vehicle.lastUpdated?.toDate?.() || Date.now()).toLocaleDateString()}
+                  </p>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="flex flex-col items-center space-y-1">
+                  <div className={`w-3 h-3 rounded-full ${vehicle.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className={`text-xs font-semibold ${vehicle.isActive ? 'text-green-600' : 'text-red-600'}`}>
                     {vehicle.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-
-                {/* Key Details */}
-                <div className="space-y-2 mb-4">
-                  {vehicle.vin && (
-                    <div className="flex items-center text-sm">
-                      <span className="text-gray-500 w-16">VIN:</span>
-                      <span className="font-mono text-gray-900">{vehicle.vin}</span>
-                    </div>
-                  )}
-                  {vehicle.licensePlate && (
-                    <div className="flex items-center text-sm">
-                      <span className="text-gray-500 w-16">Plate:</span>
-                      <span className="font-medium text-gray-900">{vehicle.licensePlate}</span>
-                    </div>
-                  )}
-                  {vehicle.state && (
-                    <div className="flex items-center text-sm">
-                      <span className="text-gray-500 w-16">State:</span>
-                      <span className="text-gray-900">{vehicle.state}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Primary Actions */}
-                <div className="flex gap-2 mb-3">
-                  {!vehicle.isActive && (
-                    <button
-                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                      onClick={async () => { 
-                        try {
-                          setActivatingVehicleId(vehicle.id);
-                          
-                          // Get current user
-                          const user = auth.currentUser;
-                          if (!user) {
-                            alert('Please sign in to activate your vehicle');
-                            return;
-                          }
-
-                          // Create Stripe checkout session
-                          const response = await fetch('/api/stripe/checkout', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${await user.getIdToken()}`,
-                            },
-                            body: JSON.stringify({
-                              vehicleId: vehicle.id,
-                              userId: user.uid,
-                            }),
-                          });
-
-                          if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.error || 'Failed to create checkout session');
-                          }
-
-                          const { url } = await response.json();
-                          
-                          // Redirect to Stripe Checkout
-                          window.location.href = url;
-                        } catch (error) {
-                          console.error('Error creating checkout session:', error);
-                          alert('Failed to start checkout process. Please try again.');
-                          setActivatingVehicleId(null);
-                        }
-                      }}
-                    >
-                      Activate
-                    </button>
-                  )}
-                  <Link 
-                    href={{ pathname: '/dashboard/subscription', query: { vehicleId: vehicle.id } }} 
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center"
-                  >
-                    Manage Membership
-                  </Link>
-                </div>
-
-                {/* Secondary Actions */}
-                <div className="flex gap-2 mb-2">
-                  <button
-                    className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                    onClick={() => {
-                      setSelectedVehicle(vehicle);
-                      setShowPhotoModal(true);
-                    }}
-                  >
-                    📸 Photos
-                  </button>
-                  <button
-                    className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                    onClick={() => {
-                      setEditingId(vehicle.id);
-                      setEditForm({
-                        vin: vehicle.vin || '',
-                        licensePlate: vehicle.licensePlate || '',
-                        state: vehicle.state || '',
-                        color: vehicle.color || '',
-                      });
-                    }}
-                  >
-                    Edit
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"
-                    onClick={() => {
-                      setDeletingVehicleId(vehicle.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Delete vehicle"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Edit Modal */}
       {editingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -541,20 +425,11 @@ function MyVehiclesPageContent() {
               <h3 className="text-xl font-bold text-gray-900">Delete Vehicle</h3>
             </div>
             
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this vehicle? This action cannot be undone and will remove all associated data including photos and documents.
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this vehicle? This action cannot be undone.
             </p>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center space-x-2 text-sm text-red-700">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                <span className="font-medium">This will permanently delete the vehicle and all its data</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end space-x-3">
               <button
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 onClick={() => {
@@ -586,13 +461,13 @@ function MyVehiclesPageContent() {
         </div>
       )}
 
-      {/* Photo Viewing Modal */}
+      {/* Vehicle Detail Modal */}
       {showPhotoModal && selectedVehicle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">
-                Photos - {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
+          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
               </h3>
               <button
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -608,7 +483,50 @@ function MyVehiclesPageContent() {
               </button>
             </div>
             
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+            <div className="p-6 space-y-6">
+              {/* Status */}
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Status</p>
+                <span className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${
+                  selectedVehicle.isActive 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'bg-red-50 text-red-700'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${selectedVehicle.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span>{selectedVehicle.isActive ? 'Active' : 'Inactive'}</span>
+                </span>
+              </div>
+
+              {/* Vehicle Details */}
+              <div className="grid grid-cols-2 gap-4">
+                {selectedVehicle.vin && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">VIN</p>
+                    <p className="text-sm font-mono text-gray-900">{selectedVehicle.vin}</p>
+                  </div>
+                )}
+                {selectedVehicle.licensePlate && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">License Plate</p>
+                    <p className="text-sm font-semibold text-gray-900">{selectedVehicle.licensePlate}</p>
+                  </div>
+                )}
+                {selectedVehicle.state && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">State</p>
+                    <p className="text-sm text-gray-900">{selectedVehicle.state}</p>
+                  </div>
+                )}
+                {selectedVehicle.color && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">Color</p>
+                    <p className="text-sm text-gray-900">{selectedVehicle.color}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Photos Section */}
+              <div>
               {selectedVehicle.photos && selectedVehicle.photos.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {selectedVehicle.photos.map((photo: any, index: number) => {
@@ -677,6 +595,103 @@ function MyVehiclesPageContent() {
                   <p className="text-gray-600">Upload photos of your vehicle to view them here.</p>
                 </div>
               )}
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 pt-4 border-t">
+                {!selectedVehicle.isActive && (
+                  <button
+                    className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        setActivatingVehicleId(selectedVehicle.id);
+                        const user = auth.currentUser;
+                        if (!user) {
+                          alert('Please sign in to activate your vehicle');
+                          return;
+                        }
+                        const response = await fetch('/api/stripe/checkout', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${await user.getIdToken()}`,
+                          },
+                          body: JSON.stringify({
+                            vehicleId: selectedVehicle.id,
+                            userId: user.uid,
+                          }),
+                        });
+                        if (!response.ok) {
+                          const error = await response.json();
+                          throw new Error(error.error || 'Failed to create checkout session');
+                        }
+                        const { url } = await response.json();
+                        window.location.href = url;
+                      } catch (error) {
+                        console.error('Error creating checkout session:', error);
+                        alert('Failed to start checkout process. Please try again.');
+                        setActivatingVehicleId(null);
+                      }
+                    }}
+                  >
+                    Activate
+                  </button>
+                )}
+                <Link 
+                  href={{ pathname: '/dashboard/subscription', query: { vehicleId: selectedVehicle.id } }} 
+                  className="block w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm text-center"
+                >
+                  Manage Membership
+                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (event) => {
+                        const file = (event.target as HTMLInputElement).files?.[0];
+                        if (file) {
+                          await handlePhotoUpload(selectedVehicle.id, file);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    📸 Photos
+                  </button>
+                  <button
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(selectedVehicle.id);
+                      setEditForm({
+                        vin: selectedVehicle.vin || '',
+                        licensePlate: selectedVehicle.licensePlate || '',
+                        state: selectedVehicle.state || '',
+                        color: selectedVehicle.color || '',
+                      });
+                      setShowPhotoModal(false);
+                    }}
+                  >
+                    Edit
+                  </button>
+                </div>
+                <button
+                  className="w-full px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium text-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeletingVehicleId(selectedVehicle.id);
+                    setShowDeleteModal(true);
+                    setShowPhotoModal(false);
+                  }}
+                >
+                  🗑️ Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
