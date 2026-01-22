@@ -86,10 +86,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4">
-            <h1 className="text-xl font-semibold text-gray-900 mb-4">
-              My DIP Account
-            </h1>
-            
             {/* Tab Navigation */}
             <div className="flex space-x-1 overflow-x-auto">
               {tabs.map((tab) => {
