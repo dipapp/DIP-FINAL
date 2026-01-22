@@ -26,7 +26,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center space-x-2 mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/dip-logo.png" alt="DIP Logo" className="h-6 w-auto" />
-                  <span className="text-sm font-bold">DIGITAL CAR WALLET</span>
+                  <span className="text-sm font-bold">digital car wallet</span>
                 </div>
                 <p className="text-gray-400 text-sm">
                   Your digital wallet & automotive marketplace.
