@@ -31,7 +31,7 @@ export default function Navbar() {
               alt="DIP Logo" 
               className="h-10 w-auto" 
             />
-            <div className="text-2xl font-bold text-blue-600">DIP</div>
+            <div className="text-xl font-bold text-blue-600">DIGITAL CAR WALLET</div>
           </Link>
 
           {/* Desktop Navigation - AAA Style */}
