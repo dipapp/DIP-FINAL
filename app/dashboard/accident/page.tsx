@@ -38,6 +38,10 @@ export default function AccidentRequestPage() {
 
   const activeVehicles = vehicles.filter(v => v.isActive);
 
+  const handleNewRequest = () => {
+    setShowClaimForm(true);
+  };
+
   const handleClaimSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedVehicle || !phoneNumber.trim() || !anyInjuries || photos.length === 0) {
