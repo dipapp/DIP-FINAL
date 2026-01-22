@@ -104,9 +104,7 @@ export type MarketplaceListing = {
   // Parts-specific fields
   partType?: string;
   compatibleVehicles?: string;
-};
-
-export type MarketplaceConversation = {
+};export type MarketplaceConversation = {
   id: string;
   listingId: string;
   listingTitle: string;

@@ -6,6 +6,7 @@ import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, delet
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { MarketplaceListing, MarketplaceConversation, MarketplaceMessage, ListingCategory, ItemCondition, TitleStatus } from '@/lib/types';
 import Image from 'next/image';
+import { useGuestMode } from '@/contexts/GuestModeContext';
 
 // Category display helpers
 const categoryLabels: Record<ListingCategory, string> = {
@@ -61,6 +62,7 @@ export default function MarketplacePage() {
   const [showInbox, setShowInbox] = useState(false);
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { requireAuth } = useGuestMode();
 
   // Auth and data loading
   useEffect(() => {
@@ -137,26 +139,31 @@ export default function MarketplacePage() {
 
   // My listings
   const myListings = user ? listings.filter(l => l.sellerId === user.uid) : [];
-
-  if (!user) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-sky-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">🏪</span>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">DIP Marketplace</h2>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Buy and sell vehicles and parts with other DIP members. Sign in to browse listings or post your own.
-        </p>
-        <a 
-          href="/auth/sign-up?tab=login" 
-          className="inline-flex items-center bg-sky-500 text-white font-semibold px-6 py-3 rounded-xl hover:bg-sky-600 transition-all shadow-lg hover:shadow-xl"
-        >
-          Sign In to Browse
-        </a>
-      </div>
-    );
-  }
+  
+  // Handle protected actions for guests
+  const handleCreateListing = () => {
+    if (!user) {
+      requireAuth('Sign in to post a listing');
+      return;
+    }
+    setShowCreateModal(true);
+  };
+  
+  const handleShowInbox = () => {
+    if (!user) {
+      requireAuth('Sign in to view your messages');
+      return;
+    }
+    setShowInbox(true);
+  };
+  
+  const handleShowMyListings = () => {
+    if (!user) {
+      requireAuth('Sign in to view your listings');
+      return;
+    }
+    setShowMyListings(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -170,14 +177,14 @@ export default function MarketplacePage() {
         <div className="flex items-center gap-3">
           {/* Inbox Button */}
           <button
-            onClick={() => setShowInbox(true)}
+            onClick={handleShowInbox}
             className="relative flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <span className="font-medium text-gray-700">Inbox</span>
-            {unreadCount > 0 && (
+            {user && unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
@@ -186,14 +193,14 @@ export default function MarketplacePage() {
           
           {/* My Listings Button */}
           <button
-            onClick={() => setShowMyListings(true)}
+            onClick={handleShowMyListings}
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <span className="font-medium text-gray-700">My Listings</span>
-            {myListings.length > 0 && (
+            {user && myListings.length > 0 && (
               <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">
                 {myListings.length}
               </span>
@@ -202,7 +209,7 @@ export default function MarketplacePage() {
           
           {/* Create Listing Button */}
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleCreateListing}
             className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 transition-all shadow-lg hover:shadow-xl"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,7 +297,7 @@ export default function MarketplacePage() {
           <h3 className="text-xl font-bold text-gray-900 mb-2">No Listings Yet</h3>
           <p className="text-gray-600 mb-6">Be the first to list something for sale!</p>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleCreateListing}
             className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 transition-all shadow-lg"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1350,13 +1357,17 @@ function ListingDetailModal({
   const [showChat, setShowChat] = useState(false);
   const [conversation, setConversation] = useState<MarketplaceConversation | null>(null);
   const [startingChat, setStartingChat] = useState(false);
+  const { requireAuth } = useGuestMode();
 
   const displayTitle = listing.category === 'vehicle' && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
     ? `${listing.vehicleYear} ${listing.vehicleMake} ${listing.vehicleModel}`
     : listing.title;
 
   const startConversation = async () => {
-    if (!user) return;
+    if (!user) {
+      requireAuth('Sign in to message the seller');
+      return;
+    }
     
     setStartingChat(true);
     try {

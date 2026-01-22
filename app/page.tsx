@@ -75,12 +75,8 @@ export default function HomePage() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      if (u) router.replace('/dashboard');
-    });
-    return () => unsub();
-  }, [router]);
+  // Removed auto-redirect to allow guest browsing
+  // Users can navigate to dashboard manually
 
   // Ensure page starts at top
   useEffect(() => {
