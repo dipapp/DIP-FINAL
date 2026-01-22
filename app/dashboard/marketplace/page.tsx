@@ -1535,48 +1535,134 @@ function ListingDetailModal({
           )}
           
           {/* Details */}
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-4">
+            {/* Title */}
+            <h3 className="text-xl font-bold text-gray-900">{displayTitle}</h3>
+            
             {/* Price */}
             <div className="text-3xl font-bold text-gray-900">
               {formatPrice(listing.price)}
             </div>
+            
+            {/* Quick Stats - Mileage for vehicles */}
+            {listing.category === 'vehicle' && listing.vehicleMileage && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span className="font-medium">{parseInt(listing.vehicleMileage).toLocaleString()} Miles</span>
+              </div>
+            )}
             
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
                 {conditionLabels[listing.condition]}
               </span>
-              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                {categoryLabels[listing.category]}
-              </span>
               {listing.titleStatus && (
                 <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
                   {titleStatusLabels[listing.titleStatus]}
                 </span>
               )}
+              {listing.vehicleColor && (
+                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {listing.vehicleColor}
+                </span>
+              )}
             </div>
             
-            {/* Vehicle Details */}
-            {listing.category === 'vehicle' && (
-              <div className="grid grid-cols-2 gap-4">
-                {listing.vehicleMileage && (
+            {/* VIN Section with Copy Button */}
+            {listing.category === 'vehicle' && listing.vehicleVIN && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-gray-500">Mileage</div>
-                    <div className="font-medium">{parseInt(listing.vehicleMileage).toLocaleString()} miles</div>
+                    <div className="text-sm font-semibold text-gray-700 mb-1">VIN</div>
+                    <div className="font-mono text-sm text-gray-900">{listing.vehicleVIN}</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(listing.vehicleVIN!);
+                      alert('VIN copied to clipboard!');
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Posted Date & Location */}
+            <div className="space-y-2">
+              <div className="text-sm text-gray-500">
+                Posted {listing.createdAt?.toDate ? formatRelativeTime(listing.createdAt.toDate()) : 'recently'}
+              </div>
+              {listing.locationCity && (
+                <div className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span className="font-medium">{listing.locationCity}{listing.locationZip && ` (${listing.locationZip})`}</span>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            
+            <div className="border-t border-gray-200 pt-4"></div>
+            
+            {/* Vehicle/Part Details Section */}
+            {listing.category === 'vehicle' && (
+              <div className="space-y-3">
+                {listing.vehicleMake && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Make</span>
+                    <span className="text-sm text-gray-900">{listing.vehicleMake}</span>
+                  </div>
+                )}
+                {listing.vehicleModel && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Model</span>
+                    <span className="text-sm text-gray-900">{listing.vehicleModel}</span>
+                  </div>
+                )}
+                {listing.vehicleYear && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Year</span>
+                    <span className="text-sm text-gray-900">{listing.vehicleYear}</span>
+                  </div>
+                )}
+                {listing.titleStatus && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Title</span>
+                    <span className="text-sm text-gray-900">{titleStatusLabels[listing.titleStatus]}</span>
+                  </div>
+                )}
+                {listing.vehicleMileage && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Mileage</span>
+                    <span className="text-sm text-gray-900">{parseInt(listing.vehicleMileage).toLocaleString()} miles</span>
                   </div>
                 )}
                 {listing.vehicleColor && (
-                  <div>
-                    <div className="text-sm text-gray-500">Color</div>
-                    <div className="font-medium">{listing.vehicleColor}</div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Color</span>
+                    <span className="text-sm text-gray-900">{listing.vehicleColor}</span>
                   </div>
                 )}
-                {listing.vehicleVIN && (
-                  <div className="col-span-2">
-                    <div className="text-sm text-gray-500">VIN</div>
-                    <div className="font-mono text-sm">{listing.vehicleVIN}</div>
-                  </div>
-                )}
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-700">Condition</span>
+                  <span className="text-sm text-gray-900">{conditionLabels[listing.condition]}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-700">Category</span>
+                  <span className="text-sm text-gray-900">Vehicles</span>
+                </div>
               </div>
             )}
             
@@ -1584,33 +1670,34 @@ function ListingDetailModal({
             {listing.category === 'parts' && (
               <div className="space-y-3">
                 {listing.partType && (
-                  <div>
-                    <div className="text-sm text-gray-500">Part Type</div>
-                    <div className="font-medium">{listing.partType}</div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Type</span>
+                    <span className="text-sm text-gray-900">{listing.partType}</span>
                   </div>
                 )}
                 {listing.compatibleVehicles && (
-                  <div>
-                    <div className="text-sm text-gray-500">Compatible With</div>
-                    <div className="font-medium">{listing.compatibleVehicles}</div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-gray-700">Fits</span>
+                    <span className="text-sm text-gray-900">{listing.compatibleVehicles}</span>
                   </div>
                 )}
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-700">Condition</span>
+                  <span className="text-sm text-gray-900">{conditionLabels[listing.condition]}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-700">Category</span>
+                  <span className="text-sm text-gray-900">Parts & Accessories</span>
+                </div>
               </div>
             )}
             
             {/* Description */}
             {listing.description && (
               <div>
-                <div className="text-sm text-gray-500 mb-2">Description</div>
-                <p className="text-gray-700 whitespace-pre-wrap">{listing.description}</p>
-              </div>
-            )}
-            
-            {/* Location */}
-            {listing.locationCity && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <span>📍</span>
-                <span>{listing.locationCity}{listing.locationZip && `, ${listing.locationZip}`}</span>
+                <div className="border-t border-gray-200 pt-4 mb-4"></div>
+                <div className="text-base font-semibold text-gray-900 mb-2">Description</div>
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{listing.description}</p>
               </div>
             )}
             
