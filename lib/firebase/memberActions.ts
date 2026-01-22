@@ -217,13 +217,14 @@ export async function uploadRequestPhoto(requestId: string, file: File) {
 // Alias for backward compatibility
 export const uploadClaimPhoto = uploadRequestPhoto;
 
-export async function submitRequest(requestId: string, data: { amount: number; description?: string; userPhoneNumber: string; photoURLs: string[]; date?: Date }) {
+export async function submitRequest(requestId: string, data: { amount: number; description?: string; userPhoneNumber: string; photoURLs: string[]; date?: Date; anyInjuries?: boolean }) {
   await updateDoc(doc(db, 'requests', requestId), {
     amount: data.amount,
     description: data.description ?? '',
     userPhoneNumber: data.userPhoneNumber,
     photoURLs: data.photoURLs,
     date: data.date ? data.date : serverTimestamp(),
+    anyInjuries: data.anyInjuries ?? null,
     updatedAt: serverTimestamp(),
   });
 }
