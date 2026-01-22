@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface AuthPromptModalProps {
@@ -10,6 +10,18 @@ interface AuthPromptModalProps {
 
 export default function AuthPromptModal({ isOpen, onClose, message }: AuthPromptModalProps) {
   const router = useRouter();
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

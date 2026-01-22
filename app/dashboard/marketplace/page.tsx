@@ -436,6 +436,14 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
   const [title, setTitle] = useState('');
+  
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [condition, setCondition] = useState<ItemCondition>('used');
@@ -961,6 +969,14 @@ function MyListingsModal({
   onClose: () => void; 
   onSelect: (listing: MarketplaceListing) => void;
 }) {
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleDelete = async (listingId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm('Are you sure you want to delete this listing?')) return;
@@ -1040,6 +1056,14 @@ function InboxModal({ user, profile, onClose }: { user: any; profile: any; onClo
   const [conversations, setConversations] = useState<MarketplaceConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<MarketplaceConversation | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -1166,6 +1190,14 @@ function ChatModal({
 }) {
   const [messages, setMessages] = useState<MarketplaceMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   const [sending, setSending] = useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -1358,6 +1390,14 @@ function ListingDetailModal({
   const [conversation, setConversation] = useState<MarketplaceConversation | null>(null);
   const [startingChat, setStartingChat] = useState(false);
   const { requireAuth } = useGuestMode();
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   const displayTitle = listing.category === 'vehicle' && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
     ? `${listing.vehicleYear} ${listing.vehicleMake} ${listing.vehicleModel}`
