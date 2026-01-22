@@ -7,15 +7,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const tabs = [
     { 
-      href: '/dashboard', 
-      label: 'Overview', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v0" />
-        </svg>
-      )
-    },
-    { 
       href: '/dashboard/vehicles', 
       label: 'My Vehicles', 
       icon: (
@@ -71,20 +62,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-semibold text-gray-900">
-                My DIP Account
-              </h1>
-              <div className="flex items-center space-x-1.5 bg-green-50 px-2.5 py-1 rounded-full">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-green-700 font-medium">Active</span>
-              </div>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-4">
+              My DIP Account
+            </h1>
             
             {/* Tab Navigation */}
             <div className="flex space-x-1 overflow-x-auto">
               {tabs.map((tab) => {
-                const isActive = pathname === tab.href;
+                const isActive = pathname === tab.href || (pathname === '/dashboard' && tab.href === '/dashboard/vehicles');
                 return (
                   <Link 
                     key={tab.href} 
