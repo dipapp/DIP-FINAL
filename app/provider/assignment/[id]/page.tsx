@@ -75,10 +75,11 @@ export default function AssignmentDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (assignmentId && currentProviderId) {
+    // Fetch assignment data once we have the ID - don't wait for provider ID
+    if (assignmentId) {
       fetchAssignmentData();
     }
-  }, [assignmentId, currentProviderId]);
+  }, [assignmentId]);
 
   const fetchProviderInfo = async (user: any) => {
     try {
@@ -219,7 +220,7 @@ export default function AssignmentDetailPage() {
     );
   }
 
-  if (!assignment || !request) {
+  if (!assignment) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -287,7 +288,7 @@ export default function AssignmentDetailPage() {
               </div>
               <div>
                 <div className="text-gray-600">Amount</div>
-                <div className="font-semibold">${request.amount?.toFixed?.(2) || '0.00'}</div>
+                <div className="font-semibold">${request?.amount?.toFixed?.(2) || '0.00'}</div>
               </div>
             </div>
 
@@ -343,19 +344,19 @@ export default function AssignmentDetailPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Full Name</div>
-                <div className="font-semibold text-gray-900">{request.userFirstName} {request.userLastName}</div>
+                <div className="font-semibold text-gray-900">{assignment.customerName || `${request?.userFirstName || ''} ${request?.userLastName || ''}`.trim() || 'Not available'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Email</div>
-                <div className="font-semibold text-gray-900">{request.userEmail}</div>
+                <div className="font-semibold text-gray-900">{assignment.customerEmail || request?.userEmail || 'Not available'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Phone Number</div>
-                <div className="font-semibold text-gray-900">{request.userPhoneNumber || 'Not provided'}</div>
+                <div className="font-semibold text-gray-900">{assignment.customerPhone || request?.userPhoneNumber || 'Not provided'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Member ID</div>
-                <div className="font-semibold text-gray-900">{request.userId}</div>
+                <div className="font-semibold text-gray-900">{request?.userId || 'Not available'}</div>
               </div>
             </div>
           </div>
@@ -366,19 +367,19 @@ export default function AssignmentDetailPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Year, Make, Model</div>
-                <div className="font-semibold text-gray-900">{request.vehicleYear} {request.vehicleMake} {request.vehicleModel}</div>
+                <div className="font-semibold text-gray-900">{assignment.vehicleInfo || `${request?.vehicleYear || ''} ${request?.vehicleMake || ''} ${request?.vehicleModel || ''}`.trim() || 'Not available'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">License Plate</div>
-                <div className="font-semibold text-gray-900">{request.licensePlate || 'Not provided'}</div>
+                <div className="font-semibold text-gray-900">{request?.licensePlate || 'Not provided'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">VIN</div>
-                <div className="font-semibold text-gray-900 font-mono text-sm">{vehicleVin || request.vin || 'Not provided'}</div>
+                <div className="font-semibold text-gray-900 font-mono text-sm">{vehicleVin || request?.vin || 'Not provided'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Vehicle ID</div>
-                <div className="font-semibold text-gray-900 font-mono text-sm">{request.vehicleId}</div>
+                <div className="font-semibold text-gray-900 font-mono text-sm">{request?.vehicleId || 'Not available'}</div>
               </div>
             </div>
           </div>
@@ -389,11 +390,11 @@ export default function AssignmentDetailPage() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Service Description</div>
-                <div className="font-semibold text-gray-900">{request.issueDescription || request.description || 'No description provided'}</div>
+                <div className="font-semibold text-gray-900">{assignment.issueDescription || request?.issueDescription || request?.description || 'No description provided'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Location</div>
-                <div className="font-semibold text-gray-900">{request.location || 'Not specified'}</div>
+                <div className="font-semibold text-gray-900">{assignment.location || request?.location || 'Not specified'}</div>
               </div>
               {assignment.notes && (
                 <div>
@@ -411,7 +412,7 @@ export default function AssignmentDetailPage() {
           </div>
 
           {/* Photos Section */}
-          {request.photoURLs && request.photoURLs.length > 0 && (
+          {request?.photoURLs && request.photoURLs.length > 0 && (
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Photos from Request ({request.photoURLs.length})</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
