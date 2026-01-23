@@ -220,6 +220,54 @@ service cloud.firestore {
       allow read, write, create: if isAdmin();
     }
     
+    // === MARKETPLACE LISTINGS ===
+    match /marketplace/{listingId} {
+      // Anyone can read marketplace listings (public browsing)
+      allow read: if true;
+      
+      // Authenticated users can create listings
+      allow create: if isAuthenticated();
+      
+      // Owners can update their own listings
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.sellerId;
+      
+      // Owners can delete their own listings, admin can delete any
+      allow delete: if (isAuthenticated() && request.auth.uid == resource.data.sellerId) || isAdmin();
+    }
+    
+    // === MARKETPLACE CONVERSATIONS ===
+    match /marketplace_conversations/{conversationId} {
+      // Participants can read their conversations
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+      
+      // Authenticated users can create conversations
+      allow create: if isAuthenticated();
+      
+      // Participants can update their conversations
+      allow update: if isAuthenticated() && 
+        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+      
+      // Participants can delete conversations
+      allow delete: if isAuthenticated() && 
+        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+    }
+    
+    // === MARKETPLACE MESSAGES ===
+    match /marketplace_messages/{messageId} {
+      // Authenticated users can read messages (will be filtered by conversation)
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create messages
+      allow create: if isAuthenticated();
+      
+      // Message sender can update (for read status)
+      allow update: if isAuthenticated();
+      
+      // No deletion of messages
+      allow delete: if false;
+    }
+    
     // Block all other database access
     match /{document=**} {
       allow read, write: if false;

@@ -115,13 +115,16 @@ function AdminHomeContent() {
     completedRequests: requests.filter(r => r.status === 'Completed' || r.status === 'completed').length,
   };
 
+  const approvedProvidersList = providers.filter(p => p.status === 'approved');
+  
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'users', label: 'Users', icon: '👥', count: users.length },
+    { id: 'service-providers', label: 'Service Providers', icon: '🏢', count: approvedProvidersList.length },
     { id: 'requests', label: 'Requests', icon: '📋', count: requests.length },
     { id: 'towing', label: 'Towing', icon: '🚛', count: towEvents.length },
-    { id: 'providers', label: 'Provider Applications', icon: '🏢', count: providers.length },
-    { id: 'applicants', label: 'Service Assignments', icon: '📝', count: 0 },
+    { id: 'providers', label: 'Provider Applications', icon: '📝', count: providers.filter(p => p.status === 'pending').length },
+    { id: 'applicants', label: 'Service Assignments', icon: '🔧', count: 0 },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -329,6 +332,69 @@ function AdminHomeContent() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Service Providers Tab */}
+        {activeTab === 'service-providers' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Active Service Providers ({approvedProvidersList.length})</h3>
+            </div>
+            {approvedProvidersList.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-5xl mb-4">🏢</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Service Providers</h3>
+                <p className="text-gray-600">Approved providers will appear here</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-muted border-b">
+                    <tr>
+                      <th className="py-2 pr-4">Business Name</th>
+                      <th className="py-2 pr-4">Contact</th>
+                      <th className="py-2 pr-4">Location</th>
+                      <th className="py-2 pr-4">Provider ID</th>
+                      <th className="py-2 pr-4">Status</th>
+                      <th className="py-2 pr-4">Approved</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvedProvidersList.map((provider) => (
+                      <tr key={provider.id} className="table-row hover:bg-gray-50">
+                        <td className="py-3 pr-4">
+                          <div className="font-medium">{provider.businessName}</div>
+                          <div className="text-xs text-muted">{provider.legalEntityName}</div>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <div>{provider.contactPerson}</div>
+                          <div className="text-xs text-muted">{provider.email}</div>
+                          <div className="text-xs text-muted">{provider.phone}</div>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <div>{provider.city}, {provider.state}</div>
+                          <div className="text-xs text-muted">{provider.zipCode}</div>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                            {provider.providerId || '—'}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                            ✓ Active
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          {provider.updatedAt?.toLocaleDateString?.() || provider.createdAt?.toLocaleDateString?.() || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
