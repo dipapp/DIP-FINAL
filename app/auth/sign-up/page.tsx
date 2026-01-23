@@ -205,7 +205,7 @@ function AuthPageContent() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/dip-logo.png" alt="DIP Logo" className="h-12 w-auto mx-auto mb-3" />
             <h1 className="text-xl font-bold text-gray-900">
-              {selectedTab === 0 ? 'Sign In to Your Account' : 'Join DIP Today'}
+              {selectedTab === 0 ? 'Sign in to Your Account' : 'Join DIP Today'}
             </h1>
           </div>
 
@@ -222,7 +222,7 @@ function AuthPageContent() {
                 setError(null); // Clear error when switching tabs
               }}
             >
-              Sign In
+              Sign in
             </button>
             <button
               className={`flex-1 py-2 text-center font-medium border-b-2 transition-colors ${
@@ -235,7 +235,7 @@ function AuthPageContent() {
                 setError(null); // Clear error when switching tabs
               }}
             >
-              Join Now
+              Sign up
             </button>
           </div>
 
@@ -325,10 +325,10 @@ function AuthPageContent() {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                    Signing In...
+                    Signing in...
                   </div>
                 ) : (
-                  'Sign In'
+                  'Sign in'
                 )}
               </button>
               <div className="text-center">
@@ -476,6 +476,19 @@ function AuthPageContent() {
               </button>
             </form>
           )}
+
+          {/* Provider Portal Link */}
+          <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-600">
+              Are you a service provider?{' '}
+              <a 
+                href="/provider" 
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Access Provider Portal
+              </a>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -513,7 +526,7 @@ function AuthPageContent() {
                   onClick={closeForgotPassword}
                   className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Back to Sign In
+                  Back to Sign in
                 </button>
               </div>
             ) : (

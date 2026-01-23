@@ -45,15 +45,6 @@ export default function Navbar() {
               Home
             </Link>
             
-            <Link 
-              className={`font-medium transition-colors hover:text-blue-600 ${
-                pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
-              }`}
-              href="/provider"
-            >
-              Provider Portal
-            </Link>
-            
             {user && (
               <Link 
                 className={`font-medium transition-colors hover:text-blue-600 ${
@@ -92,13 +83,13 @@ export default function Navbar() {
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                   href="/auth/sign-up?tab=login"
                 >
-                  Sign In
+                  Sign in
                 </Link>
                 <Link 
                   className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   href="/auth/sign-up?tab=signup"
                 >
-                  Join Now
+                  Sign up
                 </Link>
               </div>
             )}
@@ -132,16 +123,6 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
-              </Link>
-              
-              <Link 
-                className={`block py-2 font-medium transition-colors hover:text-blue-600 ${
-                  pathname?.startsWith('/provider') ? 'text-blue-600' : 'text-gray-700'
-                }`}
-                href="/provider"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Provider Portal
               </Link>
               
               {user && (
@@ -186,14 +167,14 @@ export default function Navbar() {
                     href="/auth/sign-up?tab=login"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sign In
+                    Sign in
                   </Link>
                   <Link 
                     className="block bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
                     href="/auth/sign-up?tab=signup"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Join Now
+                    Sign up
                   </Link>
                 </div>
               )}

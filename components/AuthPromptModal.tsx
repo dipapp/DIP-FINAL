@@ -66,11 +66,11 @@ export default function AuthPromptModal({ isOpen, onClose, message }: AuthPrompt
             <button
               onClick={() => {
                 onClose();
-                router.push('/auth/sign-in');
+                router.push('/auth/sign-up?tab=login');
               }}
               className="w-full py-3 px-4 bg-white text-blue-600 font-semibold rounded-xl border-2 border-blue-600 hover:bg-blue-50 transition-all"
             >
-              Sign In
+              Sign in
             </button>
             
             <button
