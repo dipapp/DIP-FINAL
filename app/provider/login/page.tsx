@@ -26,7 +26,26 @@ export default function ProviderLoginPage() {
       // This will be handled by middleware or auth context
       router.push('/provider/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      // Map Firebase error codes to user-friendly messages
+      const errorCode = err.code;
+      switch (errorCode) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+          setError('Invalid email or password. Please try again.');
+          break;
+        case 'auth/invalid-email':
+          setError('Please enter a valid email address.');
+          break;
+        case 'auth/user-disabled':
+          setError('This account has been disabled. Please contact support.');
+          break;
+        case 'auth/too-many-requests':
+          setError('Too many failed attempts. Please try again later.');
+          break;
+        default:
+          setError('Unable to sign in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
