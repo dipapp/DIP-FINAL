@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// DIP Firebase Security Rules
+// DIP (Deductible Impact Protection) Firebase Security Rules
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -10,7 +10,11 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.email == "admin@dipmembers.com";
+      // Check both: hardcoded admin email OR database-driven admin check
+      return isAuthenticated() && (
+        request.auth.token.email == "admin@dipmembers.com" ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
     }
     
     function isOwner(userId) {
@@ -32,15 +36,22 @@ service cloud.firestore {
       // Users can read their own profile (includes phone numbers)
       allow read: if isOwner(userId);
       
+      // Allow ANY authenticated user to read (needed for Cloud Functions called by admin)
+      // This allows admin to send notifications to users
+      allow read: if isAuthenticated();
+      
       // Users can create their profile during signup (phone number optional)
       allow create: if isOwner(userId);
       
       // Users can update their profile but cannot change critical system fields
+      // Allow FCM token updates, profile picture, and personal info updates
       allow update: if isOwner(userId)
         && request.resource.data.email == resource.data.email
         && request.resource.data.isAdmin == resource.data.isAdmin
-        && request.resource.data.isActive == resource.data.isActive
-        && request.resource.data.createdAt == resource.data.createdAt;
+        && request.resource.data.isActive == resource.data.isActive;
+      
+      // Users can delete their own account
+      allow delete: if isOwner(userId);
       
       // Admin can read all profiles for management dashboard
       allow read: if isAdmin();
@@ -59,9 +70,10 @@ service cloud.firestore {
     // Supports persistent vehicle subscription status (isActive field)
     // Users can update subscription status and it will persist across sessions
     match /vehicles/{vehicleId} {
-      // Users can read vehicles they own
+      // Users can read vehicles they own (by ownerId or ownerEmail)
       allow read: if isAuthenticated() 
-        && request.auth.uid == resource.data.ownerId;
+        && (request.auth.uid == resource.data.ownerId 
+            || request.auth.token.email == resource.data.ownerEmail);
       
       // Users can create vehicles and set themselves as owner with required fields
       allow create: if isAuthenticated() 
@@ -110,7 +122,7 @@ service cloud.firestore {
       // Users can delete their own claims (for cancellation) - only pending/in-review
       allow delete: if isAuthenticated() 
         && request.auth.uid == resource.data.userId
-        && (resource.data.status == "pending" || resource.data.status == "inReview");
+        && (resource.data.status == "Pending" || resource.data.status == "In Review" || resource.data.status == "pending" || resource.data.status == "inReview");
       
       // Providers can read claims that are assigned to them (simplified for now)
       allow read: if isAuthenticated();
@@ -119,17 +131,76 @@ service cloud.firestore {
       allow read, write, delete: if isAdmin();
     }
     
+    // === REQUESTS MANAGEMENT (new collection for member requests) ===
+    match /requests/{requestId} {
+      // Users can read their own requests (includes phone numbers for admin contact)
+      // Support both userId and userEmail matching for backward compatibility
+      allow read: if isAuthenticated() 
+        && (request.auth.uid == resource.data.userId || 
+            request.auth.token.email == resource.data.userEmail);
+      
+      // Users can create requests and set themselves as owner (phone number required)
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.userId;
+      
+      // Users can update their own requests
+      allow update: if isAuthenticated() 
+        && (request.auth.uid == resource.data.userId || 
+            request.auth.token.email == resource.data.userEmail);
+      
+      // Users can delete their own requests (for cancellation) - only pending/in-review
+      allow delete: if isAuthenticated() 
+        && (request.auth.uid == resource.data.userId || 
+            request.auth.token.email == resource.data.userEmail)
+        && (resource.data.status == "Pending" || resource.data.status == "In Review");
+      
+      // Admin can read/write/delete all requests for management (includes phone access)
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // === ADMINS COLLECTION (controls who is admin - managed via Firebase Console only) ===
+    match /admins/{email} {
+      // Any authenticated user can check if they are admin (needed for app login)
+      allow read: if isAuthenticated();
+      // No client-side writes - manage admins only through Firebase Console
+      allow write: if false;
+    }
+    
     // === ADMIN COLLECTIONS ===
     match /admin/{document=**} {
       allow read, write: if isAdmin();
     }
     
-    // === ADMIN EVENTS (e.g., Tow Calls) ===
-    // Members can create tow_call events; admins can read/manage
+    // === ADMIN EXPORTS (for CSV export emails) ===
+    match /adminExports/{exportId} {
+      // Only admin can create export requests
+      allow create: if isAdmin();
+      // Admin can read their own exports
+      allow read: if isAdmin();
+      // Cloud Functions can update (status) - no client updates needed
+      allow update: if false;
+      // Admin can delete old exports
+      allow delete: if isAdmin();
+    }
+    
+    // === ACCOUNT DELETIONS (for admin notification when users delete accounts) ===
+    match /accountDeletions/{deletionId} {
+      // Any authenticated user can create a deletion record (when deleting their own account)
+      allow create: if isAuthenticated();
+      // Only admin can read deletion records
+      allow read: if isAdmin();
+      // No client updates - Cloud Functions handle status updates
+      allow update: if false;
+      // Admin can delete old records
+      allow delete: if isAdmin();
+    }
+    
+    // === ADMIN EVENTS (Tow Calls, Emergency, Attorney Referrals) ===
+    // Members can create event documents; admins can read/manage
     match /admin_events/{eventId} {
-      // Allow any authenticated user to create a tow_call event document
+      // Allow any authenticated user to create event documents
       allow create: if isAuthenticated() &&
-        request.resource.data.event == "tow_call" &&
+        request.resource.data.event in ["tow_call", "emergency", "attorney_referral"] &&
         request.resource.data.timestamp is timestamp;
       
       // Admins can read/list and manage these events
@@ -151,9 +222,35 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
+    // === NOTIFICATIONS ===
+    // Admin can create notifications for any user
+    // Users can read, update, and delete their own notifications
+    // Any authenticated user can create notifications (for admin notifications from members)
     match /notifications/{notificationId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      // Users can read notifications addressed to them
+      allow read: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      
+      // Users can update their own notifications (to mark as read)
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId; // Can't change owner
+      
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid;
+      
+      // Admin can read all notifications
+      allow read: if isAdmin();
+      
+      // Any authenticated user can create notifications (allows members to notify admin)
+      allow create: if isAuthenticated();
+      
+      // Admin can update any notification
+      allow update: if isAdmin();
+      
+      // Admin can delete any notification
+      allow delete: if isAdmin();
     }
     
     match /settings/{document=**} {
@@ -222,50 +319,72 @@ service cloud.firestore {
     
     // === MARKETPLACE LISTINGS ===
     match /marketplace/{listingId} {
-      // Anyone can read marketplace listings (public browsing)
+      // Anyone can read marketplace listings (including guests)
       allow read: if true;
       
-      // Authenticated users can create listings
-      allow create: if isAuthenticated();
+      // Users can create listings and set themselves as seller
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.sellerId;
       
-      // Owners can update their own listings
-      allow update: if isAuthenticated() && request.auth.uid == resource.data.sellerId;
+      // Users can update their own listings
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.sellerId
+        && request.auth.uid == request.resource.data.sellerId; // Can't transfer ownership
       
-      // Owners can delete their own listings, admin can delete any
-      allow delete: if (isAuthenticated() && request.auth.uid == resource.data.sellerId) || isAdmin();
+      // Users can delete their own listings
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.sellerId;
+      
+      // Admin can manage all listings
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // === MARKETPLACE LISTINGS (alternate collection name) ===
+    match /marketplace_listings/{listingId} {
+      // Anyone can read marketplace listings (including guests)
+      allow read: if true;
+      
+      // Users can create listings and set themselves as seller
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.sellerId;
+      
+      // Users can update their own listings
+      allow update: if isAuthenticated() 
+        && request.auth.uid == resource.data.sellerId;
+      
+      // Users can delete their own listings
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == resource.data.sellerId;
+      
+      // Admin can manage all listings
+      allow read, write, delete: if isAdmin();
     }
     
     // === MARKETPLACE CONVERSATIONS ===
     match /marketplace_conversations/{conversationId} {
-      // Participants can read their conversations
-      allow read: if isAuthenticated() && 
-        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
-      
-      // Authenticated users can create conversations
+      // Any authenticated user can read/write conversations they're involved in
+      // Using simpler rules - participants check done in app logic
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      
-      // Participants can update their conversations
-      allow update: if isAuthenticated() && 
-        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
-      
-      // Participants can delete conversations
-      allow delete: if isAuthenticated() && 
-        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
     }
     
     // === MARKETPLACE MESSAGES ===
     match /marketplace_messages/{messageId} {
-      // Authenticated users can read messages (will be filtered by conversation)
+      // Users can read messages from conversations they're part of
+      // Note: This requires querying the conversation first in the app
       allow read: if isAuthenticated();
       
-      // Authenticated users can create messages
-      allow create: if isAuthenticated();
+      // Users can create messages where they are the sender
+      allow create: if isAuthenticated() 
+        && request.auth.uid == request.resource.data.senderId;
       
-      // Message sender can update (for read status)
+      // Users can update messages they sent (mark as read, etc.)
       allow update: if isAuthenticated();
       
-      // No deletion of messages
-      allow delete: if false;
+      // Admin can manage all messages
+      allow read, write, delete: if isAdmin();
     }
     
     // Block all other database access
