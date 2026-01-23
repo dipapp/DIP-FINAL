@@ -674,7 +674,7 @@ export default function AdminAssignmentsPage() {
                       const userName = request.userFirstName && request.userLastName 
                         ? `${request.userFirstName} ${request.userLastName}`
                         : request.userFirstName || request.userLastName || request.userEmail;
-                      const requestDate = request.createdAt?.toDate?.() || request.date?.toDate?.();
+                      const requestDate = request.createdAt instanceof Date ? request.createdAt : (request.createdAt as any)?.toDate?.() || request.createdAt;
                       const isSelected = selectedRequest?.id === request.id;
 
                       return (
