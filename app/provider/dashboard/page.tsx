@@ -388,13 +388,10 @@ export default function ProviderDashboard() {
                       Customer
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Vehicle / VIN
+                      Vehicle
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Service
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Priority
+                      VIN
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -420,21 +417,12 @@ export default function ProviderDashboard() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm text-gray-900">{assignment.vehicleInfo}</div>
-                        {assignment.vehicleVin && (
-                          <div className="text-xs text-gray-500 font-mono">VIN: {assignment.vehicleVin}</div>
-                        )}
                         {assignment.photoURLs && assignment.photoURLs.length > 0 && (
                           <div className="text-xs text-blue-600">📷 {assignment.photoURLs.length} photo(s)</div>
                         )}
                       </td>
                       <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
-                        <div className="text-sm text-gray-500">{assignment.location}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
-                          {assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1)}
-                        </span>
+                        <div className="text-sm text-gray-900 font-mono">{assignment.vehicleVin || 'Not available'}</div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
