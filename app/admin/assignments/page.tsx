@@ -52,10 +52,12 @@ interface Request {
   vehicleMake: string;
   vehicleModel: string;
   issueDescription: string;
+  description?: string; // Alternative description field
   location: string;
   priority: string;
   status: string;
   createdAt: Date;
+  photoURLs?: string[]; // Photos attached to request
   assignedTo?: string; // Optional field for tracking provider assignment
 }
 
