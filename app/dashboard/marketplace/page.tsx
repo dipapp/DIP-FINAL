@@ -67,6 +67,29 @@ const getTitleStatusLabel = (status: string) => {
   return status;
 };
 
+// Converters for saving data in iOS-compatible format
+const getCategoryForFirestore = (category: ListingCategory): string => {
+  return category === 'vehicle' ? 'Vehicle' : 'Parts & Accessories';
+};
+
+const getConditionForFirestore = (condition: ItemCondition): string => {
+  switch (condition) {
+    case 'new': return 'New';
+    case 'used': return 'Used';
+    case 'for_parts': return 'For Parts';
+    default: return 'Used';
+  }
+};
+
+const getTitleStatusForFirestore = (status: TitleStatus): string => {
+  switch (status) {
+    case 'clean': return 'Clean Title';
+    case 'salvage': return 'Salvage Title';
+    case 'lien_sale': return 'Lien Sale';
+    default: return 'Clean Title';
+  }
+};
+
 // Format relative time
 const formatRelativeTime = (date: Date) => {
   const now = new Date();
@@ -158,8 +181,11 @@ export default function MarketplacePage() {
 
   // Filter listings
   const filteredListings = listings.filter(listing => {
-    // Filter by category
-    if (selectedCategory && listing.category !== selectedCategory) return false;
+    // Filter by category (handle both iOS format "Vehicle"/"Parts & Accessories" and web format "vehicle"/"parts")
+    if (selectedCategory) {
+      if (selectedCategory === 'vehicle' && !isVehicleCategory(listing.category)) return false;
+      if (selectedCategory === 'parts' && !isPartsCategory(listing.category)) return false;
+    }
     
     // Filter by search text
     if (searchText) {
@@ -629,7 +655,7 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
         photoURLs.push(url);
       }
       
-      // Create listing document
+      // Create listing document with iOS-compatible format
       const listingData: any = {
         sellerId: user.uid,
         sellerEmail: user.email,
@@ -637,11 +663,11 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
           ? `${profile.firstName} ${profile.lastName}`
           : user.email.split('@')[0],
         sellerPhone: profile?.phoneNumber || null,
-        category,
+        category: getCategoryForFirestore(category),
         title,
         description,
         price: parseFloat(price.replace(/,/g, '')),
-        condition,
+        condition: getConditionForFirestore(condition),
         photoURLs,
         isActive: true,
         createdAt: Timestamp.now(),
@@ -657,7 +683,7 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
         listingData.vehicleColor = vehicleColor || null;
         listingData.vehicleMileage = vehicleMileage || null;
         listingData.vehicleVIN = vehicleVIN || null;
-        listingData.titleStatus = titleStatus;
+        listingData.titleStatus = getTitleStatusForFirestore(titleStatus);
       } else {
         listingData.partType = partType;
         listingData.compatibleVehicles = compatibleVehicles || null;
@@ -2024,11 +2050,12 @@ function EditListingModal({
     
     setIsSaving(true);
     try {
+      // Save with iOS-compatible format
       const updateData: any = {
         title: title.trim(),
         description: description.trim(),
         price: parseFloat(price.replace(/,/g, '')),
-        condition,
+        condition: getConditionForFirestore(condition),
         locationCity: locationCity.trim(),
         locationZip: locationZip.trim() || null,
         updatedAt: Timestamp.now(),
@@ -2041,7 +2068,7 @@ function EditListingModal({
         updateData.vehicleColor = vehicleColor.trim() || null;
         updateData.vehicleMileage = vehicleMileage || null;
         updateData.vehicleVIN = vehicleVIN.trim() || null;
-        updateData.titleStatus = titleStatus;
+        updateData.titleStatus = getTitleStatusForFirestore(titleStatus);
       } else {
         updateData.partType = partType.trim();
         updateData.compatibleVehicles = compatibleVehicles.trim() || null;
