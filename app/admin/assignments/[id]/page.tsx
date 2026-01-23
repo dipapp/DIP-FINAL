@@ -87,9 +87,9 @@ export default function AdminAssignmentDetailPage() {
       
       setAssignment(assignmentData);
       
-      // Try to fetch original request details
+      // Try to fetch original request details - iOS uses 'requests' collection
       try {
-        const requestDoc = await getDoc(doc(db, 'claims', assignmentData.requestId));
+        const requestDoc = await getDoc(doc(db, 'requests', assignmentData.requestId));
         if (requestDoc.exists()) {
           const requestData = {
             id: requestDoc.id,

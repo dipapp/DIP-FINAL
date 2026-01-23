@@ -102,7 +102,8 @@ export default function RequestDetailPage() {
   async function handleContactUpdate() {
     setUploading(true);
     try {
-      await updateDoc(doc(db, 'claims', claimId), {
+      // iOS uses 'requests' collection
+      await updateDoc(doc(db, 'requests', claimId), {
         userPhoneNumber: contactPhone,
         updatedAt: serverTimestamp(),
       });

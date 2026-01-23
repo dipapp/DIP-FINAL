@@ -134,8 +134,8 @@ export default function AdminApplicantsPage() {
         adminNotes: '',
       });
 
-      // Update request status
-      await updateDoc(doc(db, 'claims', selectedRequest.id), {
+      // Update request status - iOS uses 'requests' collection
+      await updateDoc(doc(db, 'requests', selectedRequest.id), {
         status: 'Assigned',
         assignedTo: selectedProvider,
         assignedAt: new Date(),

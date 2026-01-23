@@ -302,8 +302,8 @@ export default function AdminAssignmentsPage() {
       const assignmentRef = await addDoc(collection(db, 'assignments'), assignmentData);
       console.log('Assignment created with ID:', assignmentRef.id);
 
-      // Update request status
-      await updateDoc(doc(db, 'claims', selectedRequest.id), {
+      // Update request status - iOS uses 'requests' collection
+      await updateDoc(doc(db, 'requests', selectedRequest.id), {
         status: 'Assigned',
         assignedTo: selectedProvider,
         assignedAt: new Date(),
@@ -336,8 +336,8 @@ export default function AdminAssignmentsPage() {
     try {
       console.log('Moving assignment back to pending requests:', assignment);
       
-      // Update the original claim back to "Pending" status
-      await updateDoc(doc(db, 'claims', assignment.requestId), {
+      // Update the original request back to "Pending" status - iOS uses 'requests' collection
+      await updateDoc(doc(db, 'requests', assignment.requestId), {
         status: 'Pending',
         assignedTo: null,
         assignedAt: null,

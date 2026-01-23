@@ -125,8 +125,8 @@ export default function AssignmentDetailPage() {
       
       setAssignment(assignmentData);
       
-      // Fetch original request details
-      const requestDoc = await getDoc(doc(db, 'claims', assignmentData.requestId));
+      // Fetch original request details - iOS uses 'requests' collection
+      const requestDoc = await getDoc(doc(db, 'requests', assignmentData.requestId));
       if (requestDoc.exists()) {
         const requestData = {
           id: requestDoc.id,
