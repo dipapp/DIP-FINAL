@@ -54,14 +54,20 @@ export default function AuthPromptModal({ isOpen, onClose, message }: AuthPrompt
           {/* Auth Buttons */}
           <div className="space-y-3 mb-6">
             <button
-              onClick={() => router.push('/auth/sign-up')}
+              onClick={() => {
+                onClose();
+                router.push('/auth/sign-up');
+              }}
               className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
             >
               Create Account
             </button>
             
             <button
-              onClick={() => router.push('/auth/sign-in')}
+              onClick={() => {
+                onClose();
+                router.push('/auth/sign-in');
+              }}
               className="w-full py-3 px-4 bg-white text-blue-600 font-semibold rounded-xl border-2 border-blue-600 hover:bg-blue-50 transition-all"
             >
               Sign In
