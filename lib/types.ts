@@ -90,6 +90,7 @@ export type MarketplaceListing = {
   updatedAt: any;
   // Location fields
   locationCity?: string;
+  locationState?: string;
   locationZip?: string;
   latitude?: number;
   longitude?: number;
