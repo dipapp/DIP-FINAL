@@ -8,25 +8,51 @@ import { useRouter } from 'next/navigation';
 interface Assignment {
   id: string;
   requestId: string;
-  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
+  assignmentNumber?: number;
+  
+  // Provider info
   providerId: string;
+  providerDocId?: string;
   providerName: string;
+  
+  // Member info (matching iOS)
+  userId?: string;
   customerName: string;
+  customerFirstName?: string;
+  customerLastName?: string;
   customerPhone: string;
   customerEmail: string;
-  vehicleInfo: string;
-  vehicleVin?: string; // VIN stored in assignment
+  
+  // Vehicle info
   vehicleId?: string;
-  photoURLs?: string[]; // Photos stored in assignment
-  issueDescription: string;
-  location: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  vehicleInfo: string;
+  vehicleYear?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleVin?: string;
+  
+  // Request details (matching iOS Claim)
+  description?: string;
+  issueDescription?: string; // Legacy
+  amount?: number;
+  photoURLs?: string[];
+  anyInjuries?: boolean;
+  
+  // Dates
+  requestDate?: Date;
+  requestCreatedAt?: Date;
   assignedAt: Date;
   dueDate?: Date;
+  
+  // Status
+  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  
+  // Notes
   notes?: string;
   adminNotes?: string;
-  requestDeleted?: boolean; // Flag to track if original request was deleted
+  
+  // Flags
+  requestDeleted?: boolean;
 }
 
 interface Provider {
@@ -48,15 +74,22 @@ interface Request {
   userLastName: string;
   userEmail: string;
   userPhone: string;
+  userPhoneNumber?: string; // iOS uses this field name
+  vehicleId: string;
   vehicleYear: string;
   vehicleMake: string;
   vehicleModel: string;
-  issueDescription: string;
-  location: string;
-  priority: string;
+  description: string; // iOS Claim description
+  issueDescription?: string; // Legacy field
+  amount: number;
+  photoURLs: string[];
+  anyInjuries?: boolean;
+  location?: string;
   status: string;
+  date: Date;
   createdAt: Date;
-  assignedTo?: string; // Optional field for tracking provider assignment
+  updatedAt?: Date;
+  assignedTo?: string;
 }
 
 export default function AdminAssignmentsPage() {
@@ -308,24 +341,53 @@ export default function AdminAssignmentsPage() {
         }
       }
 
+      // Get phone number - iOS uses userPhoneNumber field
+      const customerPhone = selectedRequest.userPhoneNumber || selectedRequest.userPhone || 'Not provided';
+      
+      // Get description - iOS uses description field
+      const description = selectedRequest.description || selectedRequest.issueDescription || 'No description provided';
+
       const assignmentData = {
+        // Assignment identifiers
         requestId: selectedRequest.id,
-        assignmentNumber: nextAssignmentNumber, // Sequential assignment number
-        providerId: finalProviderId, // Use providerId field if available, fallback to document ID
-        providerDocId: selectedProvider, // Also store document ID for backup matching
+        assignmentNumber: nextAssignmentNumber,
+        
+        // Provider info
+        providerId: finalProviderId,
+        providerDocId: selectedProvider,
         providerName: provider.businessName,
-        customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
-        customerPhone: selectedRequest.userPhone || 'Not provided',
+        
+        // Member info (matching iOS Claim fields)
+        userId: selectedRequest.userId,
+        customerName: `${selectedRequest.userFirstName || ''} ${selectedRequest.userLastName || ''}`.trim() || selectedRequest.userEmail,
+        customerFirstName: selectedRequest.userFirstName || '',
+        customerLastName: selectedRequest.userLastName || '',
+        customerPhone: customerPhone,
         customerEmail: selectedRequest.userEmail || 'Not provided',
+        
+        // Vehicle info
+        vehicleId: selectedRequest.vehicleId || '',
         vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
-        vehicleVin: vehicleVin, // Store VIN in assignment
-        vehicleId: (selectedRequest as any).vehicleId || '',
-        photoURLs: photoURLs, // Store photos in assignment
-        issueDescription: selectedRequest.issueDescription || 'No description provided',
-        location: selectedRequest.location || 'Not specified',
-        priority: selectedRequest.priority || 'medium',
+        vehicleYear: selectedRequest.vehicleYear || '',
+        vehicleMake: selectedRequest.vehicleMake || '',
+        vehicleModel: selectedRequest.vehicleModel || '',
+        vehicleVin: vehicleVin,
+        
+        // Request details (matching iOS Claim fields)
+        description: description,
+        amount: selectedRequest.amount || 0,
+        photoURLs: photoURLs,
+        anyInjuries: selectedRequest.anyInjuries || false,
+        
+        // Dates
+        requestDate: selectedRequest.date || selectedRequest.createdAt || new Date(),
+        requestCreatedAt: selectedRequest.createdAt || new Date(),
+        
+        // Assignment status
         status: 'assigned',
         assignedAt: new Date(),
+        
+        // Notes
         notes: assignmentNotes,
         adminNotes: '',
       };
@@ -640,10 +702,10 @@ export default function AdminAssignmentsPage() {
           )}
         </div>
 
-        {/* Assignment Modal */}
+        {/* Assignment Modal - Enhanced to show full request details */}
         {showAssignModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="relative top-10 mx-auto p-5 border max-w-lg shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Create Assignment</h3>
                 
@@ -665,6 +727,52 @@ export default function AdminAssignmentsPage() {
                     ))}
                   </select>
                 </div>
+
+                {/* Show selected request details */}
+                {selectedRequest && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Request Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-gray-500">Member:</span>{' '}
+                        <span className="font-medium">{selectedRequest.userFirstName} {selectedRequest.userLastName}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Email:</span>{' '}
+                        <span className="font-medium">{selectedRequest.userEmail}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Phone:</span>{' '}
+                        <span className="font-medium">{selectedRequest.userPhoneNumber || selectedRequest.userPhone || 'Not provided'}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Vehicle:</span>{' '}
+                        <span className="font-medium">{selectedRequest.vehicleYear} {selectedRequest.vehicleMake} {selectedRequest.vehicleModel}</span>
+                      </div>
+                      {selectedRequest.description && (
+                        <div>
+                          <span className="text-gray-500">Description:</span>{' '}
+                          <span className="font-medium">{selectedRequest.description}</span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-gray-500">Amount:</span>{' '}
+                        <span className="font-medium">${selectedRequest.amount?.toFixed?.(2) || '0.00'}</span>
+                      </div>
+                      {selectedRequest.photoURLs && selectedRequest.photoURLs.length > 0 && (
+                        <div className="flex items-center text-blue-600">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {selectedRequest.photoURLs.length} photo(s) attached
+                        </div>
+                      )}
+                      {selectedRequest.anyInjuries && (
+                        <div className="text-red-600 font-medium">⚠️ Injuries reported</div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select Provider</label>

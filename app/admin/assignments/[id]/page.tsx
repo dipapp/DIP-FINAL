@@ -8,22 +8,45 @@ import BackButton from '@/components/BackButton';
 interface Assignment {
   id: string;
   requestId: string;
-  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
+  assignmentNumber?: number;
+  
+  // Provider info
   providerId: string;
+  providerDocId?: string;
   providerName: string;
+  
+  // Member info (matching iOS)
+  userId?: string;
   customerName: string;
+  customerFirstName?: string;
+  customerLastName?: string;
   customerPhone: string;
   customerEmail: string;
-  vehicleInfo: string;
-  vehicleVin?: string; // VIN stored in assignment
+  
+  // Vehicle info
   vehicleId?: string;
-  photoURLs?: string[]; // Photos stored in assignment
-  issueDescription: string;
-  location: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  vehicleInfo: string;
+  vehicleYear?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleVin?: string;
+  
+  // Request details (matching iOS Claim)
+  description?: string;
+  amount?: number;
+  photoURLs?: string[];
+  anyInjuries?: boolean;
+  
+  // Dates
+  requestDate?: Date;
+  requestCreatedAt?: Date;
   assignedAt: Date;
   dueDate?: Date;
+  
+  // Status
+  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  
+  // Notes
   notes?: string;
   adminNotes?: string;
 }
@@ -346,13 +369,21 @@ export default function AdminAssignmentDetailPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Service Details</h2>
             <div className="space-y-4">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Service Description</div>
-                <div className="font-semibold text-gray-900">{assignment.issueDescription}</div>
+                <div className="text-sm text-gray-600 mb-1">Description</div>
+                <div className="font-semibold text-gray-900">{assignment.description || 'No description provided'}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Location</div>
-                <div className="font-semibold text-gray-900">{assignment.location}</div>
+                <div className="text-sm text-gray-600 mb-1">Amount</div>
+                <div className="font-semibold text-gray-900">${assignment.amount?.toFixed?.(2) || request?.amount?.toFixed?.(2) || '0.00'}</div>
               </div>
+              {assignment.anyInjuries && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="flex items-center text-red-700">
+                    <span className="mr-2">⚠️</span>
+                    <span className="font-medium">Injuries reported in this incident</span>
+                  </div>
+                </div>
+              )}
               {assignment.notes && (
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Assignment Notes</div>
