@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db, storage } from '@/lib/firebase/client';
-import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { MarketplaceListing, MarketplaceConversation, MarketplaceMessage, ListingCategory, ItemCondition, TitleStatus } from '@/lib/types';
 import Image from 'next/image';
@@ -1472,7 +1472,7 @@ function ListingDetailModal({
           participants: [listing.sellerId, user.uid]
         };
         
-        await addDoc(collection(db, 'marketplace_conversations'), newConvo);
+        await setDoc(doc(db, 'marketplace_conversations', conversationId), newConvo);
         setConversation(newConvo);
       }
       
