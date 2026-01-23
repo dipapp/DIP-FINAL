@@ -412,10 +412,12 @@ export default function AssignmentDetailPage() {
                   </div>
                 </div>
               )}
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Location</div>
-                <div className="font-semibold text-gray-900">{assignment.location || request?.location || 'Not specified'}</div>
-              </div>
+              {request?.location && (
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Location</div>
+                  <div className="font-semibold text-gray-900">{request.location}</div>
+                </div>
+              )}
               {assignment.notes && (
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Assignment Notes</div>
