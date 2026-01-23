@@ -607,7 +607,38 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
   const [compatibleVehicles, setCompatibleVehicles] = useState('');
   const [locationCity, setLocationCity] = useState('');
   const [locationZip, setLocationZip] = useState('');
+  const [isLookingUpZip, setIsLookingUpZip] = useState(false);
+  const [zipLookupError, setZipLookupError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Auto-lookup city when ZIP code is entered
+  const lookupZipCode = async (zip: string) => {
+    if (zip.length !== 5) {
+      setLocationCity('');
+      setZipLookupError('');
+      return;
+    }
+    
+    setIsLookingUpZip(true);
+    setZipLookupError('');
+    
+    try {
+      const response = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (!response.ok) {
+        throw new Error('Invalid ZIP code');
+      }
+      const data = await response.json();
+      const place = data.places?.[0];
+      if (place) {
+        setLocationCity(`${place['place name']}, ${place['state abbreviation']}`);
+      }
+    } catch (err) {
+      setZipLookupError('Invalid ZIP code');
+      setLocationCity('');
+    } finally {
+      setIsLookingUpZip(false);
+    }
+  };
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -634,7 +665,7 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
           return price && vehicleMake && vehicleModel && vehicleYear;
         }
         return price && partType;
-      case 4: return locationCity.trim();
+      case 4: return locationZip.length === 5 && locationCity.trim() && !zipLookupError;
       default: return false;
     }
   };
@@ -1035,33 +1066,54 @@ function CreateListingModal({ user, profile, onClose }: { user: any; profile: an
 
           {/* Step 4: Location */}
           {step === 4 && (
-            <div className="space-y-4">
-              <p className="text-gray-600 mb-4">Add your location so buyers can find your listing</p>
+            <div className="space-y-6">
+              <p className="text-gray-600">Add your location so buyers can find your listing</p>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City <span className="text-red-500">*</span>
+                  ZIP Code <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={locationCity}
-                  onChange={(e) => setLocationCity(e.target.value)}
-                  placeholder="Los Angeles"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ZIP Code
-                </label>
-                <input
-                  type="text"
-                  value={locationZip}
-                  onChange={(e) => setLocationZip(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
-                  placeholder="90001"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={locationZip}
+                    onChange={(e) => {
+                      const zip = e.target.value.replace(/[^0-9]/g, '').slice(0, 5);
+                      setLocationZip(zip);
+                      lookupZipCode(zip);
+                    }}
+                    placeholder="Enter 5-digit ZIP code"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-center text-lg font-medium ${
+                      zipLookupError ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    }`}
+                  />
+                  {isLookingUpZip && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg className="animate-spin w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Error message */}
+                {zipLookupError && (
+                  <p className="mt-2 text-sm text-red-500 text-center">{zipLookupError}</p>
+                )}
+                
+                {/* City display */}
+                {locationCity && !zipLookupError && (
+                  <div className="mt-4 flex items-center justify-center gap-2 py-3 px-4 bg-green-50 text-green-700 rounded-xl">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    <span className="font-medium">{locationCity}</span>
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </div>
             </div>
           )}
