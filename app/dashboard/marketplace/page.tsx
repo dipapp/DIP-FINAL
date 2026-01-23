@@ -1420,7 +1420,24 @@ function ListingDetailModal({
   const [showChat, setShowChat] = useState(false);
   const [conversation, setConversation] = useState<MarketplaceConversation | null>(null);
   const [startingChat, setStartingChat] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { requireAuth } = useGuestMode();
+  
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteDoc(doc(db, 'marketplace', listing.id));
+      onClose();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      alert('Failed to delete listing');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirmation(false);
+    }
+  };
 
   // Prevent background scroll when modal is open
   useEffect(() => {
@@ -1752,9 +1769,32 @@ function ListingDetailModal({
           </div>
         </div>
         
-        {/* Footer - Contact Button */}
-        {!isOwner && (
-          <div className="p-4 border-t border-gray-200 bg-gray-50">
+        {/* Footer - Action Buttons */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          {isOwner ? (
+            // Owner buttons - Edit and Delete
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="flex-1 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirmation(true)}
+                className="flex-1 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          ) : (
+            // Buyer button - Message Seller
             <button
               onClick={startConversation}
               disabled={startingChat}
@@ -1777,8 +1817,435 @@ function ListingDetailModal({
                 </>
               )}
             </button>
+          )}
+        </div>
+        
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+            <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Listing?</h3>
+              <p className="text-gray-600 mb-6">This action cannot be undone. Your listing will be permanently removed.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 py-2.5 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
+        
+        {/* Edit Listing Modal */}
+        {showEditModal && (
+          <EditListingModal
+            listing={listing}
+            onClose={() => setShowEditModal(false)}
+            onSave={() => {
+              setShowEditModal(false);
+              // The listing will be updated via the real-time listener
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Edit Listing Modal
+function EditListingModal({ 
+  listing, 
+  onClose, 
+  onSave 
+}: { 
+  listing: MarketplaceListing; 
+  onClose: () => void; 
+  onSave: () => void;
+}) {
+  const [title, setTitle] = useState(listing.title);
+  const [description, setDescription] = useState(listing.description);
+  const [price, setPrice] = useState(listing.price.toLocaleString());
+  const [condition, setCondition] = useState<ItemCondition>(
+    listing.condition?.toLowerCase() === 'new' ? 'new' :
+    listing.condition?.toLowerCase() === 'for_parts' || listing.condition?.toLowerCase() === 'for parts' ? 'for_parts' : 'used'
+  );
+  const [vehicleMake, setVehicleMake] = useState(listing.vehicleMake || '');
+  const [vehicleModel, setVehicleModel] = useState(listing.vehicleModel || '');
+  const [vehicleYear, setVehicleYear] = useState(listing.vehicleYear || '');
+  const [vehicleColor, setVehicleColor] = useState(listing.vehicleColor || '');
+  const [vehicleMileage, setVehicleMileage] = useState(listing.vehicleMileage || '');
+  const [vehicleVIN, setVehicleVIN] = useState(listing.vehicleVIN || '');
+  const [titleStatus, setTitleStatus] = useState<TitleStatus>(
+    listing.titleStatus?.toLowerCase() === 'salvage' || listing.titleStatus?.toLowerCase() === 'salvage title' ? 'salvage' :
+    listing.titleStatus?.toLowerCase() === 'lien_sale' || listing.titleStatus?.toLowerCase() === 'lien sale' ? 'lien_sale' : 'clean'
+  );
+  const [partType, setPartType] = useState(listing.partType || '');
+  const [compatibleVehicles, setCompatibleVehicles] = useState(listing.compatibleVehicles || '');
+  const [locationCity, setLocationCity] = useState(listing.locationCity || '');
+  const [locationZip, setLocationZip] = useState(listing.locationZip || '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  const isVehicle = isVehicleCategory(listing.category);
+
+  const canSave = () => {
+    if (!title.trim() || !price) return false;
+    if (isVehicle) {
+      return vehicleMake.trim() && vehicleModel.trim() && vehicleYear.trim();
+    }
+    return partType.trim();
+  };
+
+  const handleSave = async () => {
+    if (!canSave()) return;
+    
+    setIsSaving(true);
+    try {
+      const updateData: any = {
+        title: title.trim(),
+        description: description.trim(),
+        price: parseFloat(price.replace(/,/g, '')),
+        condition,
+        locationCity: locationCity.trim(),
+        locationZip: locationZip.trim() || null,
+        updatedAt: Timestamp.now(),
+      };
+      
+      if (isVehicle) {
+        updateData.vehicleMake = vehicleMake.trim();
+        updateData.vehicleModel = vehicleModel.trim();
+        updateData.vehicleYear = vehicleYear.trim();
+        updateData.vehicleColor = vehicleColor.trim() || null;
+        updateData.vehicleMileage = vehicleMileage || null;
+        updateData.vehicleVIN = vehicleVIN.trim() || null;
+        updateData.titleStatus = titleStatus;
+      } else {
+        updateData.partType = partType.trim();
+        updateData.compatibleVehicles = compatibleVehicles.trim() || null;
+      }
+      
+      await updateDoc(doc(db, 'marketplace', listing.id), updateData);
+      onSave();
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      alert('Failed to update listing. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">Edit Listing</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Listing Details Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Listing Details</h3>
+            
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+            
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="text"
+                  value={price}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setPrice(val ? parseInt(val).toLocaleString() : '');
+                  }}
+                  className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+            
+            {/* Condition */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Condition <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {(['new', 'used', 'for_parts'] as ItemCondition[]).map(cond => (
+                  <button
+                    key={cond}
+                    type="button"
+                    onClick={() => setCondition(cond)}
+                    className={`py-2 px-4 rounded-xl border-2 font-medium transition-all ${
+                      condition === cond
+                        ? 'border-sky-500 bg-sky-50 text-sky-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {conditionLabels[cond]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Vehicle Details Section */}
+          {isVehicle && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Vehicle Details</h3>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Year <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleYear}
+                    onChange={(e) => setVehicleYear(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Make <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleMake}
+                    onChange={(e) => setVehicleMake(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Model <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleModel}
+                    onChange={(e) => setVehicleModel(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mileage
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleMileage}
+                    onChange={(e) => setVehicleMileage(e.target.value.replace(/[^0-9]/g, ''))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Color
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleColor}
+                    onChange={(e) => setVehicleColor(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title Status
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(['clean', 'salvage', 'lien_sale'] as TitleStatus[]).map(status => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setTitleStatus(status)}
+                      className={`py-2 px-4 rounded-xl border-2 font-medium text-sm transition-all ${
+                        titleStatus === status
+                          ? 'border-sky-500 bg-sky-50 text-sky-700'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {titleStatusLabels[status]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  VIN (optional)
+                </label>
+                <input
+                  type="text"
+                  value={vehicleVIN}
+                  onChange={(e) => setVehicleVIN(e.target.value.toUpperCase())}
+                  maxLength={17}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono"
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Parts Details Section */}
+          {!isVehicle && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Part Details</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Part Type <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={partType}
+                  onChange={(e) => setPartType(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Compatible Vehicles
+                </label>
+                <input
+                  type="text"
+                  value={compatibleVehicles}
+                  onChange={(e) => setCompatibleVehicles(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Location Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Location</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={locationCity}
+                  onChange={(e) => setLocationCity(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ZIP Code
+                </label>
+                <input
+                  type="text"
+                  value={locationZip}
+                  onChange={(e) => setLocationZip(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Description Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Description</h3>
+            
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+            />
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={onClose}
+            className="px-6 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          
+          <button
+            onClick={handleSave}
+            disabled={!canSave() || isSaving}
+            className={`px-8 py-2.5 rounded-xl font-semibold transition-all ${
+              canSave() && !isSaving
+                ? 'bg-sky-500 text-white hover:bg-sky-600 shadow-lg'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Saving...
+              </span>
+            ) : 'Save Changes'}
+          </button>
+        </div>
       </div>
     </div>
   );
