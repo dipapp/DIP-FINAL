@@ -1,14 +1,111 @@
 'use client';
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useState, useRef, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
+
+// Declare google namespace for TypeScript
+declare global {
+  interface Window {
+    google: any;
+    initGooglePlaces: () => void;
+  }
+}
 
 export default function ProviderSignupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+
+  // Load Google Places API
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.warn('Google Maps API key not configured');
+      return;
+    }
+
+    // Check if already loaded
+    if (window.google?.maps?.places) {
+      setGoogleLoaded(true);
+      return;
+    }
+
+    // Create callback for when script loads
+    window.initGooglePlaces = () => {
+      setGoogleLoaded(true);
+    };
+
+    // Load the script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGooglePlaces`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
+
+  // Initialize autocomplete when Google is loaded and on step 2
+  useEffect(() => {
+    if (!googleLoaded || currentStep !== 2 || !addressInputRef.current) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+      componentRestrictions: { country: 'us' },
+      fields: ['address_components', 'formatted_address'],
+      types: ['address'],
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (!place.address_components) return;
+
+      let streetNumber = '';
+      let route = '';
+      let city = '';
+      let state = '';
+      let zipCode = '';
+
+      for (const component of place.address_components) {
+        const type = component.types[0];
+        switch (type) {
+          case 'street_number':
+            streetNumber = component.long_name;
+            break;
+          case 'route':
+            route = component.long_name;
+            break;
+          case 'locality':
+            city = component.long_name;
+            break;
+          case 'administrative_area_level_1':
+            state = component.short_name;
+            break;
+          case 'postal_code':
+            zipCode = component.long_name;
+            break;
+        }
+      }
+
+      // Update form data
+      setFormData(prev => ({
+        ...prev,
+        address: `${streetNumber} ${route}`.trim(),
+        city,
+        state,
+        zipCode,
+      }));
+    });
+  }, [googleLoaded, currentStep]);
 
   const generateProviderId = async (): Promise<string> => {
     let providerId: string;
@@ -38,23 +135,18 @@ export default function ProviderSignupPage() {
 
   const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
     try {
-      // Check if email exists in users collection (for existing login accounts)
-      const usersQuery = query(
-        collection(db, 'users'),
-        where('email', '==', emailToCheck)
-      );
-      const usersSnapshot = await getDocs(usersQuery);
-      
-      // Also check if email exists in providers collection (for pending applications)
+      // Check if email exists in providers collection (for pending applications)
+      // Note: We only check providers collection since users collection requires authentication
       const providersQuery = query(
         collection(db, 'providers'),
         where('email', '==', emailToCheck)
       );
       const providersSnapshot = await getDocs(providersQuery);
       
-      return !usersSnapshot.empty || !providersSnapshot.empty;
+      return !providersSnapshot.empty;
     } catch (err) {
       console.error('Error checking email existence:', err);
+      // Return false to allow submission attempt - Firebase will handle duplicates
       return false;
     }
   };
@@ -334,7 +426,7 @@ export default function ProviderSignupPage() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Business License Number *
+                      City Business License Number *
                     </label>
                     <input
                       type="text"
@@ -482,13 +574,18 @@ export default function ProviderSignupPage() {
                     Business Address *
                   </label>
                   <input
+                    ref={addressInputRef}
                     type="text"
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
+                    placeholder={googleLoaded ? "Start typing address..." : "Enter address"}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
+                  {googleLoaded && (
+                    <p className="text-xs text-gray-500 mt-1">Start typing to search for your address</p>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
