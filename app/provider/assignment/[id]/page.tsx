@@ -239,8 +239,8 @@ export default function AssignmentDetailPage() {
                 ← Back to Dashboard
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Assignment #{assignment.assignmentNumber || '—'}</h1>
-                <p className="text-sm text-gray-600">ID: {assignment.id.slice(-8)}</p>
+                <h1 className="text-2xl font-bold text-gray-900">Assignment Details</h1>
+                <p className="text-sm text-gray-600">{assignment.vehicleInfo || `${request?.vehicleYear || ''} ${request?.vehicleMake || ''} ${request?.vehicleModel || ''}`.trim()}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -327,25 +327,53 @@ export default function AssignmentDetailPage() {
             </div>
           </div>
 
-          {/* Member Information */}
+          {/* Member Contact Information - Prominent section for providers */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Member Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Member Contact Information</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Full Name</div>
-                <div className="font-semibold text-gray-900">{assignment.customerName || `${request?.userFirstName || ''} ${request?.userLastName || ''}`.trim() || 'Not available'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 mb-1">Email</div>
-                <div className="font-semibold text-gray-900">{assignment.customerEmail || request?.userEmail || 'Not available'}</div>
+                <div className="font-semibold text-gray-900 text-lg">{assignment.customerName || `${request?.userFirstName || ''} ${request?.userLastName || ''}`.trim() || 'Not available'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Phone Number</div>
-                <div className="font-semibold text-gray-900">{assignment.customerPhone || request?.userPhoneNumber || 'Not provided'}</div>
+                {(assignment.customerPhone && assignment.customerPhone !== 'Not provided') || request?.userPhoneNumber ? (
+                  <div className="flex items-center space-x-3">
+                    <a 
+                      href={`tel:${assignment.customerPhone || request?.userPhoneNumber}`}
+                      className="font-semibold text-blue-600 text-lg hover:text-blue-800 flex items-center"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      {assignment.customerPhone || request?.userPhoneNumber}
+                    </a>
+                    <a 
+                      href={`sms:${assignment.customerPhone || request?.userPhoneNumber}`}
+                      className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
+                    >
+                      Text
+                    </a>
+                  </div>
+                ) : (
+                  <div className="font-semibold text-red-600">No phone number provided</div>
+                )}
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Member ID</div>
-                <div className="font-semibold text-gray-900">{request?.userId || 'Not available'}</div>
+                <div className="text-sm text-gray-600 mb-1">Email</div>
+                {(assignment.customerEmail && assignment.customerEmail !== 'Not provided') || request?.userEmail ? (
+                  <a 
+                    href={`mailto:${assignment.customerEmail || request?.userEmail}`}
+                    className="font-semibold text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {assignment.customerEmail || request?.userEmail}
+                  </a>
+                ) : (
+                  <div className="font-semibold text-gray-500">Not available</div>
+                )}
               </div>
             </div>
           </div>

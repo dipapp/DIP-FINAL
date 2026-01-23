@@ -48,6 +48,7 @@ interface Request {
   userLastName: string;
   userEmail: string;
   userPhone: string;
+  userPhoneNumber?: string; // Alternative phone field from iOS
   vehicleYear: string;
   vehicleMake: string;
   vehicleModel: string;
@@ -317,7 +318,7 @@ export default function AdminAssignmentsPage() {
         providerDocId: selectedProvider, // Also store document ID for backup matching
         providerName: provider.businessName,
         customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
-        customerPhone: selectedRequest.userPhone || 'Not provided',
+        customerPhone: selectedRequest.userPhone || selectedRequest.userPhoneNumber || 'Not provided',
         customerEmail: selectedRequest.userEmail || 'Not provided',
         vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
         vehicleVin: vehicleVin, // Store VIN in assignment
