@@ -234,6 +234,22 @@ export default function ProviderSignupPage() {
 
       await addDoc(collection(db, 'providers'), providerData);
       
+      // Send email notification to admin
+      try {
+        await fetch('/api/send-provider-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            providerId: providerId,
+            yearsInBusiness: parseInt(formData.yearsInBusiness),
+          }),
+        });
+      } catch (emailError) {
+        // Don't block submission if email fails - just log it
+        console.error('Failed to send notification email:', emailError);
+      }
+      
       // Redirect to success page
       router.push('/provider/signup/success');
     } catch (err: any) {
