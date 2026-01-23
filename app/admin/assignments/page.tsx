@@ -598,7 +598,7 @@ export default function AdminAssignmentsPage() {
                       Provider
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                      Service
+                      Description
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                       Vehicle / VIN
@@ -636,8 +636,10 @@ export default function AdminAssignmentsPage() {
                         <div className="text-sm text-gray-900 truncate">{assignment.providerName}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
-                        <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
+                        <div className="text-sm text-gray-900 truncate">{assignment.description || 'No description'}</div>
+                        {assignment.amount !== undefined && assignment.amount > 0 && (
+                          <div className="text-xs text-gray-500 truncate">${assignment.amount.toFixed(2)}</div>
+                        )}
                         {assignment.photoURLs && assignment.photoURLs.length > 0 && (
                           <div className="text-xs text-blue-600 mt-1">📷 {assignment.photoURLs.length} photo(s)</div>
                         )}
