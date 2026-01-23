@@ -8,12 +8,16 @@ import BackButton from '@/components/BackButton';
 interface Assignment {
   id: string;
   requestId: string;
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
   providerName: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
   vehicleInfo: string;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
   issueDescription: string;
   location: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
@@ -212,8 +216,8 @@ export default function AdminAssignmentDetailPage() {
             <div className="flex items-center">
               <BackButton />
               <div className="ml-4">
-                <h1 className="text-2xl font-bold text-gray-900">Assignment Details</h1>
-                <p className="text-sm text-gray-600">Assignment #{assignment.id.slice(-8)}</p>
+                <h1 className="text-2xl font-bold text-gray-900">Assignment #{assignment.assignmentNumber || '—'}</h1>
+                <p className="text-sm text-gray-600">ID: {assignment.id.slice(-8)}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -343,7 +347,7 @@ export default function AdminAssignmentDetailPage() {
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">VIN</div>
-                <div className="font-semibold text-gray-900 font-mono text-sm">{vehicleVin || request?.vin || 'Not available'}</div>
+                <div className="font-semibold text-gray-900 font-mono text-sm">{assignment.vehicleVin || vehicleVin || request?.vin || 'Not available'}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Vehicle ID</div>
@@ -394,12 +398,14 @@ export default function AdminAssignmentDetailPage() {
             </div>
           </div>
 
-          {/* Photos Section */}
-          {request?.photoURLs && request.photoURLs.length > 0 && (
+          {/* Photos Section - Use photos from assignment or request */}
+          {((assignment.photoURLs && assignment.photoURLs.length > 0) || (request?.photoURLs && request.photoURLs.length > 0)) && (
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Photos from Request ({request.photoURLs.length})</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Photos ({(assignment.photoURLs || request?.photoURLs || []).length})
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {request.photoURLs.map((photoUrl: string, index: number) => (
+                {(assignment.photoURLs || request?.photoURLs || []).map((photoUrl: string, index: number) => (
                   <div 
                     key={index} 
                     className="relative group cursor-pointer"

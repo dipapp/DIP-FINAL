@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import BackButton from '@/components/BackButton';
 import { useRouter } from 'next/navigation';
@@ -8,12 +8,16 @@ import { useRouter } from 'next/navigation';
 interface Assignment {
   id: string;
   requestId: string;
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
   providerName: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
   vehicleInfo: string;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
   issueDescription: string;
   location: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
@@ -283,8 +287,30 @@ export default function AdminAssignmentsPage() {
       const finalProviderId = provider.providerId || selectedProvider;
       console.log('Final providerId to use in assignment:', finalProviderId);
 
+      // Get the next assignment number by counting existing assignments
+      const allAssignmentsSnapshot = await getDocs(collection(db, 'assignments'));
+      const nextAssignmentNumber = allAssignmentsSnapshot.docs.length + 1;
+      console.log('Next assignment number:', nextAssignmentNumber);
+
+      // Try to get VIN and photos from the request or vehicle
+      let vehicleVin = (selectedRequest as any).vin || '';
+      let photoURLs: string[] = (selectedRequest as any).photoURLs || [];
+      
+      // If we have a vehicleId, try to fetch the VIN from the vehicles collection
+      if ((selectedRequest as any).vehicleId && !vehicleVin) {
+        try {
+          const vehicleDoc = await getDoc(doc(db, 'vehicles', (selectedRequest as any).vehicleId));
+          if (vehicleDoc.exists()) {
+            vehicleVin = vehicleDoc.data().vin || '';
+          }
+        } catch (err) {
+          console.log('Could not fetch vehicle VIN:', err);
+        }
+      }
+
       const assignmentData = {
         requestId: selectedRequest.id,
+        assignmentNumber: nextAssignmentNumber, // Sequential assignment number
         providerId: finalProviderId, // Use providerId field if available, fallback to document ID
         providerDocId: selectedProvider, // Also store document ID for backup matching
         providerName: provider.businessName,
@@ -292,6 +318,9 @@ export default function AdminAssignmentsPage() {
         customerPhone: selectedRequest.userPhone || 'Not provided',
         customerEmail: selectedRequest.userEmail || 'Not provided',
         vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
+        vehicleVin: vehicleVin, // Store VIN in assignment
+        vehicleId: (selectedRequest as any).vehicleId || '',
+        photoURLs: photoURLs, // Store photos in assignment
         issueDescription: selectedRequest.issueDescription || 'No description provided',
         location: selectedRequest.location || 'Not specified',
         priority: selectedRequest.priority || 'medium',
@@ -497,6 +526,9 @@ export default function AdminAssignmentsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                      #
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                       Customer
                     </th>
@@ -507,7 +539,7 @@ export default function AdminAssignmentsPage() {
                       Service
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
-                      Vehicle
+                      Vehicle / VIN
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                       Status
@@ -521,12 +553,17 @@ export default function AdminAssignmentsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {assignments.map((assignment) => (
+                  {assignments.map((assignment, index) => (
                     <tr 
                       key={assignment.id} 
                       className="hover:bg-gray-50 cursor-pointer"
                       onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
                     >
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-bold text-blue-600">
+                          #{assignment.assignmentNumber || (assignments.length - index)}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900 truncate">{assignment.customerName}</div>
@@ -539,6 +576,9 @@ export default function AdminAssignmentsPage() {
                       <td className="px-4 py-3">
                         <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
                         <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
+                        {assignment.photoURLs && assignment.photoURLs.length > 0 && (
+                          <div className="text-xs text-blue-600 mt-1">📷 {assignment.photoURLs.length} photo(s)</div>
+                        )}
                         {assignment.requestDeleted && (
                           <div className="text-xs text-red-600 mt-1 flex items-center">
                             <span className="mr-1">⚠️</span>
@@ -546,8 +586,11 @@ export default function AdminAssignmentsPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3">
                         <div className="text-sm text-gray-900 truncate">{assignment.vehicleInfo}</div>
+                        {assignment.vehicleVin && (
+                          <div className="text-xs text-gray-500 font-mono truncate">VIN: {assignment.vehicleVin}</div>
+                        )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>

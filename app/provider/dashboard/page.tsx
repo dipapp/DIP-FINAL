@@ -9,12 +9,16 @@ import Link from 'next/link';
 interface Assignment {
   id: string;
   requestId: string;
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
   providerName: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
   vehicleInfo: string;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
   issueDescription: string;
   location: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
@@ -377,22 +381,25 @@ export default function ProviderDashboard() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vehicle / VIN
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Service
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Assigned
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -400,30 +407,41 @@ export default function ProviderDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {assignments.map((assignment) => (
                     <tr key={assignment.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-blue-600">
+                          #{assignment.assignmentNumber || '—'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{assignment.customerName}</div>
                           <div className="text-sm text-gray-500">{assignment.customerPhone}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">{assignment.vehicleInfo}</div>
+                        {assignment.vehicleVin && (
+                          <div className="text-xs text-gray-500 font-mono">VIN: {assignment.vehicleVin}</div>
+                        )}
+                        {assignment.photoURLs && assignment.photoURLs.length > 0 && (
+                          <div className="text-xs text-blue-600">📷 {assignment.photoURLs.length} photo(s)</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
                         <div className="text-sm text-gray-900">{assignment.issueDescription}</div>
                         <div className="text-sm text-gray-500">{assignment.location}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(assignment.priority)}`}>
                           {assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assignment.status)}`}>
                           {assignment.status.replace('_', ' ').charAt(0).toUpperCase() + assignment.status.replace('_', ' ').slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assignment.assignedAt.toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <Link
                             href={`/provider/assignment/${assignment.id}`}
