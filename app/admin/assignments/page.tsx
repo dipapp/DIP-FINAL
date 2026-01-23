@@ -127,7 +127,8 @@ export default function AdminAssignmentsPage() {
       // Fetch ALL requests (same approach as admin home page)
       console.log('Fetching ALL requests...');
       
-      const allClaimsQuery = query(collection(db, 'claims'));
+      // iOS uses 'requests' collection
+      const allClaimsQuery = query(collection(db, 'requests'));
       const allClaimsSnapshot = await getDocs(allClaimsQuery);
       console.log('All claims in database:', allClaimsSnapshot.docs.length);
       console.log('All claims data:', allClaimsSnapshot.docs.map(doc => ({ 

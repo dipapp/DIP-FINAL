@@ -88,9 +88,9 @@ export default function AdminApplicantsPage() {
         ...doc.data(),
       })) as Provider[];
 
-      // Fetch pending requests
+      // Fetch pending requests - iOS uses 'requests' collection
       const requestsQuery = query(
-        collection(db, 'claims'),
+        collection(db, 'requests'),
         where('status', '==', 'Pending')
       );
       const requestsSnapshot = await getDocs(requestsQuery);

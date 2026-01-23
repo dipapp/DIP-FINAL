@@ -488,7 +488,7 @@ function AdminHomeContent() {
                       </td>
                       <td className="py-3 pr-4">{getStatusBadge(claim.status)}</td>
                       <td className="py-3 pr-4">
-                        {claim.date?.toDate?.()?.toLocaleDateString?.() || '—'}
+                        {claim.createdAt?.toDate?.()?.toLocaleDateString?.() || claim.date?.toDate?.()?.toLocaleDateString?.() || '—'}
                       </td>
                     </tr>
                   ))}

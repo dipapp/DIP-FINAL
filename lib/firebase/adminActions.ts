@@ -25,7 +25,8 @@ export function subscribeVehiclesByOwner(ownerId: string, callback: (vehicles: V
 }
 
 export function subscribeRequests(callback: (requests: any[]) => void) {
-  const q = query(collection(db, 'claims'), orderBy('date', 'desc'));
+  // iOS uses 'requests' collection, sorted by createdAt descending
+  const q = query(collection(db, 'requests'), orderBy('createdAt', 'desc'));
   return onSnapshot(q, (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))));
 }
 
@@ -33,11 +34,12 @@ export function subscribeRequests(callback: (requests: any[]) => void) {
 export const subscribeClaims = subscribeRequests;
 
 export function subscribeRequestsByUser(userId: string, callback: (requests: any[]) => void) {
-  const q = query(collection(db, 'claims'), where('userId', '==', userId));
+  // iOS uses 'requests' collection
+  const q = query(collection(db, 'requests'), where('userId', '==', userId));
   return onSnapshot(q, (snap) => {
     const requests = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-    // Sort client-side to avoid composite index requirement
-    requests.sort((a, b) => (b.date?.toDate?.() || 0) - (a.date?.toDate?.() || 0));
+    // Sort client-side by createdAt to match iOS
+    requests.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
     callback(requests);
   });
 }
@@ -50,7 +52,8 @@ export async function setUserActive(uid: string, isActive: boolean) {
 }
 
 export async function updateRequestStatus(requestId: string, status: ClaimStatus) {
-  await updateDoc(doc(db, 'claims', requestId), { status, updatedAt: new Date() });
+  // iOS uses 'requests' collection
+  await updateDoc(doc(db, 'requests', requestId), { status, updatedAt: new Date() });
 }
 
 // Alias for backward compatibility
@@ -75,7 +78,8 @@ export async function deleteByUrl(fileUrl: string) {
 }
 
 export async function uploadRequestPhoto(requestId: string, file: File): Promise<string> {
-  const storageRef = ref(storage, `claims/${requestId}/photos/photo_${Date.now()}.jpg`);
+  // iOS uses 'requests' folder in storage
+  const storageRef = ref(storage, `requests/${requestId}/photos/photo_${Date.now()}.jpg`);
   await uploadBytes(storageRef, file, { contentType: file.type || 'image/jpeg' });
   return await getDownloadURL(storageRef);
 }
