@@ -276,14 +276,17 @@ export default function AdminAssignmentsPage() {
       console.log('Available fields:', Object.keys(selectedRequest));
       console.log('Provider data:', provider);
       console.log('Provider providerId field:', provider.providerId);
-      console.log('Selected provider ID:', selectedProvider);
+      console.log('Selected provider ID (document ID):', selectedProvider);
 
+      // Use providerId field if it exists, otherwise use the document ID
+      // Also store the document ID separately for backup matching
       const finalProviderId = provider.providerId || selectedProvider;
       console.log('Final providerId to use in assignment:', finalProviderId);
 
       const assignmentData = {
         requestId: selectedRequest.id,
         providerId: finalProviderId, // Use providerId field if available, fallback to document ID
+        providerDocId: selectedProvider, // Also store document ID for backup matching
         providerName: provider.businessName,
         customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
         customerPhone: selectedRequest.userPhone || 'Not provided',

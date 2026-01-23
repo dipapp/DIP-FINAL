@@ -34,6 +34,7 @@ export default function ProviderDashboard() {
     contactPerson: string;
   } | null>(null);
   const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
+  const [providerDocId, setProviderDocId] = useState<string | null>(null); // Provider document ID from 'providers' collection
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -52,16 +53,21 @@ export default function ProviderDashboard() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch assignments when providerId changes
+  // Fetch assignments when providerId or providerDocId changes
   useEffect(() => {
-    if (currentProviderId) {
+    if (currentProviderId || providerDocId) {
       fetchAssignments();
     }
-  }, [currentProviderId]);
+  }, [currentProviderId, providerDocId]);
 
   const fetchProviderInfo = async (user: any) => {
     try {
       if (!user) return;
+      
+      let foundProviderId: string | null = null;
+      let foundProviderDocId: string | null = null;
+      let businessName = 'Unknown Business';
+      let contactPerson = 'Unknown Contact';
       
       // Get provider profile from provider_profiles collection using user UID
       const providerProfileDoc = await getDoc(doc(db, 'provider_profiles', user.uid));
@@ -69,58 +75,71 @@ export default function ProviderDashboard() {
       if (providerProfileDoc.exists()) {
         const providerData = providerProfileDoc.data();
         console.log('Provider profile data:', providerData);
-        const providerId = providerData.providerId || 'Unknown ID';
-        setCurrentProviderId(providerId);
-        setProviderInfo({
-          businessName: providerData.businessName || providerData.legalEntityName || 'Unknown Business',
-          providerId: providerId,
-          contactPerson: providerData.contactPerson || 'Unknown Contact',
-        });
+        foundProviderId = providerData.providerId || null;
+        businessName = providerData.businessName || providerData.legalEntityName || 'Unknown Business';
+        contactPerson = providerData.contactPerson || 'Unknown Contact';
       } else {
         // Fallback: try to get from users collection
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
           console.log('User data:', userData);
-          
-          // If we have a providerId, try to get more info from providers collection
-          if (userData.providerId) {
-            const providersQuery = query(
-              collection(db, 'providers'),
-              where('providerId', '==', userData.providerId)
-            );
-            const providersSnapshot = await getDocs(providersQuery);
-            
-            if (!providersSnapshot.empty) {
-              const providerData = providersSnapshot.docs[0].data();
-              console.log('Provider data from providers collection:', providerData);
-              const providerId = providerData.providerId || userData.providerId || 'Unknown ID';
-              setCurrentProviderId(providerId);
-              setProviderInfo({
-                businessName: providerData.businessName || userData.businessName || 'Unknown Business',
-                providerId: providerId,
-                contactPerson: providerData.contactPerson || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
-              });
-            } else {
-              const providerId = userData.providerId || 'Unknown ID';
-              setCurrentProviderId(providerId);
-              setProviderInfo({
-                businessName: userData.businessName || 'Unknown Business',
-                providerId: providerId,
-                contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
-              });
-            }
-          } else {
-            const providerId = userData.providerId || 'Unknown ID';
-            setCurrentProviderId(providerId);
-            setProviderInfo({
-              businessName: userData.businessName || 'Unknown Business',
-              providerId: providerId,
-              contactPerson: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact',
-            });
-          }
+          foundProviderId = userData.providerId || null;
+          businessName = userData.businessName || 'Unknown Business';
+          contactPerson = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Contact';
         }
       }
+      
+      // Also try to find the provider document in 'providers' collection
+      // This is important because the admin creates assignments using the provider document ID
+      if (foundProviderId) {
+        // Search by providerId field
+        const providersQuery = query(
+          collection(db, 'providers'),
+          where('providerId', '==', foundProviderId)
+        );
+        const providersSnapshot = await getDocs(providersQuery);
+        
+        if (!providersSnapshot.empty) {
+          const providerDoc = providersSnapshot.docs[0];
+          foundProviderDocId = providerDoc.id; // This is the document ID
+          const providerData = providerDoc.data();
+          console.log('Found provider document:', { docId: providerDoc.id, providerId: providerData.providerId });
+          businessName = providerData.businessName || businessName;
+          contactPerson = providerData.contactPerson || contactPerson;
+        }
+      }
+      
+      // Also search by email as fallback
+      if (!foundProviderDocId) {
+        const emailQuery = query(
+          collection(db, 'providers'),
+          where('email', '==', user.email)
+        );
+        const emailSnapshot = await getDocs(emailQuery);
+        
+        if (!emailSnapshot.empty) {
+          const providerDoc = emailSnapshot.docs[0];
+          foundProviderDocId = providerDoc.id;
+          const providerData = providerDoc.data();
+          console.log('Found provider document by email:', { docId: providerDoc.id, providerId: providerData.providerId });
+          if (!foundProviderId) {
+            foundProviderId = providerData.providerId || providerDoc.id;
+          }
+          businessName = providerData.businessName || businessName;
+          contactPerson = providerData.contactPerson || contactPerson;
+        }
+      }
+      
+      console.log('Final provider info:', { foundProviderId, foundProviderDocId, businessName });
+      
+      setCurrentProviderId(foundProviderId || 'Unknown ID');
+      setProviderDocId(foundProviderDocId);
+      setProviderInfo({
+        businessName,
+        providerId: foundProviderId || 'Unknown ID',
+        contactPerson,
+      });
     } catch (error) {
       console.error('Error fetching provider info:', error);
     }
@@ -128,38 +147,60 @@ export default function ProviderDashboard() {
 
   const fetchAssignments = async () => {
     try {
-      console.log('fetchAssignments called with currentProviderId:', currentProviderId);
-      if (!currentProviderId) {
+      console.log('fetchAssignments called with:', { currentProviderId, providerDocId });
+      if (!currentProviderId && !providerDocId) {
         console.log('No provider ID available yet, skipping assignment fetch');
         return;
       }
 
-      // Filter assignments by the current provider's ID
-      const assignmentsQuery = query(
-        collection(db, 'assignments'),
-        where('providerId', '==', currentProviderId),
-        orderBy('assignedAt', 'desc')
-      );
-      
-      const assignmentsSnapshot = await getDocs(assignmentsQuery);
-      console.log('Fetched assignments count for provider', currentProviderId, ':', assignmentsSnapshot.docs.length);
-      
-      // Debug: Let's also fetch ALL assignments to see what's in the database
+      // Fetch ALL assignments and filter client-side to avoid index requirements
+      // and to handle potential providerId format mismatches (string vs number)
       const allAssignmentsQuery = query(collection(db, 'assignments'));
       const allAssignmentsSnapshot = await getDocs(allAssignmentsQuery);
+      
       console.log('All assignments in database:', allAssignmentsSnapshot.docs.length);
-      console.log('All assignment data:', allAssignmentsSnapshot.docs.map(doc => ({
+      console.log('All assignment providerIds:', allAssignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         providerId: doc.data().providerId,
+        providerDocId: doc.data().providerDocId,
         customerName: doc.data().customerName,
-        status: doc.data().status
       })));
-      const assignmentsData = assignmentsSnapshot.docs.map(doc => ({
+      console.log('Looking for matches with:', { currentProviderId, providerDocId });
+      
+      // Filter assignments for this provider - check multiple fields for matching
+      const myAssignments = allAssignmentsSnapshot.docs.filter(doc => {
+        const data = doc.data();
+        const assignmentProviderId = data.providerId;
+        const assignmentProviderDocId = data.providerDocId;
+        
+        // Compare as strings to handle any type mismatches
+        // Try matching by:
+        // 1. assignment.providerId == our currentProviderId
+        // 2. assignment.providerId == our providerDocId (if admin used doc ID)
+        // 3. assignment.providerDocId == our currentProviderId
+        // 4. assignment.providerDocId == our providerDocId
+        const matchByProviderId = currentProviderId && String(assignmentProviderId) === String(currentProviderId);
+        const matchByDocIdToProviderId = providerDocId && String(assignmentProviderId) === String(providerDocId);
+        const matchByProviderDocId = currentProviderId && assignmentProviderDocId && String(assignmentProviderDocId) === String(currentProviderId);
+        const matchByBothDocIds = providerDocId && assignmentProviderDocId && String(assignmentProviderDocId) === String(providerDocId);
+        
+        const match = matchByProviderId || matchByDocIdToProviderId || matchByProviderDocId || matchByBothDocIds;
+        
+        console.log(`Assignment ${doc.id}: providerId="${assignmentProviderId}", providerDocId="${assignmentProviderDocId}" | Our: providerId="${currentProviderId}", docId="${providerDocId}" | Match: ${match}`);
+        return match;
+      });
+      
+      console.log('Filtered assignments for this provider:', myAssignments.length);
+      
+      const assignmentsData = myAssignments.map(doc => ({
         id: doc.id,
         ...doc.data(),
         assignedAt: doc.data().assignedAt?.toDate(),
         dueDate: doc.data().dueDate?.toDate(),
       })) as Assignment[];
+      
+      // Sort by assignedAt descending (newest first)
+      assignmentsData.sort((a, b) => (b.assignedAt?.getTime() || 0) - (a.assignedAt?.getTime() || 0));
       
       console.log('Assignments data:', assignmentsData);
       setAssignments(assignmentsData);
