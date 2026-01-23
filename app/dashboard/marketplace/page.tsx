@@ -93,6 +93,10 @@ export default function MarketplacePage() {
   const [showInbox, setShowInbox] = useState(false);
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [filterZipCode, setFilterZipCode] = useState('');
+  const [filterCityName, setFilterCityName] = useState('');
+  const [searchRadius, setSearchRadius] = useState<number>(50); // miles, 0 = any
   const { requireAuth } = useGuestMode();
 
   // Auth and data loading
@@ -154,18 +158,54 @@ export default function MarketplacePage() {
 
   // Filter listings
   const filteredListings = listings.filter(listing => {
+    // Filter by category
     if (selectedCategory && listing.category !== selectedCategory) return false;
+    
+    // Filter by search text
     if (searchText) {
       const search = searchText.toLowerCase();
-      return (
+      const matchesSearch = (
         listing.title.toLowerCase().includes(search) ||
         listing.description.toLowerCase().includes(search) ||
         listing.vehicleMake?.toLowerCase().includes(search) ||
         listing.vehicleModel?.toLowerCase().includes(search) ||
         listing.locationCity?.toLowerCase().includes(search)
       );
+      if (!matchesSearch) return false;
     }
+    
+    // Filter by location (ZIP code prefix matching based on radius)
+    if (filterZipCode && searchRadius > 0 && listing.locationZip) {
+      // Use ZIP prefix matching based on search radius
+      // 10 mi = same ZIP, 25 mi = first 4 digits, 50 mi = first 3 digits, 100 mi = first 2 digits
+      let prefixLength = 5; // exact match
+      if (searchRadius >= 100) prefixLength = 2;
+      else if (searchRadius >= 50) prefixLength = 3;
+      else if (searchRadius >= 25) prefixLength = 4;
+      else prefixLength = 5;
+      
+      const userZipPrefix = filterZipCode.slice(0, prefixLength);
+      const listingZipPrefix = listing.locationZip.slice(0, prefixLength);
+      
+      if (userZipPrefix !== listingZipPrefix) return false;
+    }
+    
     return true;
+  }).sort((a, b) => {
+    // If location filter is active, sort listings with matching location first
+    if (filterZipCode && searchRadius > 0) {
+      const aHasZip = a.locationZip ? 1 : 0;
+      const bHasZip = b.locationZip ? 1 : 0;
+      if (aHasZip !== bHasZip) return bHasZip - aHasZip;
+      
+      // Sort by ZIP similarity (closer prefix = higher priority)
+      if (a.locationZip && b.locationZip) {
+        const aMatch = a.locationZip.startsWith(filterZipCode.slice(0, 3)) ? 1 : 0;
+        const bMatch = b.locationZip.startsWith(filterZipCode.slice(0, 3)) ? 1 : 0;
+        if (aMatch !== bMatch) return bMatch - aMatch;
+      }
+    }
+    return 0;
   });
 
   // My listings
@@ -253,23 +293,54 @@ export default function MarketplacePage() {
 
       {/* Search and Filters */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search Input */}
-          <div className="flex-1 relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search marketplace..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-            />
+        <div className="flex flex-col gap-4">
+          {/* Top Row: Search and Location */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search marketplace..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              />
+            </div>
+            
+            {/* Location Filter Button */}
+            <button
+              onClick={() => setShowLocationPicker(true)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all whitespace-nowrap ${
+                filterZipCode 
+                  ? 'bg-blue-50 text-blue-700 border-2 border-blue-200' 
+                  : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {filterCityName ? (
+                  <>
+                    {filterCityName}
+                    {searchRadius > 0 && <span className="text-blue-500 ml-1">({searchRadius} mi)</span>}
+                  </>
+                ) : (
+                  'Set Location'
+                )}
+              </span>
+              {filterZipCode && (
+                <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full" />
+              )}
+            </button>
           </div>
           
-          {/* Category Filters */}
-          <div className="flex gap-2">
+          {/* Bottom Row: Category Filters */}
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-xl font-medium transition-all ${
@@ -384,6 +455,27 @@ export default function MarketplacePage() {
           profile={profile}
           isOwner={selectedListing.sellerId === user?.uid}
           onClose={() => setSelectedListing(null)}
+        />
+      )}
+
+      {showLocationPicker && (
+        <LocationPickerModal
+          currentZipCode={filterZipCode}
+          currentCityName={filterCityName}
+          currentRadius={searchRadius}
+          onApply={(zipCode, cityName, radius) => {
+            setFilterZipCode(zipCode);
+            setFilterCityName(cityName);
+            setSearchRadius(radius);
+            setShowLocationPicker(false);
+          }}
+          onClear={() => {
+            setFilterZipCode('');
+            setFilterCityName('');
+            setSearchRadius(50);
+            setShowLocationPicker(false);
+          }}
+          onClose={() => setShowLocationPicker(false)}
         />
       )}
     </div>
@@ -2245,6 +2337,271 @@ function EditListingModal({
               </span>
             ) : 'Save Changes'}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Location Picker Modal
+function LocationPickerModal({
+  currentZipCode,
+  currentCityName,
+  currentRadius,
+  onApply,
+  onClear,
+  onClose
+}: {
+  currentZipCode: string;
+  currentCityName: string;
+  currentRadius: number;
+  onApply: (zipCode: string, cityName: string, radius: number) => void;
+  onClear: () => void;
+  onClose: () => void;
+}) {
+  const [zipCodeInput, setZipCodeInput] = useState(currentZipCode);
+  const [cityName, setCityName] = useState(currentCityName);
+  const [radius, setRadius] = useState(currentRadius);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  const radiusOptions = [
+    { value: 10, label: '10 mi' },
+    { value: 25, label: '25 mi' },
+    { value: 50, label: '50 mi' },
+    { value: 100, label: '100 mi' },
+    { value: 0, label: 'Any' }
+  ];
+
+  const lookupZipCode = async () => {
+    if (!zipCodeInput || zipCodeInput.length !== 5) {
+      setError('Please enter a valid 5-digit ZIP code');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Use a free ZIP code API to get city name
+      const response = await fetch(`https://api.zippopotam.us/us/${zipCodeInput}`);
+      if (!response.ok) {
+        throw new Error('Invalid ZIP code');
+      }
+      const data = await response.json();
+      const place = data.places?.[0];
+      if (place) {
+        setCityName(`${place['place name']}, ${place['state abbreviation']}`);
+      }
+    } catch (err) {
+      setError('Invalid ZIP code. Please try again.');
+      setCityName('');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApply = () => {
+    if (zipCodeInput && cityName) {
+      onApply(zipCodeInput, cityName, radius);
+    } else if (zipCodeInput) {
+      // Try to lookup first
+      lookupZipCode().then(() => {
+        if (cityName) {
+          onApply(zipCodeInput, cityName, radius);
+        }
+      });
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          // Reverse geocode to get ZIP code
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const address = data.address;
+          
+          if (address?.postcode) {
+            setZipCodeInput(address.postcode.slice(0, 5));
+            const city = address.city || address.town || address.village || address.county || '';
+            const state = address.state || '';
+            setCityName(city ? `${city}, ${state}` : '');
+          } else {
+            setError('Could not determine your location');
+          }
+        } catch (err) {
+          setError('Failed to get location details');
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (err) => {
+        setIsLoading(false);
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setError('Location access denied. Please enter ZIP code manually.');
+            break;
+          case err.POSITION_UNAVAILABLE:
+            setError('Location unavailable. Please enter ZIP code manually.');
+            break;
+          default:
+            setError('Failed to get location. Please enter ZIP code manually.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">Search Location</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Header Text */}
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900">Where are you searching?</h3>
+            <p className="text-sm text-gray-500 mt-1">Find listings near your location</p>
+          </div>
+          
+          {/* Use My Location Button */}
+          <button
+            onClick={handleGetCurrentLocation}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? (
+              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+              </svg>
+            )}
+            <span>Use my current location</span>
+          </button>
+          
+          {/* Divider */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-sm text-gray-400">Or</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+          
+          {/* ZIP Code Input */}
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Enter ZIP code"
+                value={zipCodeInput}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 5);
+                  setZipCodeInput(val);
+                  setError('');
+                }}
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={lookupZipCode}
+                disabled={isLoading || zipCodeInput.length !== 5}
+                className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Lookup
+              </button>
+            </div>
+            
+            {/* City Name Display */}
+            {cityName && (
+              <div className="flex items-center justify-center gap-2 py-2 px-4 bg-green-50 text-green-700 rounded-full">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span className="font-medium">{cityName}</span>
+              </div>
+            )}
+            
+            {/* Error Message */}
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+          </div>
+          
+          {/* Search Radius */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">Search radius</label>
+            <div className="grid grid-cols-5 gap-2">
+              {radiusOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setRadius(option.value)}
+                  className={`py-2 px-2 rounded-lg text-sm font-medium transition-all ${
+                    radius === option.value
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
+          <button
+            onClick={handleApply}
+            disabled={!zipCodeInput || !cityName}
+            className={`w-full py-3 rounded-xl font-semibold transition-all ${
+              zipCodeInput && cityName
+                ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Apply
+          </button>
+          
+          {(currentZipCode || currentCityName) && (
+            <button
+              onClick={onClear}
+              className="w-full py-2 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-colors"
+            >
+              Clear Location Filter
+            </button>
+          )}
         </div>
       </div>
     </div>
