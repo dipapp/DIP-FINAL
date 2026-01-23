@@ -36,6 +36,37 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(price);
 };
 
+// Helper to check category (iOS saves "Vehicle"/"Parts & Accessories", web uses "vehicle"/"parts")
+const isVehicleCategory = (category: string) => {
+  return category?.toLowerCase() === 'vehicle';
+};
+
+const isPartsCategory = (category: string) => {
+  return category?.toLowerCase() === 'parts' || category?.toLowerCase() === 'parts & accessories';
+};
+
+// Helper to get display label for condition (iOS saves "New"/"Used"/"For Parts", web uses "new"/"used"/"for_parts")
+const getConditionLabel = (condition: string) => {
+  if (!condition) return 'Used';
+  const lower = condition.toLowerCase();
+  if (lower === 'new') return 'New';
+  if (lower === 'used') return 'Used';
+  if (lower === 'for_parts' || lower === 'for parts' || lower === 'forparts') return 'For Parts';
+  // If it's already a display string from iOS, return as-is
+  return condition;
+};
+
+// Helper to get display label for title status (iOS saves "Clean Title"/"Salvage Title"/"Lien Sale")
+const getTitleStatusLabel = (status: string) => {
+  if (!status) return '';
+  const lower = status.toLowerCase();
+  if (lower === 'clean' || lower === 'clean title') return 'Clean Title';
+  if (lower === 'salvage' || lower === 'salvage title') return 'Salvage Title';
+  if (lower === 'lien_sale' || lower === 'lien sale' || lower === 'liensale') return 'Lien Sale';
+  // If it's already a display string, return as-is
+  return status;
+};
+
 // Format relative time
 const formatRelativeTime = (date: Date) => {
   const now = new Date();
@@ -361,7 +392,7 @@ export default function MarketplacePage() {
 
 // Listing Card Component
 function ListingCard({ listing, onClick }: { listing: MarketplaceListing; onClick: () => void }) {
-  const displayTitle = listing.category === 'vehicle' && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
+  const displayTitle = isVehicleCategory(listing.category) && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
     ? `${listing.vehicleYear} ${listing.vehicleMake} ${listing.vehicleModel}`
     : listing.title;
 
@@ -381,14 +412,14 @@ function ListingCard({ listing, onClick }: { listing: MarketplaceListing; onClic
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-5xl opacity-40">
-              {listing.category === 'vehicle' ? '🚗' : '🔧'}
+              {isVehicleCategory(listing.category) ? '🚗' : '🔧'}
             </span>
           </div>
         )}
         
         {/* Condition Badge */}
         <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium text-gray-700">
-          {conditionLabels[listing.condition]}
+          {getConditionLabel(listing.condition)}
         </div>
         
         {/* Photo Count */}
@@ -410,7 +441,7 @@ function ListingCard({ listing, onClick }: { listing: MarketplaceListing; onClic
         </h3>
         
         {/* Vehicle Mileage */}
-        {listing.category === 'vehicle' && listing.vehicleMileage && (
+        {isVehicleCategory(listing.category) && listing.vehicleMileage && (
           <div className="flex items-center gap-1 text-sm text-gray-500 mb-1">
             <span>🛣️</span>
             <span>{parseInt(listing.vehicleMileage).toLocaleString()} mi</span>
@@ -1022,7 +1053,7 @@ function MyListingsModal({
                       <img src={listing.photoURLs[0]} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl">
-                        {listing.category === 'vehicle' ? '🚗' : '🔧'}
+                        {isVehicleCategory(listing.category) ? '🚗' : '🔧'}
                       </div>
                     )}
                   </div>
@@ -1399,7 +1430,7 @@ function ListingDetailModal({
     };
   }, []);
 
-  const displayTitle = listing.category === 'vehicle' && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
+  const displayTitle = isVehicleCategory(listing.category) && listing.vehicleYear && listing.vehicleMake && listing.vehicleModel
     ? `${listing.vehicleYear} ${listing.vehicleMake} ${listing.vehicleModel}`
     : listing.title;
 
@@ -1513,7 +1544,7 @@ function ListingDetailModal({
             </div>
           ) : (
             <div className="aspect-video bg-gray-100 flex items-center justify-center">
-              <span className="text-6xl opacity-30">{listing.category === 'vehicle' ? '🚗' : '🔧'}</span>
+              <span className="text-6xl opacity-30">{isVehicleCategory(listing.category) ? '🚗' : '🔧'}</span>
             </div>
           )}
           
@@ -1545,7 +1576,7 @@ function ListingDetailModal({
             </div>
             
             {/* Quick Stats - Mileage for vehicles */}
-            {listing.category === 'vehicle' && listing.vehicleMileage && (
+            {isVehicleCategory(listing.category) && listing.vehicleMileage && (
               <div className="flex items-center gap-2 text-gray-700">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1557,11 +1588,11 @@ function ListingDetailModal({
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                {conditionLabels[listing.condition]}
+                {getConditionLabel(listing.condition)}
               </span>
               {listing.titleStatus && (
                 <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                  {titleStatusLabels[listing.titleStatus]}
+                  {getTitleStatusLabel(listing.titleStatus)}
                 </span>
               )}
               {listing.vehicleColor && (
@@ -1572,7 +1603,7 @@ function ListingDetailModal({
             </div>
             
             {/* VIN Section with Copy Button */}
-            {listing.category === 'vehicle' && listing.vehicleVIN && (
+            {isVehicleCategory(listing.category) && listing.vehicleVIN && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1617,7 +1648,7 @@ function ListingDetailModal({
             <div className="border-t border-gray-200 pt-4"></div>
             
             {/* Vehicle/Part Details Section */}
-            {listing.category === 'vehicle' && (
+            {isVehicleCategory(listing.category) && (
               <div className="space-y-3">
                 {listing.vehicleMake && (
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1640,7 +1671,7 @@ function ListingDetailModal({
                 {listing.titleStatus && (
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-sm font-semibold text-gray-700">Title</span>
-                    <span className="text-sm text-gray-900">{titleStatusLabels[listing.titleStatus]}</span>
+                    <span className="text-sm text-gray-900">{getTitleStatusLabel(listing.titleStatus)}</span>
                   </div>
                 )}
                 {listing.vehicleMileage && (
@@ -1657,7 +1688,7 @@ function ListingDetailModal({
                 )}
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm font-semibold text-gray-700">Condition</span>
-                  <span className="text-sm text-gray-900">{conditionLabels[listing.condition]}</span>
+                  <span className="text-sm text-gray-900">{getConditionLabel(listing.condition)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm font-semibold text-gray-700">Category</span>
@@ -1667,7 +1698,7 @@ function ListingDetailModal({
             )}
             
             {/* Parts Details */}
-            {listing.category === 'parts' && (
+            {isPartsCategory(listing.category) && (
               <div className="space-y-3">
                 {listing.partType && (
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1683,7 +1714,7 @@ function ListingDetailModal({
                 )}
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm font-semibold text-gray-700">Condition</span>
-                  <span className="text-sm text-gray-900">{conditionLabels[listing.condition]}</span>
+                  <span className="text-sm text-gray-900">{getConditionLabel(listing.condition)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm font-semibold text-gray-700">Category</span>
