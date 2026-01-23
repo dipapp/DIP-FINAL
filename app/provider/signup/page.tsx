@@ -300,7 +300,7 @@ export default function ProviderSignupPage() {
               Become a DIP Provider
             </h1>
             <p className="text-gray-600">
-              Join our network of approved service providers and help California drivers
+              Join our network of approved service providers
             </p>
           </div>
 
