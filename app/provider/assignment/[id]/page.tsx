@@ -10,45 +10,22 @@ import Link from 'next/link';
 interface Assignment {
   id: string;
   requestId: string;
-  assignmentNumber?: number;
-  
-  // Provider info
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
-  providerDocId?: string;
   providerName: string;
-  
-  // Member info (matching iOS)
-  userId?: string;
   customerName: string;
-  customerFirstName?: string;
-  customerLastName?: string;
   customerPhone: string;
   customerEmail: string;
-  
-  // Vehicle info
-  vehicleId?: string;
   vehicleInfo: string;
-  vehicleYear?: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  vehicleVin?: string;
-  
-  // Request details (matching iOS Claim)
-  description?: string;
-  amount?: number;
-  photoURLs?: string[];
-  anyInjuries?: boolean;
-  
-  // Dates
-  requestDate?: Date;
-  requestCreatedAt?: Date;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
+  issueDescription: string;
+  location: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   assignedAt: Date;
   dueDate?: Date;
-  
-  // Status
-  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  
-  // Notes
   notes?: string;
   adminNotes?: string;
 }
@@ -300,7 +277,7 @@ export default function AssignmentDetailPage() {
               </div>
               <div>
                 <div className="text-gray-600">Amount</div>
-                <div className="font-semibold">${assignment.amount?.toFixed?.(2) || request?.amount?.toFixed?.(2) || '0.00'}</div>
+                <div className="font-semibold">${request?.amount?.toFixed?.(2) || '0.00'}</div>
               </div>
             </div>
 
@@ -402,22 +379,12 @@ export default function AssignmentDetailPage() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Service Description</div>
-                <div className="font-semibold text-gray-900">{assignment.description || request?.description || 'No description provided'}</div>
+                <div className="font-semibold text-gray-900">{assignment.issueDescription || request?.issueDescription || request?.description || 'No description provided'}</div>
               </div>
-              {assignment.anyInjuries && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <div className="flex items-center text-red-700">
-                    <span className="mr-2">⚠️</span>
-                    <span className="font-medium">Injuries reported in this incident</span>
-                  </div>
-                </div>
-              )}
-              {request?.location && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Location</div>
-                  <div className="font-semibold text-gray-900">{request.location}</div>
-                </div>
-              )}
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Location</div>
+                <div className="font-semibold text-gray-900">{assignment.location || request?.location || 'Not specified'}</div>
+              </div>
               {assignment.notes && (
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Assignment Notes</div>

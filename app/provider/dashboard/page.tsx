@@ -9,45 +9,22 @@ import Link from 'next/link';
 interface Assignment {
   id: string;
   requestId: string;
-  assignmentNumber?: number;
-  
-  // Provider info
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
-  providerDocId?: string;
   providerName: string;
-  
-  // Member info (matching iOS)
-  userId?: string;
   customerName: string;
-  customerFirstName?: string;
-  customerLastName?: string;
   customerPhone: string;
   customerEmail: string;
-  
-  // Vehicle info
-  vehicleId?: string;
   vehicleInfo: string;
-  vehicleYear?: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  vehicleVin?: string;
-  
-  // Request details (matching iOS Claim)
-  description?: string;
-  amount?: number;
-  photoURLs?: string[];
-  anyInjuries?: boolean;
-  
-  // Dates
-  requestDate?: Date;
-  requestCreatedAt?: Date;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
+  issueDescription: string;
+  location: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   assignedAt: Date;
   dueDate?: Date;
-  
-  // Status
-  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  
-  // Notes
   notes?: string;
   adminNotes?: string;
 }

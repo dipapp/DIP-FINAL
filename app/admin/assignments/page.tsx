@@ -8,51 +8,25 @@ import { useRouter } from 'next/navigation';
 interface Assignment {
   id: string;
   requestId: string;
-  assignmentNumber?: number;
-  
-  // Provider info
+  assignmentNumber?: number; // Sequential assignment number (#1, #2, etc.)
   providerId: string;
-  providerDocId?: string;
   providerName: string;
-  
-  // Member info (matching iOS)
-  userId?: string;
   customerName: string;
-  customerFirstName?: string;
-  customerLastName?: string;
   customerPhone: string;
   customerEmail: string;
-  
-  // Vehicle info
-  vehicleId?: string;
   vehicleInfo: string;
-  vehicleYear?: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
-  vehicleVin?: string;
-  
-  // Request details (matching iOS Claim)
-  description?: string;
-  issueDescription?: string; // Legacy
-  amount?: number;
-  photoURLs?: string[];
-  anyInjuries?: boolean;
-  
-  // Dates
-  requestDate?: Date;
-  requestCreatedAt?: Date;
+  vehicleVin?: string; // VIN stored in assignment
+  vehicleId?: string;
+  photoURLs?: string[]; // Photos stored in assignment
+  issueDescription: string;
+  location: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   assignedAt: Date;
   dueDate?: Date;
-  
-  // Status
-  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  
-  // Notes
   notes?: string;
   adminNotes?: string;
-  
-  // Flags
-  requestDeleted?: boolean;
+  requestDeleted?: boolean; // Flag to track if original request was deleted
 }
 
 interface Provider {
@@ -74,22 +48,15 @@ interface Request {
   userLastName: string;
   userEmail: string;
   userPhone: string;
-  userPhoneNumber?: string; // iOS uses this field name
-  vehicleId: string;
   vehicleYear: string;
   vehicleMake: string;
   vehicleModel: string;
-  description: string; // iOS Claim description
-  issueDescription?: string; // Legacy field
-  amount: number;
-  photoURLs: string[];
-  anyInjuries?: boolean;
-  location?: string;
+  issueDescription: string;
+  location: string;
+  priority: string;
   status: string;
-  date: Date;
   createdAt: Date;
-  updatedAt?: Date;
-  assignedTo?: string;
+  assignedTo?: string; // Optional field for tracking provider assignment
 }
 
 export default function AdminAssignmentsPage() {
@@ -341,53 +308,24 @@ export default function AdminAssignmentsPage() {
         }
       }
 
-      // Get phone number - iOS uses userPhoneNumber field
-      const customerPhone = selectedRequest.userPhoneNumber || selectedRequest.userPhone || 'Not provided';
-      
-      // Get description - iOS uses description field
-      const description = selectedRequest.description || selectedRequest.issueDescription || 'No description provided';
-
       const assignmentData = {
-        // Assignment identifiers
         requestId: selectedRequest.id,
-        assignmentNumber: nextAssignmentNumber,
-        
-        // Provider info
-        providerId: finalProviderId,
-        providerDocId: selectedProvider,
+        assignmentNumber: nextAssignmentNumber, // Sequential assignment number
+        providerId: finalProviderId, // Use providerId field if available, fallback to document ID
+        providerDocId: selectedProvider, // Also store document ID for backup matching
         providerName: provider.businessName,
-        
-        // Member info (matching iOS Claim fields)
-        userId: selectedRequest.userId,
-        customerName: `${selectedRequest.userFirstName || ''} ${selectedRequest.userLastName || ''}`.trim() || selectedRequest.userEmail,
-        customerFirstName: selectedRequest.userFirstName || '',
-        customerLastName: selectedRequest.userLastName || '',
-        customerPhone: customerPhone,
+        customerName: `${selectedRequest.userFirstName} ${selectedRequest.userLastName}`,
+        customerPhone: selectedRequest.userPhone || 'Not provided',
         customerEmail: selectedRequest.userEmail || 'Not provided',
-        
-        // Vehicle info
-        vehicleId: selectedRequest.vehicleId || '',
         vehicleInfo: `${selectedRequest.vehicleYear} ${selectedRequest.vehicleMake} ${selectedRequest.vehicleModel}`,
-        vehicleYear: selectedRequest.vehicleYear || '',
-        vehicleMake: selectedRequest.vehicleMake || '',
-        vehicleModel: selectedRequest.vehicleModel || '',
-        vehicleVin: vehicleVin,
-        
-        // Request details (matching iOS Claim fields)
-        description: description,
-        amount: selectedRequest.amount || 0,
-        photoURLs: photoURLs,
-        anyInjuries: selectedRequest.anyInjuries || false,
-        
-        // Dates
-        requestDate: selectedRequest.date || selectedRequest.createdAt || new Date(),
-        requestCreatedAt: selectedRequest.createdAt || new Date(),
-        
-        // Assignment status
+        vehicleVin: vehicleVin, // Store VIN in assignment
+        vehicleId: (selectedRequest as any).vehicleId || '',
+        photoURLs: photoURLs, // Store photos in assignment
+        issueDescription: selectedRequest.issueDescription || 'No description provided',
+        location: selectedRequest.location || 'Not specified',
+        priority: selectedRequest.priority || 'medium',
         status: 'assigned',
         assignedAt: new Date(),
-        
-        // Notes
         notes: assignmentNotes,
         adminNotes: '',
       };
@@ -598,7 +536,7 @@ export default function AdminAssignmentsPage() {
                       Provider
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                      Description
+                      Service
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                       Vehicle / VIN
@@ -636,10 +574,8 @@ export default function AdminAssignmentsPage() {
                         <div className="text-sm text-gray-900 truncate">{assignment.providerName}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 truncate">{assignment.description || 'No description'}</div>
-                        {assignment.amount !== undefined && assignment.amount > 0 && (
-                          <div className="text-xs text-gray-500 truncate">${assignment.amount.toFixed(2)}</div>
-                        )}
+                        <div className="text-sm text-gray-900 truncate">{assignment.issueDescription}</div>
+                        <div className="text-xs text-gray-500 truncate">{assignment.location}</div>
                         {assignment.photoURLs && assignment.photoURLs.length > 0 && (
                           <div className="text-xs text-blue-600 mt-1">📷 {assignment.photoURLs.length} photo(s)</div>
                         )}
@@ -704,124 +640,172 @@ export default function AdminAssignmentsPage() {
           )}
         </div>
 
-        {/* Assignment Modal - Enhanced to show full request details */}
+        {/* Assignment Modal - Enhanced with request cards */}
         {showAssignModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-5 border max-w-lg shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Create Assignment</h3>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Request</label>
-                  <select
-                    value={selectedRequest?.id || ''}
-                    onChange={(e) => {
-                      const request = requests.find(r => r.id === e.target.value);
-                      setSelectedRequest(request || null);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select a request...</option>
-                    {requests.map(request => (
-                      <option key={request.id} value={request.id}>
-                        {request.userFirstName} {request.userLastName} - {request.vehicleYear} {request.vehicleMake} {request.vehicleModel}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="relative top-10 mx-auto p-6 border max-w-2xl shadow-lg rounded-lg bg-white max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Create Assignment</h3>
+                <button
+                  onClick={() => setShowAssignModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
-                {/* Show selected request details */}
-                {selectedRequest && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Request Details</h4>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">Member:</span>{' '}
-                        <span className="font-medium">{selectedRequest.userFirstName} {selectedRequest.userLastName}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Email:</span>{' '}
-                        <span className="font-medium">{selectedRequest.userEmail}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Phone:</span>{' '}
-                        <span className="font-medium">{selectedRequest.userPhoneNumber || selectedRequest.userPhone || 'Not provided'}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Vehicle:</span>{' '}
-                        <span className="font-medium">{selectedRequest.vehicleYear} {selectedRequest.vehicleMake} {selectedRequest.vehicleModel}</span>
-                      </div>
-                      {selectedRequest.description && (
-                        <div>
-                          <span className="text-gray-500">Description:</span>{' '}
-                          <span className="font-medium">{selectedRequest.description}</span>
+              {/* Step 1: Select Request */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Step 1: Select a Request ({requests.length} pending)
+                </label>
+                {requests.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <svg className="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-gray-500">No pending requests available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {requests.map((request) => {
+                      const userName = request.userFirstName && request.userLastName 
+                        ? `${request.userFirstName} ${request.userLastName}`
+                        : request.userFirstName || request.userLastName || request.userEmail;
+                      const requestDate = request.createdAt?.toDate?.() || request.date?.toDate?.();
+                      const isSelected = selectedRequest?.id === request.id;
+
+                      return (
+                        <div
+                          key={request.id}
+                          onClick={() => setSelectedRequest(request)}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            isSelected 
+                              ? 'border-blue-500 bg-blue-50' 
+                              : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {/* Header row */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-500' : 'bg-blue-100'}`}>
+                                <svg className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-900">{userName}</p>
+                                <p className="text-xs text-gray-500">
+                                  Filed {requestDate ? requestDate.toLocaleDateString() : '—'}
+                                </p>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">Selected</span>
+                            )}
+                          </div>
+
+                          {/* Vehicle info */}
+                          <div className="mb-2">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Vehicle</p>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {request.vehicleYear} {request.vehicleMake} {request.vehicleModel}
+                            </p>
+                          </div>
+
+                          {/* Description */}
+                          {(request.description || request.issueDescription) && (
+                            <div className="mb-2">
+                              <p className="text-xs text-gray-500 uppercase tracking-wide">Description</p>
+                              <p className="text-gray-700 text-sm line-clamp-2">{request.description || request.issueDescription}</p>
+                            </div>
+                          )}
+
+                          {/* Photos indicator */}
+                          {request.photoURLs && request.photoURLs.length > 0 && (
+                            <div className="flex items-center text-blue-600 text-xs">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {request.photoURLs.length} photo{request.photoURLs.length === 1 ? '' : 's'} attached
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div>
-                        <span className="text-gray-500">Amount:</span>{' '}
-                        <span className="font-medium">${selectedRequest.amount?.toFixed?.(2) || '0.00'}</span>
-                      </div>
-                      {selectedRequest.photoURLs && selectedRequest.photoURLs.length > 0 && (
-                        <div className="flex items-center text-blue-600">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          {selectedRequest.photoURLs.length} photo(s) attached
-                        </div>
-                      )}
-                      {selectedRequest.anyInjuries && (
-                        <div className="text-red-600 font-medium">⚠️ Injuries reported</div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
+              </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Provider</label>
-                  <select
-                    value={selectedProvider}
-                    onChange={(e) => setSelectedProvider(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select a provider...</option>
-                    {providers.map(provider => (
-                      <option key={provider.id} value={provider.id}>
-                        {provider.businessName} - {provider.contactPerson}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Step 2: Select Provider */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Step 2: Assign to Provider
+                </label>
+                <select
+                  value={selectedProvider}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select a provider...</option>
+                  {providers.map(provider => (
+                    <option key={provider.id} value={provider.id}>
+                      {provider.businessName} - {provider.contactPerson}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-                  <textarea
-                    value={assignmentNotes}
-                    onChange={(e) => setAssignmentNotes(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Add any special instructions..."
-                  />
-                </div>
+              {/* Step 3: Notes */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Step 3: Notes (Optional)
+                </label>
+                <textarea
+                  value={assignmentNotes}
+                  onChange={(e) => setAssignmentNotes(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Add any special instructions for the provider..."
+                />
+              </div>
 
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => setShowAssignModal(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Create Assignment button clicked in modal');
-                      console.log('Button disabled state:', !selectedRequest || !selectedProvider);
-                      createAssignment();
-                    }}
-                    disabled={!selectedRequest || !selectedProvider}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    Create Assignment
-                  </button>
+              {/* Selected Summary */}
+              {selectedRequest && selectedProvider && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm font-medium text-green-800">
+                    Ready to assign: <span className="font-bold">{selectedRequest.userFirstName} {selectedRequest.userLastName}</span>'s 
+                    request to <span className="font-bold">{providers.find(p => p.id === selectedProvider)?.businessName}</span>
+                  </p>
                 </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setSelectedRequest(null);
+                    setSelectedProvider('');
+                    setAssignmentNotes('');
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Create Assignment button clicked in modal');
+                    console.log('Button disabled state:', !selectedRequest || !selectedProvider);
+                    createAssignment();
+                  }}
+                  disabled={!selectedRequest || !selectedProvider}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Create Assignment
+                </button>
               </div>
             </div>
           </div>
