@@ -40,6 +40,17 @@ function AuthPageContent() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
+  // Google phone number collection state
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [googlePhoneNumber, setGooglePhoneNumber] = useState('');
+  const [googlePhoneError, setGooglePhoneError] = useState<string | null>(null);
+  const [googlePhoneLoading, setGooglePhoneLoading] = useState(false);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState<{
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+  } | null>(null);
+
   const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
     try {
       // Check if email exists in users collection
@@ -75,7 +86,7 @@ function AuthPageContent() {
 
   async function handleSignUp(e: FormEvent) {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !phoneNumber || !email || !password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
     }
@@ -131,23 +142,29 @@ function AuthPageContent() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       
       if (!userDoc.exists()) {
-        // Create new user document for first-time Google users
-        const nameParts = user.displayName?.split(' ') || ['', ''];
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
-        await setDoc(doc(db, 'users', user.uid), {
+        // New user - show phone number modal before creating document
+        setPendingGoogleUser({
           uid: user.uid,
           email: user.email,
-          firstName,
-          lastName,
-          phoneNumber: user.phoneNumber || '',
-          marketingOptIn: false,
-          isAdmin: user.email === 'admin@dipmembers.com',
-          isActive: true,
-          createdAt: serverTimestamp(),
-          authProvider: 'google',
+          displayName: user.displayName,
         });
+        setShowPhoneModal(true);
+        setGoogleLoading(false);
+        return; // Don't redirect yet - wait for phone number
+      }
+      
+      // Existing user - check if they have a phone number
+      const userData = userDoc.data();
+      if (!userData.phoneNumber) {
+        // Existing user without phone - show modal to collect it
+        setPendingGoogleUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+        });
+        setShowPhoneModal(true);
+        setGoogleLoading(false);
+        return;
       }
       
       router.push('/dashboard');
@@ -162,6 +179,63 @@ function AuthPageContent() {
       }
     } finally {
       setGoogleLoading(false);
+    }
+  }
+
+  async function handleGooglePhoneSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!googlePhoneNumber.trim()) {
+      setGooglePhoneError('Please enter your phone number.');
+      return;
+    }
+    if (!pendingGoogleUser) {
+      setGooglePhoneError('Something went wrong. Please try again.');
+      return;
+    }
+
+    setGooglePhoneError(null);
+    setGooglePhoneLoading(true);
+
+    try {
+      const nameParts = pendingGoogleUser.displayName?.split(' ') || ['', ''];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Check if user doc already exists (returning user without phone)
+      const userDoc = await getDoc(doc(db, 'users', pendingGoogleUser.uid));
+      
+      if (userDoc.exists()) {
+        // Update existing user with phone number
+        await setDoc(doc(db, 'users', pendingGoogleUser.uid), {
+          ...userDoc.data(),
+          phoneNumber: googlePhoneNumber.trim(),
+        }, { merge: true });
+      } else {
+        // Create new user document
+        await setDoc(doc(db, 'users', pendingGoogleUser.uid), {
+          uid: pendingGoogleUser.uid,
+          email: pendingGoogleUser.email,
+          firstName,
+          lastName,
+          phoneNumber: googlePhoneNumber.trim(),
+          marketingOptIn: false,
+          isAdmin: pendingGoogleUser.email === 'admin@dipmembers.com',
+          isActive: true,
+          createdAt: serverTimestamp(),
+          authProvider: 'google',
+        });
+      }
+
+      // Clear modal state and redirect
+      setShowPhoneModal(false);
+      setPendingGoogleUser(null);
+      setGooglePhoneNumber('');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setGooglePhoneError('Failed to save your information. Please try again.');
+      console.error('Error saving Google user:', err);
+    } finally {
+      setGooglePhoneLoading(false);
     }
   }
 
@@ -414,8 +488,8 @@ function AuthPageContent() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
                   value={phoneNumber} 
                   onChange={(e) => setPhoneNumber(e.target.value)} 
+                  required
                 />
-                <p className="text-xs text-gray-500 mt-1">Used for emergency communications</p>
               </div>
               
               <div>
@@ -583,6 +657,70 @@ function AuthPageContent() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Google Phone Number Modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="text-center mb-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/dip-logo.png" alt="DIP Logo" className="h-12 w-auto mx-auto mb-3" />
+              <h2 className="text-xl font-bold text-gray-900">One More Step</h2>
+              <p className="text-gray-600 text-sm mt-2">
+                Please enter your phone number to complete your account setup.
+              </p>
+            </div>
+
+            <form onSubmit={handleGooglePhoneSubmit} className="space-y-4">
+              {googlePhoneError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-red-700 text-sm font-medium">{googlePhoneError}</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input 
+                  type="tel" 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                  value={googlePhoneNumber} 
+                  onChange={(e) => setGooglePhoneNumber(e.target.value)} 
+                  placeholder="(555) 123-4567"
+                  autoFocus
+                  required 
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={googlePhoneLoading} 
+                className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {googlePhoneLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Completing Setup...
+                  </div>
+                ) : (
+                  'Continue'
+                )}
+              </button>
+
+              <p className="text-xs text-gray-500 text-center leading-relaxed">
+                By clicking continue, you agree to DIP&apos;s{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a>
+                {' '}and acknowledge the{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>.
+              </p>
+            </form>
           </div>
         </div>
       )}
