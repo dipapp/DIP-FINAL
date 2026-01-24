@@ -83,7 +83,7 @@ export default function AuthPromptModal({ isOpen, onClose, message }: AuthPrompt
 
           {/* Terms */}
           <p className="text-xs text-gray-500 leading-relaxed">
-            By continuing, you agree to DIP's{' '}
+            By clicking continue, you agree to DIP's{' '}
             <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
             {' '}and{' '}
             <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
