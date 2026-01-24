@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase/client';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase/client';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -22,8 +23,44 @@ export default function ProviderLoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Check if user is a provider
-      // This will be handled by middleware or auth context
+      // Check if user is an approved service provider
+      let isApprovedProvider = false;
+      
+      // Check 1: Look for provider_profiles document (completed provider signup)
+      const providerProfileDoc = await getDoc(doc(db, 'provider_profiles', user.uid));
+      if (providerProfileDoc.exists()) {
+        isApprovedProvider = true;
+      }
+      
+      // Check 2: Look in providers collection by email with approved status
+      if (!isApprovedProvider) {
+        const providersQuery = query(
+          collection(db, 'providers'),
+          where('email', '==', user.email),
+          where('status', '==', 'approved')
+        );
+        const providersSnapshot = await getDocs(providersQuery);
+        if (!providersSnapshot.empty) {
+          isApprovedProvider = true;
+        }
+      }
+      
+      // Check 3: Check if user document has a providerId field
+      if (!isApprovedProvider) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().providerId) {
+          isApprovedProvider = true;
+        }
+      }
+      
+      if (!isApprovedProvider) {
+        // Sign out the user - they're not a provider
+        await signOut(auth);
+        setError('This account is not registered as a service provider. If you are a regular member, please use the main app to sign in. If you want to become a provider, please apply through the "Join Network" tab.');
+        return;
+      }
+      
+      // User is an approved provider, redirect to dashboard
       router.push('/provider/dashboard');
     } catch (err: any) {
       // Map Firebase error codes to user-friendly messages

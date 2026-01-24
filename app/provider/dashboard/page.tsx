@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { auth } from '@/lib/firebase/client';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Assignment {
   id: string;
@@ -30,8 +31,10 @@ interface Assignment {
 }
 
 export default function ProviderDashboard() {
+  const router = useRouter();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [providerInfo, setProviderInfo] = useState<{
     businessName: string;
     providerId: string;
@@ -50,12 +53,64 @@ export default function ProviderDashboard() {
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        fetchProviderInfo(user);
+        verifyProviderAccess(user);
+      } else {
+        // No user logged in, redirect to login
+        router.push('/provider/login');
       }
     });
     
     return () => unsubscribe();
-  }, []);
+  }, [router]);
+
+  // Verify the user is actually an approved provider
+  const verifyProviderAccess = async (user: any) => {
+    try {
+      let isApprovedProvider = false;
+      
+      // Check 1: Look for provider_profiles document
+      const providerProfileDoc = await getDoc(doc(db, 'provider_profiles', user.uid));
+      if (providerProfileDoc.exists()) {
+        isApprovedProvider = true;
+      }
+      
+      // Check 2: Look in providers collection by email with approved status
+      if (!isApprovedProvider) {
+        const providersQuery = query(
+          collection(db, 'providers'),
+          where('email', '==', user.email),
+          where('status', '==', 'approved')
+        );
+        const providersSnapshot = await getDocs(providersQuery);
+        if (!providersSnapshot.empty) {
+          isApprovedProvider = true;
+        }
+      }
+      
+      // Check 3: Check if user document has a providerId field
+      if (!isApprovedProvider) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().providerId) {
+          isApprovedProvider = true;
+        }
+      }
+      
+      if (!isApprovedProvider) {
+        // Not a provider, sign out and show error
+        await signOut(auth);
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
+      
+      // User is a provider, fetch their info
+      fetchProviderInfo(user);
+    } catch (error) {
+      console.error('Error verifying provider access:', error);
+      setAccessDenied(true);
+      setLoading(false);
+    }
+  };
 
   // Fetch assignments when providerId or providerDocId changes
   useEffect(() => {
@@ -265,6 +320,44 @@ export default function ProviderDashboard() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-6">
+            This portal is only for approved service providers. Regular members should use the main DIP app to access their account.
+          </p>
+          <div className="space-y-3">
+            <Link
+              href="/provider/login"
+              className="block w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Back to Provider Login
+            </Link>
+            <Link
+              href="/provider/signup"
+              className="block w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Apply to Become a Provider
+            </Link>
+            <Link
+              href="/"
+              className="block w-full px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Go to Main Site
+            </Link>
+          </div>
         </div>
       </div>
     );
