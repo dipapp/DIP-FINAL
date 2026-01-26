@@ -177,6 +177,11 @@ export default function ProviderSignupPage() {
     agreedToTerms: false,
     agreedToBackgroundCheck: false,
     agreedToCompliance: false,
+    agreedToIndependentContractor: false,
+    agreedToIndemnification: false,
+    agreedToArbitration: false,
+    agreedToDataUse: false,
+    acknowledgedNoGuarantees: false,
   });
 
 
@@ -287,7 +292,12 @@ export default function ProviderSignupPage() {
         return !!(
           formData.agreedToTerms &&
           formData.agreedToBackgroundCheck &&
-          formData.agreedToCompliance
+          formData.agreedToCompliance &&
+          formData.agreedToIndependentContractor &&
+          formData.agreedToIndemnification &&
+          formData.agreedToArbitration &&
+          formData.agreedToDataUse &&
+          formData.acknowledgedNoGuarantees
         );
       default:
         return false;
@@ -655,74 +665,216 @@ export default function ProviderSignupPage() {
             {/* Step 3: Legal & Terms */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Legal Documents & Terms</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Service Provider Agreement</h2>
+                <p className="text-gray-600 text-sm mb-4">
+                  Please carefully review and agree to the following terms to complete your application.
+                </p>
                 
-                <div className="space-y-4">
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      W-9 Form Status
-                    </label>
-                    <select
-                      name="w9Form"
-                      value={formData.w9Form}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                {/* Scrollable Terms Summary */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-gray-900">Provider Agreement Summary</h3>
+                    <a 
+                      href="/provider/terms" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
-                      <option value="">Select Status</option>
-                      <option value="completed">Completed</option>
-                      <option value="pending">Pending</option>
-                      <option value="not-required">Not Required</option>
-                    </select>
+                      Read Full Agreement →
+                    </a>
                   </div>
-                  
+                  <div className="h-48 overflow-y-auto text-sm text-gray-700 space-y-3 pr-2">
+                    <p><strong>Independent Contractor Status:</strong> You are an independent contractor, not an employee of DIP. You are solely responsible for all taxes, insurance, and business expenses.</p>
+                    <p><strong>Licensing & Insurance:</strong> You must maintain all required licenses, permits, and insurance coverage throughout your relationship with DIP.</p>
+                    <p><strong>Indemnification:</strong> You agree to indemnify and hold harmless DIP from all claims, damages, and liabilities arising from your services, conduct, or breach of this agreement.</p>
+                    <p><strong>Limitation of Liability:</strong> DIP&apos;s maximum liability is limited to $100 or fees paid in the prior 12 months. DIP is not liable for any indirect, consequential, or punitive damages.</p>
+                    <p><strong>No Guarantees:</strong> DIP does not guarantee any minimum referrals, work volume, or income. Participation does not guarantee business.</p>
+                    <p><strong>Binding Arbitration:</strong> All disputes will be resolved through binding arbitration in Los Angeles County, California. You waive your right to jury trial and class action participation.</p>
+                    <p><strong>Termination:</strong> DIP may terminate your participation at any time, for any reason, with or without notice.</p>
+                    <p><strong>Data Use:</strong> Your information will be shared with DIP members and used for verification, communication, and platform operations.</p>
+                  </div>
                 </div>
 
-                <div className="space-y-4 border-t pt-6">
-                  <div className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      name="agreedToTerms"
-                      checked={formData.agreedToTerms}
-                      onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      required
-                    />
-                    <div className="text-sm">
-                      <p className="text-gray-700">
-                        I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Privacy Policy</a>.
-                      </p>
+                {/* W-9 Form Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    W-9 Form Status
+                  </label>
+                  <select
+                    name="w9Form"
+                    value={formData.w9Form}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="not-required">Not Required</option>
+                  </select>
+                </div>
+
+                {/* Required Agreements */}
+                <div className="border-t pt-6">
+                  <h3 className="font-medium text-gray-900 mb-4">Required Agreements</h3>
+                  <p className="text-sm text-gray-600 mb-4">You must agree to all of the following to submit your application:</p>
+                  
+                  <div className="space-y-4">
+                    {/* Terms and Privacy */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToTerms"
+                        checked={formData.agreedToTerms}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Terms of Service & Privacy Policy</p>
+                        <p className="text-gray-600">
+                          I have read and agree to the <a href="/provider/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">DIP Service Provider Agreement</a>, <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">Terms of Service</a>, and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">Privacy Policy</a>.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Independent Contractor */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToIndependentContractor"
+                        checked={formData.agreedToIndependentContractor}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Independent Contractor Status</p>
+                        <p className="text-gray-600">
+                          I understand and acknowledge that I am an independent contractor, not an employee of DIP. I am solely responsible for all taxes, insurance, employee benefits, and business expenses. I have no authority to bind DIP or act as its agent.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Background Check */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToBackgroundCheck"
+                        checked={formData.agreedToBackgroundCheck}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Background Check & Verification Consent</p>
+                        <p className="text-gray-600">
+                          I consent to background checks including criminal history, credit history, professional license verification, and reference checks. I confirm that all information provided in this application is true, accurate, and complete.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Indemnification */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToIndemnification"
+                        checked={formData.agreedToIndemnification}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Indemnification & Hold Harmless</p>
+                        <p className="text-gray-600">
+                          I agree to indemnify, defend, and hold harmless DIP, its officers, directors, employees, and affiliates from any claims, damages, losses, liabilities, and expenses arising from my services, conduct, breach of agreement, or violation of laws.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Arbitration */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToArbitration"
+                        checked={formData.agreedToArbitration}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Binding Arbitration & Class Action Waiver</p>
+                        <p className="text-gray-600">
+                          I agree that all disputes will be resolved through binding arbitration in Los Angeles County, California. <strong>I waive my right to a jury trial and my right to participate in any class action lawsuit.</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Data Use */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToDataUse"
+                        checked={formData.agreedToDataUse}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Data Use & Sharing Consent</p>
+                        <p className="text-gray-600">
+                          I consent to DIP collecting, using, and sharing my business information with DIP members, verification services, and service providers as described in the Privacy Policy.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Compliance */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="agreedToCompliance"
+                        checked={formData.agreedToCompliance}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">Provider Standards & Compliance</p>
+                        <p className="text-gray-600">
+                          I agree to maintain all required licenses, insurance, and credentials. I will perform services professionally and comply with all applicable laws, regulations, and DIP provider standards.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* No Guarantees */}
+                    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <input
+                        type="checkbox"
+                        name="acknowledgedNoGuarantees"
+                        checked={formData.acknowledgedNoGuarantees}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        required
+                      />
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium">No Guarantee of Business</p>
+                        <p className="text-gray-600">
+                          I understand that DIP does not guarantee any minimum volume of referrals, work, or income. DIP may terminate my participation at any time, for any reason, with or without notice.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
+                </div>
+
+                {/* Final Acknowledgment */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
                   <div className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      name="agreedToBackgroundCheck"
-                      checked={formData.agreedToBackgroundCheck}
-                      onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      required
-                    />
+                    <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
                     <div className="text-sm">
-                      <p className="text-gray-700">
-                        I consent to background checks and verification of all provided information.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      name="agreedToCompliance"
-                      checked={formData.agreedToCompliance}
-                      onChange={handleInputChange}
-                      className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      required
-                    />
-                    <div className="text-sm">
-                      <p className="text-gray-700">
-                        I agree to comply with all DIP provider standards and requirements.
+                      <p className="text-yellow-800 font-medium">Important Legal Notice</p>
+                      <p className="text-yellow-700 mt-1">
+                        By submitting this application, you are entering into a legally binding agreement. This agreement contains limitations of liability, indemnification obligations, and a binding arbitration provision with class action waiver. We recommend consulting with legal counsel before agreeing.
                       </p>
                     </div>
                   </div>
