@@ -25,12 +25,15 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo - AAA Style */}
           <Link href="/" className="flex items-center space-x-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="/dip-logo.png" 
-              alt="DIP Logo" 
-              className="h-10 w-auto" 
-            />
+            <div className="flex flex-col items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/dip-logo.png" 
+                alt="DIP Logo" 
+                className="h-10 w-auto" 
+              />
+              <span className="text-[10px] font-semibold text-gray-900 tracking-wide">MEMBERS</span>
+            </div>
             <div className="text-xl font-bold text-gray-500">Digital Car Wallet</div>
           </Link>
 
