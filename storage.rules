@@ -1,0 +1,116 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for DIP (Deductible Impact Protection)
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions for Firebase Storage
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      // Storage rules cannot query Firestore, so we check for admin custom claim
+      // The custom claim is set by a Cloud Function when user is added to admins collection
+      // Note: Until custom claims are set up, admin storage access requires the claim
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // === USER PROFILE FILES ===
+    match /users/{userId}/profile/{fileName} {
+      allow read, write: if isOwner(userId);
+      allow read: if isAdmin();
+    }
+    
+    match /users/{userId}/avatar {
+      allow read, write: if isOwner(userId);
+      allow read: if isAdmin();
+    }
+    
+    match /users/{userId}/documents/{fileName} {
+      allow read, write: if isOwner(userId);
+      allow read: if isAdmin();
+    }
+    
+    // === VEHICLE FILES ===
+    match /vehicles/{vehicleId}/photos/{fileName} {
+      // Allow authenticated users to read/write their vehicle photos
+      allow read, write: if isAuthenticated();
+      // Admin access to all vehicle files
+      allow read, write: if isAdmin();
+    }
+    
+    match /vehicles/{vehicleId}/documents/{fileName} {
+      // Allow authenticated users to read/write their vehicle documents
+      allow read, write: if isAuthenticated();
+      // Admin access to all vehicle files
+      allow read, write: if isAdmin();
+    }
+    
+    // === CLAIM FILES ===
+    // This is the key section for fixing the photo upload issue
+    match /claims/{claimId}/photos/{fileName} {
+      // Allow authenticated users to upload and read claim photos
+      allow read, write: if isAuthenticated();
+      // Admin access to all claim files
+      allow read, write: if isAdmin();
+    }
+    
+    match /claims/{claimId}/documents/{fileName} {
+      // Allow authenticated users to upload and read claim documents (PDFs)
+      allow read, write: if isAuthenticated();
+      // Admin access to all claim files
+      allow read, write: if isAdmin();
+    }
+    
+    // === REQUEST FILES (NEW) ===
+    // Rules for the requests collection photo uploads
+    match /requests/{requestId}/photos/{fileName} {
+      // Allow authenticated users to upload and read request photos
+      allow read, write: if isAuthenticated();
+      // Admin access to all request files
+      allow read, write: if isAdmin();
+    }
+    
+    match /requests/{requestId}/documents/{fileName} {
+      // Allow authenticated users to upload and read request documents
+      allow read, write: if isAuthenticated();
+      // Admin access to all request files
+      allow read, write: if isAdmin();
+    }
+    
+    // === MARKETPLACE FILES ===
+    match /marketplace/{listingId}/{fileName} {
+      // Allow authenticated users to upload and read marketplace photos
+      allow read, write: if isAuthenticated();
+      // Admin access to all marketplace files
+      allow read, write: if isAdmin();
+    }
+    
+    // === PROVIDER APPLICATION DOCUMENTS ===
+    // Allow public uploads for provider applications (before they have accounts)
+    // Files include: COI, W-9, Business License, Bar License
+    match /provider-documents/{providerId}/{fileName} {
+      // Allow anyone to upload provider application documents (no auth required for signup)
+      allow create: if true;
+      // Allow reading for verification (admin review)
+      allow read: if true;
+      // Only admin can update or delete provider documents
+      allow update, delete: if isAdmin();
+    }
+    
+    // === ADMIN FILES ===
+    match /admin/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
