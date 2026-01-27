@@ -295,7 +295,7 @@ export default function ProviderSignupPage() {
 
       await addDoc(collection(db, 'providers'), providerData);
       
-      // Send email notification to admin
+      // Send email notification to admin with all data including document URLs
       try {
         await fetch('/api/send-provider-notification', {
           method: 'POST',
@@ -304,6 +304,12 @@ export default function ProviderSignupPage() {
             ...formData,
             providerId: providerId,
             yearsInBusiness: parseInt(formData.yearsInBusiness),
+            documents: {
+              certificateOfInsurance: coiUrl,
+              w9Form: w9Url,
+              businessLicense: businessLicenseUrl,
+              barLicense: barLicenseUrl,
+            }
           }),
         });
       } catch (emailError) {
