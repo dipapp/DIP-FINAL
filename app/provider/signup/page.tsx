@@ -1,7 +1,8 @@
 'use client';
 import React, { FormEvent, useState, useRef, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase/client';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase/client';
 import { useRouter } from 'next/navigation';
 
 // Declare google namespace for TypeScript
@@ -19,6 +20,13 @@ export default function ProviderSignupPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: boolean}>({});
+
+  // File states
+  const [coiFile, setCoiFile] = useState<File | null>(null);
+  const [barLicenseFile, setBarLicenseFile] = useState<File | null>(null);
+  const [w9File, setW9File] = useState<File | null>(null);
+  const [businessLicenseFile, setBusinessLicenseFile] = useState<File | null>(null);
 
   // Load Google Places API
   useEffect(() => {
@@ -55,9 +63,9 @@ export default function ProviderSignupPage() {
     };
   }, []);
 
-  // Initialize autocomplete when Google is loaded and on step 2
+  // Initialize autocomplete when Google is loaded and on step 1
   useEffect(() => {
-    if (!googleLoaded || currentStep !== 2 || !addressInputRef.current) return;
+    if (!googleLoaded || currentStep !== 1 || !addressInputRef.current) return;
 
     const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
       componentRestrictions: { country: 'us' },
@@ -135,8 +143,6 @@ export default function ProviderSignupPage() {
 
   const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
     try {
-      // Check if email exists in providers collection (for pending applications)
-      // Note: We only check providers collection since users collection requires authentication
       const providersQuery = query(
         collection(db, 'providers'),
         where('email', '==', emailToCheck)
@@ -146,23 +152,16 @@ export default function ProviderSignupPage() {
       return !providersSnapshot.empty;
     } catch (err) {
       console.error('Error checking email existence:', err);
-      // Return false to allow submission attempt - Firebase will handle duplicates
       return false;
     }
   };
+
   const [formData, setFormData] = useState({
-    // Step 1: Business Information
+    // Step 1: Business & Contact Information
     businessName: '',
     legalEntityName: '',
-    ein: '',
-    barNumber: '',
-    businessLicense: '',
     yearsInBusiness: '',
-    insuranceProvider: '',
-    insurancePolicyNumber: '',
-    insuranceExpiry: '',
-    
-    // Step 2: Contact Information
+    website: '',
     contactPerson: '',
     email: '',
     phone: '',
@@ -172,8 +171,7 @@ export default function ProviderSignupPage() {
     state: '',
     zipCode: '',
     
-    // Step 3: Legal Documents & Terms
-    w9Form: '',
+    // Step 2: Agreements
     agreedToTerms: false,
     agreedToBackgroundCheck: false,
     agreedToCompliance: false,
@@ -183,7 +181,6 @@ export default function ProviderSignupPage() {
     agreedToDataUse: false,
     acknowledgedNoGuarantees: false,
   });
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -196,6 +193,30 @@ export default function ProviderSignupPage() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('File size must be less than 10MB');
+        return;
+      }
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('Only PDF, JPG, and PNG files are allowed');
+        return;
+      }
+      setError(null);
+      setter(file);
+    }
+  };
+
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -203,15 +224,25 @@ export default function ProviderSignupPage() {
     setLoading(true);
 
     // Validate all steps before submission
-    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+    if (!validateStep(1) || !validateStep(2)) {
       setError('Please fill out all required fields before submitting.');
       setLoading(false);
       return;
     }
 
-    // Validate EIN number
-    if (formData.ein.length !== 9) {
-      setError('EIN number must be exactly 9 digits.');
+    // Check required documents
+    if (!coiFile) {
+      setError('Certificate of Insurance (COI) is required.');
+      setLoading(false);
+      return;
+    }
+    if (!w9File) {
+      setError('W-9 Form is required.');
+      setLoading(false);
+      return;
+    }
+    if (!businessLicenseFile) {
+      setError('City Business License is required.');
       setLoading(false);
       return;
     }
@@ -227,6 +258,25 @@ export default function ProviderSignupPage() {
 
       // Generate unique 6-digit Provider ID
       const providerId = await generateProviderId();
+      const timestamp = Date.now();
+
+      // Upload documents
+      setUploadProgress({ coi: true });
+      const coiUrl = await uploadFile(coiFile, `provider-documents/${providerId}/coi-${timestamp}.${coiFile.name.split('.').pop()}`);
+      
+      setUploadProgress({ coi: false, w9: true });
+      const w9Url = await uploadFile(w9File, `provider-documents/${providerId}/w9-${timestamp}.${w9File.name.split('.').pop()}`);
+      
+      setUploadProgress({ w9: false, businessLicense: true });
+      const businessLicenseUrl = await uploadFile(businessLicenseFile, `provider-documents/${providerId}/business-license-${timestamp}.${businessLicenseFile.name.split('.').pop()}`);
+      
+      let barLicenseUrl = null;
+      if (barLicenseFile) {
+        setUploadProgress({ businessLicense: false, barLicense: true });
+        barLicenseUrl = await uploadFile(barLicenseFile, `provider-documents/${providerId}/bar-license-${timestamp}.${barLicenseFile.name.split('.').pop()}`);
+      }
+      
+      setUploadProgress({});
 
       const providerData = {
         ...formData,
@@ -235,6 +285,12 @@ export default function ProviderSignupPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         yearsInBusiness: parseInt(formData.yearsInBusiness),
+        documents: {
+          certificateOfInsurance: coiUrl,
+          w9Form: w9Url,
+          businessLicense: businessLicenseUrl,
+          barLicense: barLicenseUrl,
+        }
       };
 
       await addDoc(collection(db, 'providers'), providerData);
@@ -251,7 +307,6 @@ export default function ProviderSignupPage() {
           }),
         });
       } catch (emailError) {
-        // Don't block submission if email fails - just log it
         console.error('Failed to send notification email:', emailError);
       }
       
@@ -261,6 +316,7 @@ export default function ProviderSignupPage() {
       setError(err?.message ?? 'Failed to submit application');
     } finally {
       setLoading(false);
+      setUploadProgress({});
     }
   };
 
@@ -270,16 +326,8 @@ export default function ProviderSignupPage() {
         return !!(
           formData.businessName &&
           formData.legalEntityName &&
-          formData.ein &&
-          formData.ein.length === 9 &&
-          formData.businessLicense &&
           formData.yearsInBusiness &&
-          formData.insuranceProvider &&
-          formData.insurancePolicyNumber &&
-          formData.insuranceExpiry
-        );
-      case 2:
-        return !!(
+          formData.website &&
           formData.contactPerson &&
           formData.email &&
           formData.phone &&
@@ -288,7 +336,7 @@ export default function ProviderSignupPage() {
           formData.state &&
           formData.zipCode
         );
-      case 3:
+      case 2:
         return !!(
           formData.agreedToTerms &&
           formData.agreedToBackgroundCheck &&
@@ -297,7 +345,10 @@ export default function ProviderSignupPage() {
           formData.agreedToIndemnification &&
           formData.agreedToArbitration &&
           formData.agreedToDataUse &&
-          formData.acknowledgedNoGuarantees
+          formData.acknowledgedNoGuarantees &&
+          coiFile &&
+          w9File &&
+          businessLicenseFile
         );
       default:
         return false;
@@ -305,15 +356,19 @@ export default function ProviderSignupPage() {
   };
 
   const nextStep = () => {
-    if (currentStep < 3 && validateStep(currentStep)) {
+    if (currentStep < 2 && validateStep(currentStep)) {
       setCurrentStep(currentStep + 1);
+      setError(null);
     } else if (!validateStep(currentStep)) {
       setError('Please fill out all required fields before proceeding.');
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setError(null);
+    }
   };
 
   return (
@@ -333,17 +388,22 @@ export default function ProviderSignupPage() {
           {/* Progress Steps */}
           <div className="flex justify-center mb-8">
             <div className="flex items-center space-x-4">
-              {[1, 2, 3].map((step) => (
+              {[1, 2].map((step) => (
                 <div key={step} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
                     currentStep >= step 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-gray-200 text-gray-600'
                   }`}>
                     {step}
                   </div>
-                  {step < 3 && (
-                    <div className={`w-16 h-1 mx-2 ${
+                  <span className={`ml-2 text-sm font-medium ${
+                    currentStep >= step ? 'text-blue-600' : 'text-gray-500'
+                  }`}>
+                    {step === 1 ? 'Business Info' : 'Documents & Agreement'}
+                  </span>
+                  {step < 2 && (
+                    <div className={`w-16 h-1 mx-4 ${
                       currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
                     }`} />
                   )}
@@ -359,12 +419,11 @@ export default function ProviderSignupPage() {
             </div>
           )}
 
-
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Step 1: Business Information */}
+            {/* Step 1: Business & Contact Information */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Business Information</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Business & Contact Information</h2>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -396,103 +455,50 @@ export default function ProviderSignupPage() {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      EIN Number *
+                      Years in Business *
                     </label>
                     <input
-                      type="text"
-                      name="ein"
-                      value={formData.ein}
-                      onChange={(e) => {
-                        // Only allow digits and limit to 9 characters
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 9);
-                        setFormData(prev => ({ ...prev, ein: value }));
-                      }}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        formData.ein.length === 9 
-                          ? 'border-green-300 bg-green-50' 
-                          : formData.ein.length > 0 
-                            ? 'border-yellow-300 bg-yellow-50' 
-                            : 'border-gray-300'
-                      }`}
-                      placeholder="123456789"
-                      maxLength={9}
-                      required
-                    />
-                    <p className={`text-xs mt-1 ${
-                      formData.ein.length === 9 
-                        ? 'text-green-600' 
-                        : formData.ein.length > 0 
-                          ? 'text-yellow-600' 
-                          : 'text-gray-500'
-                    }`}>
-                      {formData.ein.length === 9 
-                        ? '✓ Valid EIN number' 
-                        : formData.ein.length > 0 
-                          ? `${formData.ein.length}/9 digits` 
-                          : 'Enter 9 digits only (no dashes or spaces)'
-                      }
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bar Number (if applicable)
-                    </label>
-                    <input
-                      type="text"
-                      name="barNumber"
-                      value={formData.barNumber}
+                      type="number"
+                      name="yearsInBusiness"
+                      value={formData.yearsInBusiness}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      min="0"
+                      required
                     />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City Business License Number *
+                      Website *
                     </label>
                     <input
-                      type="text"
-                      name="businessLicense"
-                      value={formData.businessLicense}
+                      type="url"
+                      name="website"
+                      value={formData.website}
                       onChange={handleInputChange}
+                      placeholder="https://www.example.com"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Years in Business *
-                  </label>
-                  <input
-                    type="number"
-                    name="yearsInBusiness"
-                    value={formData.yearsInBusiness}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="0"
-                    required
-                  />
-                </div>
-
-                {/* Insurance Information */}
                 <div className="border-t pt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Insurance Information</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
                   
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Insurance Provider *
+                        Contact Person *
                       </label>
                       <input
                         type="text"
-                        name="insuranceProvider"
-                        value={formData.insuranceProvider}
+                        name="contactPerson"
+                        value={formData.contactPerson}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -501,12 +507,28 @@ export default function ProviderSignupPage() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Policy Number *
+                        Email Address *
                       </label>
                       <input
-                        type="text"
-                        name="insurancePolicyNumber"
-                        value={formData.insurancePolicyNumber}
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Primary Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -515,12 +537,80 @@ export default function ProviderSignupPage() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Insurance Expiration *
+                        Alternate Phone
                       </label>
                       <input
-                        type="date"
-                        name="insuranceExpiry"
-                        value={formData.insuranceExpiry}
+                        type="tel"
+                        name="alternatePhone"
+                        value={formData.alternatePhone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Business Address</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Business Address *
+                    </label>
+                    <input
+                      ref={addressInputRef}
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder={googleLoaded ? "Start typing address..." : "Enter address"}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                    {googleLoaded && (
+                      <p className="text-xs text-gray-500 mt-1">Start typing to search for your address</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        State *
+                      </label>
+                      <select
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="">Select State</option>
+                        <option value="CA">California</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        ZIP Code *
+                      </label>
+                      <input
+                        type="text"
+                        name="zipCode"
+                        value={formData.zipCode}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         required
@@ -531,144 +621,165 @@ export default function ProviderSignupPage() {
               </div>
             )}
 
-            {/* Step 2: Contact Information */}
+            {/* Step 2: Documents & Agreement */}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Contact Person *
-                    </label>
-                    <input
-                      type="text"
-                      name="contactPerson"
-                      value={formData.contactPerson}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Primary Phone *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Alternate Phone
-                    </label>
-                    <input
-                      type="tel"
-                      name="alternatePhone"
-                      value={formData.alternatePhone}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Business Address *
-                  </label>
-                  <input
-                    ref={addressInputRef}
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder={googleLoaded ? "Start typing address..." : "Enter address"}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                  {googleLoaded && (
-                    <p className="text-xs text-gray-500 mt-1">Start typing to search for your address</p>
-                  )}
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      State *
-                    </label>
-                    <select
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    >
-                      <option value="">Select State</option>
-                      <option value="CA">California</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ZIP Code *
-                    </label>
-                    <input
-                      type="text"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Legal & Terms */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">Service Provider Agreement</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Documents & Service Provider Agreement</h2>
                 <p className="text-gray-600 text-sm mb-4">
-                  Please carefully review and agree to the following terms to complete your application.
+                  Upload required documents and review the service provider agreement.
                 </p>
+
+                {/* Document Uploads */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                  <h3 className="font-medium text-gray-900 mb-4">Required Documents</h3>
+                  <p className="text-sm text-gray-600 mb-4">Upload PDF, JPG, or PNG files (max 10MB each)</p>
+                  
+                  <div className="space-y-4">
+                    {/* Certificate of Insurance */}
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${coiFile ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {coiFile ? (
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Certificate of Insurance (COI) *</p>
+                          {coiFile ? (
+                            <p className="text-sm text-green-600">{coiFile.name}</p>
+                          ) : (
+                            <p className="text-sm text-gray-500">Required - Proof of liability insurance</p>
+                          )}
+                        </div>
+                      </div>
+                      <label className="cursor-pointer">
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium ${coiFile ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                          {coiFile ? 'Change' : 'Upload'}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange(e, setCoiFile)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {/* W-9 Form */}
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${w9File ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {w9File ? (
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">W-9 Form *</p>
+                          {w9File ? (
+                            <p className="text-sm text-green-600">{w9File.name}</p>
+                          ) : (
+                            <p className="text-sm text-gray-500">Required - IRS tax form</p>
+                          )}
+                        </div>
+                      </div>
+                      <label className="cursor-pointer">
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium ${w9File ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                          {w9File ? 'Change' : 'Upload'}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange(e, setW9File)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {/* City Business License */}
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${businessLicenseFile ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {businessLicenseFile ? (
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">City Business License *</p>
+                          {businessLicenseFile ? (
+                            <p className="text-sm text-green-600">{businessLicenseFile.name}</p>
+                          ) : (
+                            <p className="text-sm text-gray-500">Required - Valid business license</p>
+                          )}
+                        </div>
+                      </div>
+                      <label className="cursor-pointer">
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium ${businessLicenseFile ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                          {businessLicenseFile ? 'Change' : 'Upload'}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange(e, setBusinessLicenseFile)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Bar License (Optional) */}
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${barLicenseFile ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {barLicenseFile ? (
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Bar License</p>
+                          {barLicenseFile ? (
+                            <p className="text-sm text-green-600">{barLicenseFile.name}</p>
+                          ) : (
+                            <p className="text-sm text-gray-500">Optional - For legal service providers</p>
+                          )}
+                        </div>
+                      </div>
+                      <label className="cursor-pointer">
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium ${barLicenseFile ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                          {barLicenseFile ? 'Change' : 'Upload'}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => handleFileChange(e, setBarLicenseFile)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Scrollable Terms Summary */}
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -693,24 +804,6 @@ export default function ProviderSignupPage() {
                     <p><strong>Termination:</strong> DIP may terminate your participation at any time, for any reason, with or without notice.</p>
                     <p><strong>Data Use:</strong> Your information will be shared with DIP members and used for verification, communication, and platform operations.</p>
                   </div>
-                </div>
-
-                {/* W-9 Form Status */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    W-9 Form Status
-                  </label>
-                  <select
-                    name="w9Form"
-                    value={formData.w9Form}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select Status</option>
-                    <option value="completed">Completed</option>
-                    <option value="pending">Pending</option>
-                    <option value="not-required">Not Required</option>
-                  </select>
                 </div>
 
                 {/* Required Agreements */}
@@ -893,7 +986,7 @@ export default function ProviderSignupPage() {
                 Previous
               </button>
               
-              {currentStep < 3 ? (
+              {currentStep < 2 ? (
                 <button
                   type="button"
                   onClick={nextStep}
@@ -909,14 +1002,30 @@ export default function ProviderSignupPage() {
               ) : (
                 <button
                   type="submit"
-                  disabled={loading || !validateStep(3)}
-                  className={`px-6 py-2 rounded-lg transition-colors ${
-                    loading || !validateStep(3)
+                  disabled={loading || !validateStep(2)}
+                  className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                    loading || !validateStep(2)
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
-                  {loading ? 'Submitting...' : 'Submit Application'}
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>
+                        {uploadProgress.coi ? 'Uploading COI...' : 
+                         uploadProgress.w9 ? 'Uploading W-9...' :
+                         uploadProgress.businessLicense ? 'Uploading License...' :
+                         uploadProgress.barLicense ? 'Uploading Bar License...' :
+                         'Submitting...'}
+                      </span>
+                    </>
+                  ) : (
+                    <span>Submit Application</span>
+                  )}
                 </button>
               )}
             </div>
