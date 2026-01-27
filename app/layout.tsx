@@ -24,8 +24,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
               {/* Brand */}
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/dip-logo.png" alt="DIP Logo" className="h-6 w-auto" />
+                  <div className="flex flex-col items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/dip-logo.png" alt="DIP Logo" className="h-6 w-auto" />
+                    <span className="text-[8px] font-semibold text-gray-400 tracking-wide">MEMBERS™</span>
+                  </div>
                   <span className="text-sm font-bold text-gray-500">Digital Car Wallet</span>
                 </div>
                 <p className="text-gray-400 text-sm">
