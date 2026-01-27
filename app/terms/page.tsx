@@ -24,7 +24,7 @@ export default function TermsOfService() {
             </p>
             <p className="text-red-700 font-bold mt-2 mb-0">IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THE APP.</p>
           </div>
-
+          
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Section 1: Eligibility and Account Requirements</h2>
             
@@ -55,7 +55,7 @@ export default function TermsOfService() {
                 <li>DIP does NOT provide coverage, reimbursement, indemnification, or financial protection</li>
                 <li>DIP membership is NOT a substitute for legally required automobile insurance</li>
                 <li>DIP does NOT guarantee any financial outcome or benefit</li>
-              </ul>
+            </ul>
             </div>
             
             <h3 className="text-xl font-medium text-gray-900 mb-3">2.2 No Financial Coverage</h3>

@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
           <p className="text-lg mb-8">
             This Privacy Policy describes how DIP ("Company," "we," "us," or "our") collects, uses, discloses, and protects your personal information.
           </p>
-
+          
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Section 1: Information We Collect</h2>
             
@@ -87,7 +87,7 @@ export default function PrivacyPolicy() {
               <li>Google/Firebase (data storage, authentication)</li>
               <li>Email service providers (transactional emails)</li>
             </ul>
-            
+
             <h3 className="text-xl font-medium text-gray-900 mb-3">3.3 Collision Centers and Service Providers</h3>
             <p className="mb-4">When you request a coupon or service, we share relevant information with the participating provider.</p>
             
@@ -102,7 +102,7 @@ export default function PrivacyPolicy() {
               <li>To protect our rights, safety, or property</li>
               <li>To investigate fraud or security issues</li>
             </ul>
-            
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <h3 className="text-xl font-bold text-green-800 mb-2">3.6 No Sale of Personal Information</h3>
               <p className="text-green-800 mb-0 font-semibold">WE DO NOT SELL YOUR PERSONAL INFORMATION.</p>
@@ -120,10 +120,10 @@ export default function PrivacyPolicy() {
               <li>Regular security assessments</li>
               <li>Access controls and monitoring</li>
             </ul>
-            
+
             <h3 className="text-xl font-medium text-gray-900 mb-3">4.2 No Guarantee</h3>
             <p className="mb-4">No system is 100% secure. We cannot guarantee absolute security of your data.</p>
-            
+
             <h3 className="text-xl font-medium text-gray-900 mb-3">4.3 Your Responsibility</h3>
             <p className="mb-4">You are responsible for maintaining the security of your account credentials and device.</p>
           </section>
