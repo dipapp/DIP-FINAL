@@ -32,7 +32,7 @@ export default function Navbar() {
                 alt="DIP Logo" 
                 className="h-10 w-auto" 
               />
-              <span className="text-[10px] font-semibold text-gray-900 tracking-wide">MEMBERS</span>
+              <span className="text-[10px] font-semibold text-gray-900 tracking-wide">MEMBERS™</span>
             </div>
             <div className="text-xl font-bold text-gray-500">Digital Car Wallet</div>
           </Link>
