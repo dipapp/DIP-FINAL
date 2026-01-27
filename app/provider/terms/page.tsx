@@ -285,7 +285,7 @@ export default function ProviderTermsPage() {
                 For questions about this Agreement or the provider program, please contact:
               </p>
               <p className="text-gray-700 mt-2">
-                <strong>Email:</strong> providers@dipmembers.com<br />
+                <strong>Email:</strong> support@dipmembers.com<br />
                 <strong>Website:</strong> www.dipmembers.com
               </p>
             </section>
