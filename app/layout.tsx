@@ -51,7 +51,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
               <div>
                 <h4 className="font-semibold mb-2 text-sm">Support</h4>
                 <div className="space-y-1 text-sm">
-                  <a href="mailto:support@dipmembers.com" className="text-gray-400 hover:text-white transition-colors block">
+                  <a href="/support" className="text-gray-400 hover:text-white transition-colors block">
                     Contact Us
                   </a>
                 </div>
