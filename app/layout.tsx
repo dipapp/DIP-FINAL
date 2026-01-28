@@ -54,6 +54,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
                   <a href="/support" className="text-gray-400 hover:text-white transition-colors block">
                     Contact Us
                   </a>
+                  <a href="/privacypolicy" className="text-gray-400 hover:text-white transition-colors block">
+                    Privacy Policy
+                  </a>
                 </div>
               </div>
             </div>
