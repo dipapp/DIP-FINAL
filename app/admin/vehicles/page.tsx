@@ -20,6 +20,16 @@ type Vehicle = {
   lastUpdated?: any;
 };
 
+// Helper to safely extract color value (handles both string and object {name, abbreviation} formats)
+const getColorValue = (color: any): string => {
+  if (!color) return '';
+  if (typeof color === 'string') return color;
+  if (typeof color === 'object' && color.name) {
+    return color.name !== 'Unknown' ? color.name : '';
+  }
+  return '';
+};
+
 export default function AdminVehiclesPage() {
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -42,7 +52,7 @@ export default function AdminVehiclesPage() {
       vin: vehicle.vin || '',
       licensePlate: vehicle.licensePlate || '',
       state: vehicle.state || '',
-      color: vehicle.color || '',
+      color: getColorValue(vehicle.color),
     });
   };
 
@@ -132,7 +142,7 @@ export default function AdminVehiclesPage() {
                 <tr key={vehicle.id} className="table-row">
                   <td className="py-3 pr-4">
                     <div className="font-medium">{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                    <div className="text-xs text-muted">{vehicle.color || 'Color not specified'}</div>
+                    <div className="text-xs text-muted">{getColorValue(vehicle.color) || 'Color not specified'}</div>
                   </td>
                   <td className="py-3 pr-4">
                     <div className="font-medium">{vehicle.ownerEmail}</div>

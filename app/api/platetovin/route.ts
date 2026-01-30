@@ -68,13 +68,24 @@ export async function POST(request: NextRequest) {
     // Extract vehicle details from the VIN object
     const vinData = data.vin || {};
     
+    // Handle color which may come as an object {name, abbreviation} or a string
+    let colorValue = null;
+    if (vinData.color) {
+      if (typeof vinData.color === 'object' && vinData.color.name) {
+        // Extract the color name from the object
+        colorValue = vinData.color.name !== 'Unknown' ? vinData.color.name : null;
+      } else if (typeof vinData.color === 'string') {
+        colorValue = vinData.color;
+      }
+    }
+    
     return NextResponse.json({
       success: true,
       vin: vinData.vin || vinData.number || null,
       year: vinData.year || null,
       make: vinData.make || null,
       model: vinData.model || null,
-      color: vinData.color || null,
+      color: colorValue,
       vehicle: vinData || null,
     });
 

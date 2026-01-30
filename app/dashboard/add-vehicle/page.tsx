@@ -32,13 +32,23 @@ export default function AddVehiclePage() {
       const data = await response.json();
 
       if (data.success && data.vin) {
+        // Handle color which may come as an object {name, abbreviation} or a string
+        let colorValue = '';
+        if (data.color) {
+          if (typeof data.color === 'object' && data.color.name) {
+            colorValue = data.color.name !== 'Unknown' ? data.color.name : '';
+          } else if (typeof data.color === 'string') {
+            colorValue = data.color;
+          }
+        }
+        
         setForm({ 
           ...form, 
           vin: data.vin,
           year: data.year || '',
           make: data.make || '',
           model: data.model || '',
-          color: data.color || ''
+          color: colorValue
         });
         const message = `Vehicle details found and populated!\n\n${data.year} ${data.make} ${data.model}\nVIN: ${data.vin}`;
         alert(message);

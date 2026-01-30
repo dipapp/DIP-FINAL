@@ -159,6 +159,16 @@ function MyVehiclesPageContent() {
       const data = await response.json();
 
       if (data.success && data.vin) {
+        // Handle color which may come as an object {name, abbreviation} or a string
+        let colorValue = '';
+        if (data.color) {
+          if (typeof data.color === 'object' && data.color.name) {
+            colorValue = data.color.name !== 'Unknown' ? data.color.name : '';
+          } else if (typeof data.color === 'string') {
+            colorValue = data.color;
+          }
+        }
+        
         // Auto-populate all vehicle details
         setForm({ 
           ...form, 
@@ -166,7 +176,7 @@ function MyVehiclesPageContent() {
           year: data.year || '',
           make: data.make || '',
           model: data.model || '',
-          color: data.color || ''
+          color: colorValue
         });
         alert(`✅ Vehicle details found and populated!\n\n${data.year} ${data.make} ${data.model}\nVIN: ${data.vin}`);
       } else {
@@ -217,6 +227,16 @@ function MyVehiclesPageContent() {
     }
   }
 
+
+  // Helper to safely extract color value (handles both string and object {name, abbreviation} formats)
+  const getColorValue = (color: any): string => {
+    if (!color) return '';
+    if (typeof color === 'string') return color;
+    if (typeof color === 'object' && color.name) {
+      return color.name !== 'Unknown' ? color.name : '';
+    }
+    return '';
+  };
 
   const getVehicleIcon = (make: string) => {
     const key = make.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -517,10 +537,10 @@ function MyVehiclesPageContent() {
                     <p className="text-sm text-gray-900">{selectedVehicle.state}</p>
                   </div>
                 )}
-                {selectedVehicle.color && (
+                {getColorValue(selectedVehicle.color) && (
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Color</p>
-                    <p className="text-sm text-gray-900">{selectedVehicle.color}</p>
+                    <p className="text-sm text-gray-900">{getColorValue(selectedVehicle.color)}</p>
                   </div>
                 )}
               </div>
@@ -672,7 +692,7 @@ function MyVehiclesPageContent() {
                         vin: selectedVehicle.vin || '',
                         licensePlate: selectedVehicle.licensePlate || '',
                         state: selectedVehicle.state || '',
-                        color: selectedVehicle.color || '',
+                        color: getColorValue(selectedVehicle.color),
                       });
                       setShowPhotoModal(false);
                     }}

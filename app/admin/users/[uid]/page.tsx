@@ -9,6 +9,16 @@ import { db } from '@/lib/firebase/client';
 import { subscribeVehiclesByOwner, subscribeClaimsByUser } from '@/lib/firebase/adminActions';
 import BackButton from '@/components/BackButton';
 
+// Helper to safely extract color value (handles both string and object {name, abbreviation} formats)
+const getColorValue = (color: any): string => {
+  if (!color) return '';
+  if (typeof color === 'string') return color;
+  if (typeof color === 'object' && color.name) {
+    return color.name !== 'Unknown' ? color.name : '';
+  }
+  return '';
+};
+
 export default function AdminUserDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -161,7 +171,7 @@ export default function AdminUserDetailPage() {
                 <tr key={v.id} className="table-row">
                   <td className="py-3 pr-4">
                     <div className="font-medium">{v.year} {v.make} {v.model}</div>
-                    <div className="text-xs text-muted">{v.color || '—'}</div>
+                    <div className="text-xs text-muted">{getColorValue(v.color) || '—'}</div>
                   </td>
                   <td className="py-3 pr-4"><span className="font-mono text-xs">{v.vin || '—'}</span></td>
                   <td className="py-3 pr-4"><span className="font-mono text-xs">{v.licensePlate || '—'}</span></td>
