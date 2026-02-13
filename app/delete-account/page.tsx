@@ -8,7 +8,8 @@ import { useRouter } from 'next/navigation';
 
 export default function DeleteAccountPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ uid: string; email: string | null } | null>(undefined);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [user, setUser] = useState<{ uid: string; email: string | null } | null>(null);
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +17,7 @@ export default function DeleteAccountPage() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u ? { uid: u.uid, email: u.email || null } : null);
+      setAuthChecked(true);
     });
     return () => unsub();
   }, []);
@@ -53,7 +55,7 @@ export default function DeleteAccountPage() {
     }
   };
 
-  if (user === undefined) {
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">Loading...</div>
