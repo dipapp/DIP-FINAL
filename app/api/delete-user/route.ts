@@ -39,15 +39,24 @@ if (!getApps().length) {
 const auth = getAuth();
 const db = getFirestore();
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const { uid } = await request.json();
+function getUidFromRequest(request: NextRequest): Promise<string | null> {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return Promise.resolve(null);
+  const idToken = authHeader.split('Bearer ')[1];
+  return auth
+    .verifyIdToken(idToken)
+    .then((decoded) => decoded.uid)
+    .catch(() => null);
+}
 
+export async function POST(request: NextRequest) {
+  try {
+    const uid = await getUidFromRequest(request);
     if (!uid) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    console.log('Deleting user:', uid);
+    console.log('Deleting user (self-service):', uid);
 
     // Delete from Firebase Authentication
     try {
@@ -68,7 +77,37 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error in delete-user API:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const uid = await getUidFromRequest(request);
+    if (!uid) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    console.log('Deleting user (self-service):', uid);
+
+    try {
+      await auth.deleteUser(uid);
+      console.log('User deleted from Firebase Auth:', uid);
+    } catch (authError) {
+      console.error('Error deleting user from Firebase Auth:', authError);
+    }
+
+    try {
+      await db.collection('users').doc(uid).delete();
+      console.log('User document deleted from Firestore:', uid);
+    } catch (firestoreError) {
+      console.error('Error deleting user document from Firestore:', firestoreError);
+      return NextResponse.json({ error: 'Failed to delete user document' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error in delete-user API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

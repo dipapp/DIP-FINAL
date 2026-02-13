@@ -60,6 +60,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
                   <a href="/terms" className="text-gray-400 hover:text-white transition-colors block">
                     Terms of Service
                   </a>
+                  <a href="/delete-account" className="text-gray-400 hover:text-white transition-colors block">
+                    Delete account
+                  </a>
                 </div>
               </div>
             </div>
